@@ -7,8 +7,8 @@
     <ProjectGuid>{F12A7CFE-F3F9-48D0-92D6-6D9E0628D907}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>gatherMembersInfo</RootNamespace>
-    <AssemblyName>gatherMembersInfo</AssemblyName>
+    <RootNamespace>TawGatherMembersInfo</RootNamespace>
+    <AssemblyName>TawGatherMembersInfo</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
