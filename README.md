@@ -1,6 +1,6 @@
 # TawGatherMembersInfo
 Automatic gathering of TAW.net members information for automated processing purposes. 
-And automatic generation of TAW.net Arma 3 division squad xmls.
+Such as automatic generation of TAW.net Arma 3 division squad xmls.
 
 # Arma Squad XMLs:
 
@@ -21,10 +21,12 @@ Extra care is taken that it includes all members, even discharged ones, and the 
 
 http://am2.taw.net:8000/?rootUnitId=1&format=table&type=distinct_person_list&fields=name&orderBy=id&version=3&auth=YOUR_AUTH_TOKEN
 Results in:
+
 ![Example page result](http://image.prntscr.com/image/70e7118657be4a17810f4b19608930e7.png)
 
 It is a html table that can be imported into Google Sheet, for example for administration purposes.
 =IMPORTHTML("http://am2.taw.net:8000/?rootUnitId=1&format=table&type=distinct_person_list&fields=name&orderBy=id&version=3&auth=YOUR_AUTH_TOKEN", "table", 1)
 
 Results in:
+
 ![Example google sheet result](http://image.prntscr.com/image/89f57acbb96b41489c61fe08c670fb2a.png)
