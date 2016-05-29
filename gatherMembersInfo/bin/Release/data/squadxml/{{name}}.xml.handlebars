@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!DOCTYPE squad SYSTEM "squad.dtd">
+<?xml-stylesheet href="squad.xsl" type="text/xsl"?>
+
+<squad nick="{{nick}}">
+    
+    <name>{{name}}</name>
+    <email>{{email}}</email>
+    <web>{{web}}</web>
+    <picture>{{picture}}</picture>
+    <title>{{title}}</title>
+    {{#members}}
+    <member id="{{id}}" nick="{{nick}}">
+        <name>{{name}}</name>
+        <email>{{email}}</email>
+        <icq>{{icq}}</icq>
+        <remark>Join us at www.TAW.net</remark>
+    </member>
+    {{/members}}
+</squad>

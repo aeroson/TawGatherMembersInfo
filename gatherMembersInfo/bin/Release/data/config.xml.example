@@ -1,0 +1,15 @@
+<configuration>
+	
+	<httpServerPort>8000</httpServerPort>
+	<targetSquadXmlFolder>data/squadxml</targetSquadXmlFolder>
+
+	<authenticationTokens>
+		<!-- passwords generated with http://passwordsgenerator.net/?length=16&symbols=1&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=0 -->
+		<authenticationToken>example_KMzZA8Jm5E2AhF9MN5NY9t6eqYr5MWSp</authenticationToken>
+	</authenticationTokens>
+
+	<unitsToGatherMemberInfo>
+		<unitId>2776</unitId><!-- Arma 3 division -->
+	</unitsToGatherMemberInfo>
+
+</configuration>

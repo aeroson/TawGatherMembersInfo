@@ -1,0 +1,13 @@
+
+
+/packages
+/*/obj
+/*/bin/[Dd]ebug
+/*/bin/[Rr]elease/*.exe
+/*/bin/[Rr]elease/*.dll
+/*/bin/[Rr]elease/*.pdb
+/*/bin/[Rr]elease/*.xml
+/*/bin/[Rr]elease/*.config
+/*/bin/[Rr]elease/*.manifest
+/*/*.user
+/.vs
