@@ -41,10 +41,12 @@ namespace TawGatherMembersInfo
                 var form = new EnterTawUserLoginInfo();
                 if (form.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    if (form.RememeberLoginDetails)
+					username = form.Username;
+					password = form.Password;
+					if (form.RememeberLoginDetails)
                     {
-                        registry.SetValue("username", form.Username);
-                        registry.SetValue("password", form.Password);
+                        registry.SetValue("username", username);
+                        registry.SetValue("password", password);
                     }
                 }
                 else
