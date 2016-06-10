@@ -127,7 +127,7 @@ namespace TawGatherMembersInfo
         /// <summary>
         /// Smaller index is smaller priority
         /// </summary>
-        public static List<string> positionNameShortIngamePriorityOrder = new List<string>()
+        public static List<string> positionNameShortIngamePriority = new List<string>()
             {
                 "FL",
                 "SL",

@@ -109,7 +109,9 @@ namespace TawGatherMembersInfo
         /// </summary>
         public void GatherBasicInformationFromUnitId1Roaster()
         {
-            string responseText = null;
+			data.ClearUnitToPersonRelations();
+
+			string responseText = null;
 
             do
             {
@@ -129,7 +131,6 @@ namespace TawGatherMembersInfo
 
             var roasterDiv = html.GetElementbyId("ctl00_bcr_UpdatePanel1");
 
-            data.ClearAll();
             data.rootUnit = data.CreateUnit(null, "TAW");
             data.rootUnit.ParseUnitContents(this, roasterDiv.SelectSingleNode(roasterDiv.XPath + "/div/ul/ul"));
 

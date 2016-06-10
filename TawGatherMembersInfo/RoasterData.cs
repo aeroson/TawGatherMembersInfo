@@ -19,13 +19,10 @@ namespace TawGatherMembersInfo
 		public HashSet<Unit> allUnits = new HashSet<Unit>();
 		public HashSet<Person> allPersons = new HashSet<Person>();
 		public Dictionary<string, Person> nameToPerson = new Dictionary<string, Person>();
-		public int nextPersonId;
 
 		public int GetNextPersonId()
 		{
-			var id = nextPersonId;
-			nextPersonId++;
-			return id;
+			return allPersons.Count;
 		}
 
 		public Unit CreateUnit(Unit parentUnit, string text)
@@ -54,7 +51,21 @@ namespace TawGatherMembersInfo
 			}
 		}
 
-		public Person GetOrCreatePerson(string text, Unit parentUnit)
+		public Person GetOrCreateEmptyPerson(string name, int? id = null)
+		{
+			Person person;
+			if (nameToPerson.TryGetValue(name, out person) == false)
+			{
+				person = new Person();
+				person.name = name;
+				if (id.HasValue) person.id = id.Value;
+				else person.id = GetNextPersonId();
+				nameToPerson[name] = person;
+				allPersons.Add(person);
+			}			
+			return person;
+		}
+		public Person GetOrUpdateOrCreatePerson(string text, Unit parentUnit)
 		{
 			/*
                 text use cases:
@@ -111,43 +122,17 @@ namespace TawGatherMembersInfo
 			}
 
 
-			Person person;
-			if (nameToPerson.ContainsKey(name)) person = nameToPerson[name];
-			else
-			{
-				person = new Person();
-				person.name = name;
-				person.id = GetNextPersonId();
-				person.rankNameShort = rank;
-				if (onLeave) person.status = "on leave";
-				nameToPerson[name] = person;
-			}
+			var person = GetOrCreateEmptyPerson(name);
+		
+			person.name = name;
+			person.rankNameShort = rank;
+			if (onLeave) person.status = "on leave";
 
 			parentUnit.personToPositionNameShort[person] = positionNameShort;
 			person.unitToPositionNameShort[parentUnit] = positionNameShort;
 			allPersons.Add(person);
 
 			return person;
-		}
-
-
-
-		public void ClearAll()
-		{
-
-			foreach (var unit in allUnits)
-			{
-				unit.personToPositionNameShort.Clear();
-				unit.childUnits.Clear();
-				unit.parentUnit = null;
-			}
-			allUnits.Clear();
-
-			foreach (var person in allPersons)
-			{
-				person.unitToPositionNameShort.Clear();
-			}
-			allPersons.Clear();
 		}
 
 		public void Save(Stream stream)
@@ -181,15 +166,34 @@ namespace TawGatherMembersInfo
 
 		public static RoasterData Load(string pathAndName)
 		{
+			RoasterData data = null;
 			var dataPath = pathAndName + ".data.bin";
 			if (File.Exists(dataPath))
 			{
-				var data = Load(File.Open(dataPath, FileMode.Open, FileAccess.Read, FileShare.Read));
+				data = Load(File.Open(dataPath, FileMode.Open, FileAccess.Read, FileShare.Read));
 				Console.WriteLine("loaded data from '" + pathAndName + "'");
-				return data;
 			}
-			Console.WriteLine("'" + dataPath + "' not found, creating empty data");
-			return new RoasterData();
+			else
+			{
+				data = new RoasterData();
+				Console.WriteLine("'" + dataPath + "' not found, creating empty data");
+
+				var personsOrderPath = pathAndName + ".personsOrder.txt";
+				if (File.Exists(personsOrderPath))
+				{
+					Console.WriteLine("found '" + personsOrderPath + "' creating name only persons to preserve IDs");
+					foreach (var line in File.ReadAllLines(personsOrderPath))
+					{
+						data.GetOrCreateEmptyPerson(line);
+					}
+				}
+				else
+				{
+					Console.WriteLine("'" + personsOrderPath + "' not found, no persons created at all");
+				}
+
+			}
+			return data;
 		}
 	}
 

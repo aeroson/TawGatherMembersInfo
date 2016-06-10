@@ -44,7 +44,8 @@ namespace TawGatherMembersInfo
             }
         }
 
-        public static string GetUnitRoasterPage(int unitId)
+
+		public static string GetUnitRoasterPage(int unitId)
         {
             if (unitId < 1) throw new IndexOutOfRangeException("unit id must be 1 or more");
             return @"http://taw.net/unit/" + unitId + "/roster.aspx";
@@ -55,7 +56,7 @@ namespace TawGatherMembersInfo
             id = int.Parse(htmlNode.GetAttributeValue("id", "u-1").Substring(1));
             roasterFactory.data.idToUnit[id] = this;
 
-            foreach (var child in htmlNode.ChildNodes)
+			foreach (var child in htmlNode.ChildNodes)
             {
 
                 var span = child.SelectSingleNode(child.XPath + "/span"); // contains the name of this unit
@@ -65,7 +66,7 @@ namespace TawGatherMembersInfo
                 {
                     // person
                     var name = child.InnerText;
-                    var person = roasterFactory.data.GetOrCreatePerson(name, this);
+                    var person = roasterFactory.data.GetOrUpdateOrCreatePerson(name, this);
                 }
                 else
                 {

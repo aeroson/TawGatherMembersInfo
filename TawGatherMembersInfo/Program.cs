@@ -88,7 +88,29 @@ namespace TawGatherMembersInfo
             foreach (var person in rootUnit.GetAllPersons())
             {
 
-                var picture = GetUnitImage(rootUnit, person.MostImportantIngameUnit, targetSquadXmlFolder) ?? "taw_paa.paa";            
+				string picture = null;
+
+				if(string.IsNullOrEmpty(person.biography) == false)
+				{
+					var bio = person.biography.ToLower();
+					var start = "squadxml logo:";
+					var startIndex = bio.IndexOf(start);
+					if (startIndex != -1)
+					{
+						var endIndex = bio.IndexOf("\r\n", startIndex);
+						if (endIndex == -1) endIndex = bio.IndexOf("\n\r", startIndex);
+						if (endIndex == -1) endIndex = bio.IndexOf("\n", startIndex);
+
+						var length = bio.Length - (startIndex + start.Length);
+						if (endIndex != -1) length = endIndex - (startIndex + start.Length);
+						picture = bio.Substring(startIndex + start.Length, length).Trim() + ".paa";
+					}
+				}
+
+				if (string.IsNullOrEmpty(picture))
+				{
+					picture = GetUnitImage(rootUnit, person.MostImportantIngameUnit, targetSquadXmlFolder) ?? "taw_paa.paa";
+				}
   
                 var result = template(
                     new

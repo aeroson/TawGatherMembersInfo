@@ -67,6 +67,7 @@
     <Compile Include="EnterTawUserLoginInfo.Designer.cs">
       <DependentUpon>EnterTawUserLoginInfo.cs</DependentUpon>
     </Compile>
+    <Compile Include="Event.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="HelperClasses.cs" />
     <Compile Include="HttpServerHandler.cs" />

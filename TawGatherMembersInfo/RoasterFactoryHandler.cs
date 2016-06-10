@@ -63,7 +63,6 @@ namespace TawGatherMembersInfo
             {
 
                 roasterFactory.ClearCookies();
-                roasterFactory.data.ClearUnitToPersonRelations();
                 roasterFactory.GatherBasicInformationFromUnitId1Roaster();
 
                 var personsUpdated = new HashSet<Person>();
@@ -76,7 +75,7 @@ namespace TawGatherMembersInfo
                     {
                         if (personsUpdated.Contains(person)) continue;
                         personsUpdated.Add(person);
-                        person.UpdateInfo(roasterFactory);
+                        person.UpdateInfoFromProfilePage(roasterFactory);
                         Thread.Sleep(profileUpdateDelayMiliSeconds);
                     }
                 }

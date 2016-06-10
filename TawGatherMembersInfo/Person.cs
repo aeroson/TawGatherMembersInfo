@@ -23,6 +23,7 @@ namespace TawGatherMembersInfo
         public string status = "unknown"; // active, discharged, etc..
         public int id = 0;
         public DateTime dateJoinedTaw;
+		public string biography;
 
         public string countryCodeIso3166 = "";
         public string CountryName
@@ -36,14 +37,6 @@ namespace TawGatherMembersInfo
                 countryCodeIso3166 = countryCodeIso3166ToCountryName.Reverse.Get(value, "");
             }
         }
-        /*
-        public string countryCodeThreeLetters
-        {
-            get
-            {
-                return countryCodeIso3166ToCountryCodeThreeLetters.Get(countryCodeTwoLetters, "");
-            }
-        }*/
         public string CountryFlagImageUrl
         {
             get
@@ -80,6 +73,8 @@ namespace TawGatherMembersInfo
             }
         }
 
+
+
         [NonSerialized]
         Unit mostImportantIngameUnit_cache;
         public Unit MostImportantIngameUnit
@@ -89,17 +84,17 @@ namespace TawGatherMembersInfo
                 if (mostImportantIngameUnit_cache == null)
                 {
                     var unitsSortedAccordingToInGameImportance = unitToPositionNameShort
-                        .OrderByDescending(kvp => {
-                            var importance = 0;
-                            foreach (var n in inGameUnitNamePriority)
-                            {
-                                if (kvp.Key.name.ToLower().Contains(n)) return importance;
-                                importance += 100;
-                            }
-                            var positionNameShort = kvp.Value;
-                            var positionPriority = positionNameShortIngamePriorityOrder.IndexOf(positionNameShort);
-                            importance += positionPriority;
-                            return 0;
+                        .OrderByDescending(unitToPositionNameShort => {
+							int priority = 0;
+
+							var squatTypeImportance = inGameUnitNamePriority.IndexOf(unitToPositionNameShort.Key.type.ToLower());
+							priority += squatTypeImportance;
+
+                            var positionNameShort = unitToPositionNameShort.Value;
+                            var positionImportance = positionNameShortIngamePriority.IndexOf(positionNameShort);
+                            priority += 10 * positionImportance;
+
+                            return priority;
                         });
 
                     mostImportantIngameUnit_cache = unitsSortedAccordingToInGameImportance.FirstOrDefault().Key;
@@ -235,7 +230,7 @@ namespace TawGatherMembersInfo
             }
         }
 
-        public static string GetPersonInfoPageUrl(string personName)
+        public static string GetPersonProfilePageUrl(string personName)
         {
             return @"http://taw.net/member/" + personName + @".aspx";
         }
@@ -247,13 +242,14 @@ namespace TawGatherMembersInfo
             teamSpeakUnit_cache = null;
         }
 
-        public void UpdateInfo(RoasterFactory roaster)
+
+        public void UpdateInfoFromProfilePage(RoasterFactory roaster)
         {
             string responseText = null;
 
             var person = this;
 
-            var url = GetPersonInfoPageUrl(person.name);
+            var url = GetPersonProfilePageUrl(person.name);
 
             do
             {
@@ -291,9 +287,16 @@ namespace TawGatherMembersInfo
                 }
             }
 
+			// bio
+			var biographyElement = html.DocumentNode.SelectSingleNode("//*[@id='dossierbio']");
+			if (biographyElement != null) {
+				var biography = biographyElement.InnerText.Trim();
+				var bioTextHeader = "Bio:";
+				if (biography.StartsWith(bioTextHeader)) biography = biography.Substring(bioTextHeader.Length);
+				person.biography = biography;
+			}
 
-
-            var table = new HtmlTwoColsStringTable(html.DocumentNode.SelectNodes("//*[@class='dossiernexttopicture']/table//tr"));
+			var table = new HtmlTwoColsStringTable(html.DocumentNode.SelectNodes("//*[@class='dossiernexttopicture']/table//tr"));
 
             // country
             person.CountryName = table.Get("Location:", person.CountryName);
