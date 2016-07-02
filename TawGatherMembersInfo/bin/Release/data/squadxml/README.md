@@ -3,9 +3,9 @@ If you want to select custom squad xml logo append this at the bottom of your TA
 ```
 squadxml logo: medic
 ```
-Where the medic is the name of the picture form this folder.
+Where the "medic" is the name of the picture form this folder.
 Example:
-![](http://image.prntscr.com/image/073dd00233364e4e82f6206126220905.png)
+![Where to append the setting](http://image.prntscr.com/image/987090c5428f447795b735497363aaea.png)
 
 # Squadxml data folder
 This is the folder where all squadxmls are generated into. And where all squad logoS reside.
