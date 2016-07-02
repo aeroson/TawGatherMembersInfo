@@ -14,6 +14,10 @@ Squad xmls are thus always up to date.
 ### How to get squad xml
 ![How to get squad xml](http://am2.taw.net/squadxml/how_to_get_squadxml.png)
 
+### Custom squad xml logo
+See [custom-squad-xml-logo](https://github.com/TAW-Arma/TawGatherMembersInfo/tree/master/TawGatherMembersInfo/bin/Release/data/squadxml#custom-squad-xml-logo)
+
+
 # API
 This project also provides API to automatically get up to date information of all TAW.net members.
 You need to ask AM 2 server staff to give you an authentication token.
