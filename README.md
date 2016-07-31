@@ -12,6 +12,7 @@ Squad xmls are thus always up to date.
 ![What is squad xml](http://am2.taw.net/squadxml/what_is_squadxml.png)
 
 ### How to get squad xml
+The URL: http://am2.taw.net/squadxml/aeroson.xml
 ![How to get squad xml](http://am2.taw.net/squadxml/how_to_get_squadxml.png)
 
 ### Custom squad xml logo
