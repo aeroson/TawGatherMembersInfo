@@ -65,7 +65,7 @@ namespace TawGatherMembersInfo
         public void Login()
         {
 
-            Console.WriteLine("Logging in...");
+            Log.Info("Logging in...");
 
             var request = MyHttpWebRequest.Create(loginPageUrl);
             request.CookieContainer = cookieContainer;
@@ -86,12 +86,12 @@ namespace TawGatherMembersInfo
             responseText = response.GetResponseStream().StreamReadTextToEnd();
             if (IsLoggedIn(responseText))
             {
-                Console.WriteLine("Successfully logged in...");
+                Log.Info("Successfully logged in...");
             }
             else
             {
-                Console.WriteLine("Failed to log in...");
-                Console.WriteLine("Resetting registry stored user details.");
+                Log.Info("Failed to log in...");
+                Log.Info("Resetting registry stored user details.");
                 var registry = Registry.CurrentUser.CreateSubKey(this.GetType().FullName);
                 registry.SetValue("username", "");
                 registry.SetValue("password", "");

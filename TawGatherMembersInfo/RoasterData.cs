@@ -7,6 +7,7 @@ using System.Threading;
 using System.Net;
 using System.IO;
 using System.Web;
+using Neitri;
 
 namespace TawGatherMembersInfo
 {
@@ -46,7 +47,7 @@ namespace TawGatherMembersInfo
 			}
 			foreach (var p in allPersons)
 			{
-				p.unitToPositionNameShort.Clear();
+				p.UnitToPositionNameShort.Clear();
 				p.ClearCache();
 			}
 		}
@@ -57,9 +58,9 @@ namespace TawGatherMembersInfo
 			if (nameToPerson.TryGetValue(name, out person) == false)
 			{
 				person = new Person();
-				person.name = name;
-				if (id.HasValue) person.id = id.Value;
-				else person.id = GetNextPersonId();
+				person.Name = name;
+				if (id.HasValue) person.Id = id.Value;
+				else person.Id = GetNextPersonId();
 				nameToPerson[name] = person;
 				allPersons.Add(person);
 			}			
@@ -116,20 +117,20 @@ namespace TawGatherMembersInfo
 
 				if (positionNameLong != "")
 				{
-					positionNameShort = Person.positionNameShortToPositionNameLong.Reverse.Get(positionNameLong, null);
-					if (positionNameShort == null) Console.WriteLine("ERROR: cannot find positionNameShortToPositionNameLong.Reverse[" + positionNameLong + "]");
+					positionNameShort = Person.positionNameShortToPositionNameLong.Reverse.GetValue(positionNameLong, null);
+					if (positionNameShort == null) Log.Error("cannot find positionNameShortToPositionNameLong.Reverse[" + positionNameLong + "]");
 				}
 			}
 
 
 			var person = GetOrCreateEmptyPerson(name);
 		
-			person.name = name;
-			person.rankNameShort = rank;
-			if (onLeave) person.status = "on leave";
+			person.Name = name;
+			person.RankNameShort = rank;
+			if (onLeave) person.Status = "on leave";
 
 			parentUnit.personToPositionNameShort[person] = positionNameShort;
-			person.unitToPositionNameShort[parentUnit] = positionNameShort;
+			person.UnitToPositionNameShort[parentUnit] = positionNameShort;
 			allPersons.Add(person);
 
 			return person;
@@ -155,12 +156,12 @@ namespace TawGatherMembersInfo
 
 			using (var s = new StreamWriter(File.Open(pathAndName + ".personsOrder.txt", FileMode.Create, FileAccess.Write, FileShare.Write)))
 			{
-				foreach (var p in allPersons.OrderBy((person) => person.id))
+				foreach (var p in allPersons.OrderBy((person) => person.Id))
 				{
-					s.WriteLine(p.name);
+					s.WriteLine(p.Name);
 				}
 			}
-			Console.WriteLine("saved data to '" + pathAndName + "'");
+			Log.Info("saved roaster data to '" + pathAndName + ".data.bin' and '" + pathAndName + ".personsOrder.txt'");
 		}
 
 
@@ -171,17 +172,17 @@ namespace TawGatherMembersInfo
 			if (File.Exists(dataPath))
 			{
 				data = Load(File.Open(dataPath, FileMode.Open, FileAccess.Read, FileShare.Read));
-				Console.WriteLine("loaded data from '" + pathAndName + "'");
+				Log.Info("loaded data from '" + dataPath + "'");
 			}
 			else
 			{
 				data = new RoasterData();
-				Console.WriteLine("'" + dataPath + "' not found, creating empty data");
+				Log.Info("'" + dataPath + "' not found, creating empty data");
 
 				var personsOrderPath = pathAndName + ".personsOrder.txt";
 				if (File.Exists(personsOrderPath))
 				{
-					Console.WriteLine("found '" + personsOrderPath + "' creating name only persons to preserve IDs");
+					Log.Info("found '" + personsOrderPath + "' creating name only persons to preserve IDs");
 					foreach (var line in File.ReadAllLines(personsOrderPath))
 					{
 						data.GetOrCreateEmptyPerson(line);
@@ -189,7 +190,7 @@ namespace TawGatherMembersInfo
 				}
 				else
 				{
-					Console.WriteLine("'" + personsOrderPath + "' not found, no persons created at all");
+					Log.Info("'" + personsOrderPath + "' not found, no persons created at all");
 				}
 
 			}

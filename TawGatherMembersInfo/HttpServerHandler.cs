@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Net;
 using System.IO;
+using Neitri;
 
 namespace TawGatherMembersInfo
 {
 	public class HttpServerHandler
 	{
 		InstancesContainer instances;
+
 		HttpListener httpListener;
 		Thread thread;
 		int serverPort;
@@ -42,7 +44,7 @@ namespace TawGatherMembersInfo
 
 			if (!HttpListener.IsSupported)
 			{
-				Console.WriteLine("HttpListener is not supported");
+				Log.Info("HttpListener is not supported");
 				return;
 			}
 			try
@@ -53,7 +55,7 @@ namespace TawGatherMembersInfo
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("Failed to start server listener on, " + serverPort + " reason, " + e);
+				Log.Info("Failed to start server listener on, " + serverPort + " reason, " + e);
 				return;
 			}
 			HttpListenerContext context;
@@ -75,13 +77,13 @@ namespace TawGatherMembersInfo
 				catch (Exception e)
 				{
 					if (context != null) context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-					Console.WriteLine(e);
+					Log.Info(e);
 				}
 				finally
 				{
 					if (context != null)
 					{
-						Console.WriteLine(context.Request.HttpMethod + " " + context.Request.RawUrl + " " + ((HttpStatusCode)context.Response.StatusCode).ToString());
+						Log.Info(context.Request.HttpMethod + " " + context.Request.RawUrl + " " + ((HttpStatusCode)context.Response.StatusCode).ToString());
 						context.Response.Close();
 					}
 				}
@@ -141,18 +143,18 @@ namespace TawGatherMembersInfo
 			{
 				o.WriteLine("<tr>");
 
-				o.WriteLine("<td>" + p.name + "</td>");
-				o.WriteLine("<td>" + p.avatarImageUrl + "</td>");
+				o.WriteLine("<td>" + p.Name + "</td>");
+				o.WriteLine("<td>" + p.AvatarImageUrl + "</td>");
 				o.WriteLine("<td>" + p.CountryName + "</td>");
-				o.WriteLine("<td>" + p.dateJoinedTaw.Year + "</td>");
-				o.WriteLine("<td>" + p.dateJoinedTaw.Month + "</td>");
-				o.WriteLine("<td>" + p.dateJoinedTaw.Day + "</td>");
+				o.WriteLine("<td>" + p.DateJoinedTaw.Year + "</td>");
+				o.WriteLine("<td>" + p.DateJoinedTaw.Month + "</td>");
+				o.WriteLine("<td>" + p.DateJoinedTaw.Day + "</td>");
 				o.WriteLine("<td>" + p.DaysInTaw + "</td>");
 				o.WriteLine("<td>" + p.RankImageBigUrl + "</td>");
 				o.WriteLine("<td>" + p.RankImageSmallUrl + "</td>");
 				o.WriteLine("<td>" + p.RankNameLong + "</td>");
-				o.WriteLine("<td>" + p.rankNameShort + "</td>");
-				o.WriteLine("<td>" + p.status + "</td>");
+				o.WriteLine("<td>" + p.RankNameShort + "</td>");
+				o.WriteLine("<td>" + p.Status + "</td>");
 
 				o.WriteLine("</tr>");
 			}
@@ -207,14 +209,14 @@ namespace TawGatherMembersInfo
 			{
 				o.WriteLine("<tr>");
 
-				o.WriteLine("<td>" + p.name + "</td>");
-				o.WriteLine("<td>" + p.avatarImageUrl + "</td>");
-				o.WriteLine("<td>" + p.countryCodeIso3166 + "</td>");
+				o.WriteLine("<td>" + p.Name + "</td>");
+				o.WriteLine("<td>" + p.AvatarImageUrl + "</td>");
+				o.WriteLine("<td>" + p.CountryCodeIso3166 + "</td>");
 				o.WriteLine("<td>" + p.CountryFlagImageUrl + "</td>");
 				o.WriteLine("<td>" + p.CountryName + "</td>");
-				o.WriteLine("<td>" + p.dateJoinedTaw.Year + "</td>");
-				o.WriteLine("<td>" + p.dateJoinedTaw.Month + "</td>");
-				o.WriteLine("<td>" + p.dateJoinedTaw.Day + "</td>");
+				o.WriteLine("<td>" + p.DateJoinedTaw.Year + "</td>");
+				o.WriteLine("<td>" + p.DateJoinedTaw.Month + "</td>");
+				o.WriteLine("<td>" + p.DateJoinedTaw.Day + "</td>");
 				o.WriteLine("<td>" + p.DaysInTaw + "</td>");
 				o.WriteLine("<td>" + p.MostImportantIngameUnit.name + "</td>");
 				o.WriteLine("<td>" + p.MostImportantIngameUnit.type + "</td>");
@@ -224,8 +226,8 @@ namespace TawGatherMembersInfo
 				o.WriteLine("<td>" + p.RankImageBigUrl + "</td>");
 				o.WriteLine("<td>" + p.RankImageSmallUrl + "</td>");
 				o.WriteLine("<td>" + p.RankNameLong + "</td>");
-				o.WriteLine("<td>" + p.rankNameShort + "</td>");
-				o.WriteLine("<td>" + p.status + "</td>");
+				o.WriteLine("<td>" + p.RankNameShort + "</td>");
+				o.WriteLine("<td>" + p.Status + "</td>");
 				o.WriteLine("<td>" + p.TeamSpeakName + "</td>");
 				o.WriteLine("<td>" + p.TeamSpeakUnitPositionNameLong + "</td>");
 				o.WriteLine("<td>" + p.TeamSpeakUnitPositionNameShort + "</td>");
@@ -245,7 +247,7 @@ namespace TawGatherMembersInfo
 		void Format_Table_Version_3(StreamWriter o, HashSet<Person> personsSet, HashSet<string> fields, string orderBy)
 		{
 			IEnumerable<Person> persons = personsSet;
-			if (orderBy == "id") persons = personsSet.OrderBy(p => p.id);
+			if (orderBy == "id") persons = personsSet.OrderBy(p => p.Id);
 
 			o.WriteLine("<table>");
 
@@ -316,22 +318,22 @@ namespace TawGatherMembersInfo
 			{
 				o.WriteLine("<tr>");
 
-				o.WriteLine("<td>" + p.name + "</td>");
-				if (avatarImageUrl) o.WriteLine("<td>" + p.avatarImageUrl + "</td>");
+				o.WriteLine("<td>" + p.Name + "</td>");
+				if (avatarImageUrl) o.WriteLine("<td>" + p.AvatarImageUrl + "</td>");
 				if (country)
 				{
-					o.WriteLine("<td>" + p.countryCodeIso3166 + "</td>");
+					o.WriteLine("<td>" + p.CountryCodeIso3166 + "</td>");
 					o.WriteLine("<td>" + p.CountryFlagImageUrl + "</td>");
 					o.WriteLine("<td>" + p.CountryName + "</td>");
 				}
 				if (dateJoinedTaw)
 				{
-					o.WriteLine("<td>" + p.dateJoinedTaw.Year + "</td>");
-					o.WriteLine("<td>" + p.dateJoinedTaw.Month + "</td>");
-					o.WriteLine("<td>" + p.dateJoinedTaw.Day + "</td>");
+					o.WriteLine("<td>" + p.DateJoinedTaw.Year + "</td>");
+					o.WriteLine("<td>" + p.DateJoinedTaw.Month + "</td>");
+					o.WriteLine("<td>" + p.DateJoinedTaw.Day + "</td>");
 				}
 				if (daysInTaw) o.WriteLine("<td>" + p.DaysInTaw + "</td>");
-				if (id) o.WriteLine("<td>" + p.id + "</td>");
+				if (id) o.WriteLine("<td>" + p.Id + "</td>");
 				if (mostImportantIngameUnit)
 				{
 					o.WriteLine("<td>" + p.MostImportantIngameUnit.name + "</td>");
@@ -345,9 +347,9 @@ namespace TawGatherMembersInfo
 					o.WriteLine("<td>" + p.RankImageBigUrl + "</td>");
 					o.WriteLine("<td>" + p.RankImageSmallUrl + "</td>");
 					o.WriteLine("<td>" + p.RankNameLong + "</td>");
-					o.WriteLine("<td>" + p.rankNameShort + "</td>");
+					o.WriteLine("<td>" + p.RankNameShort + "</td>");
 				}
-				if (status) o.WriteLine("<td>" + p.status + "</td>");
+				if (status) o.WriteLine("<td>" + p.Status + "</td>");
 				if (teamSpeak)
 				{
 					o.WriteLine("<td>" + p.TeamSpeakName + "</td>");
@@ -374,7 +376,7 @@ namespace TawGatherMembersInfo
 
 			string format = "json";
 			var parameters = new Params(context.Request.RawUrl);
-			var authToken = parameters.Get("auth", "none");
+			var authToken = parameters.GetValue("auth", "none");
 
 			var authTokens = instances.config.Root.Descendants("authenticationTokens").First().Elements().Select(e => e.Value).ToList();
 			if (authTokens.Contains(authToken) == false)
@@ -383,17 +385,17 @@ namespace TawGatherMembersInfo
 			}
 			else
 			{
-				format = parameters.Get("format", "table");
-				var version = parameters.Get("version", "3");
-				var fields = new HashSet<string>(parameters.Get("fields", "name").Split(','));
-				var orderBy = parameters.Get("orderBy", "none");
+				format = parameters.GetValue("format", "table");
+				var version = parameters.GetValue("version", "3");
+				var fields = new HashSet<string>(parameters.GetValue("fields", "name").Split(','));
+				var orderBy = parameters.GetValue("orderBy", "none");
 				var goodApiCall = true;
 
-				if (parameters.Get("type", "distinct_person_list") == "distinct_person_list")
+				if (parameters.GetValue("type", "distinct_person_list") == "distinct_person_list")
 				{
 					Unit rootUnit = null;
 
-					var rootUnitRegexPattern = parameters.Get("rootUnitRegex", null);
+					var rootUnitRegexPattern = parameters.GetValue("rootUnitRegex", null);
 					if (rootUnitRegexPattern != null)
 					{
 						var rootUnitRegex = new System.Text.RegularExpressions.Regex(rootUnitRegexPattern);
@@ -401,8 +403,8 @@ namespace TawGatherMembersInfo
 					}
 					else
 					{
-						var rootUnitId = int.Parse(parameters.Get("rootUnitId", "1"));
-						rootUnit = instances.roaster.CurrentData.idToUnit.Get(rootUnitId, null);
+						var rootUnitId = int.Parse(parameters.GetValue("rootUnitId", "1"));
+						rootUnit = instances.roaster.CurrentData.idToUnit.GetValue(rootUnitId, null);
 					}
 
 

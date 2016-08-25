@@ -9,326 +9,404 @@ using HtmlAgilityPack;
 using NodaTime;
 using NodaTime.Extensions;
 
+using Neitri;
+using System.Runtime.Serialization;
+
 namespace TawGatherMembersInfo
 {
 
-    [Serializable]
-    public partial class Person : IEquatable<Person>
-    {
-        public Dictionary<Unit, string> unitToPositionNameShort = new Dictionary<Unit, string>();
-        public string name = "unnamed";
-        public string rankNameShort = "";
-        public long steamId;
-        public string avatarImageUrl = "";
-        public string status = "unknown"; // active, discharged, etc..
-        public int id = 0;
-        public DateTime dateJoinedTaw;
-		public string biography;
+	[Serializable]
+	public partial class Person : IEquatable<Person>
+	{
+		public Dictionary<Unit, string> UnitToPositionNameShort { get; set; } = new Dictionary<Unit, string>();
+		public string Name { get; set; } = "unnamed";
+		public string RankNameShort { get; set; } = "";
+		public long SteamId { get; set; }
+		public string AvatarImageUrl { get; set; } = "";
+		public string Status { get; set; } = "unknown"; // active, discharged, etc..
+		public int Id { get; set; } = 0;
+		public DateTime DateJoinedTaw { get; set; }
+		string BiographyContents { get; set; }
+		public DateTime LastProfileDataUpdatedDate { get; set; }
 
-        public string countryCodeIso3166 = "";
-        public string CountryName
-        {
-            get
-            {
-                return countryCodeIso3166ToCountryName.Get(countryCodeIso3166, "");
-            }
-            set
-            {
-                countryCodeIso3166 = countryCodeIso3166ToCountryName.Reverse.Get(value, "");
-            }
-        }
-        public string CountryFlagImageUrl
-        {
-            get
-            {
-                return GetCountryFlagImageUrl(countryCodeIso3166);
-            }
-        }
-        public int DaysInTaw
-        {
-            get
-            {
-                return Period.Between(dateJoinedTaw.ToLocalDateTime(), DateTime.UtcNow.ToLocalDateTime(), PeriodUnits.Days).Days;
-            }
-        }
-        public string RankNameLong
-        {
-            get
-            {
-                return rankNameShortToRankNameLong.Get(rankNameShort, "Unknown rank");
-            }
-        }
-        public string RankImageSmallUrl
-        {
-            get
-            {
-                return rankNameShortToRankImageSmall.Get(rankNameShort, "http://i.imgur.com/jcHvcul.png"); // default is recruit image
-            }
-        }
-        public string RankImageBigUrl
-        {
-            get
-            {
-                return GetRankImageBigFromRankNameShort(rankNameShort);
-            }
-        }
+		[NonSerialized]
+		BiographyData biography;
+		public BiographyData Biography => biography;
+
+		public class BiographyData
+		{
+			Person person;
+			public BiographyData(Person person)
+			{
+				this.person = person;
+			}
+			public string GetData(params string[] names)
+			{
+				foreach (var name in names)
+				{
+					var data = GetData(name);
+					if (data.IsNullOrEmpty() == false) return data;
+				}
+				return null;
+			}
+			public string GetData(string name)
+			{
+				if (person.BiographyContents.IsNullOrEmpty()) return null;
+
+				name = name.Trim();
+				while (name.EndsWith(":")) name = name.RemoveFromEnd(1).Trim();
+
+				var biography = person.BiographyContents.ToLower();
+
+				var start = name;
+				var startIndex = biography.IndexOf(start);
+				if (startIndex != -1)
+				{
+					var endIndex = biography.IndexOf("\r\n", startIndex);
+					if (endIndex == -1) endIndex = biography.IndexOf("\n\r", startIndex);
+					if (endIndex == -1) endIndex = biography.IndexOf("\n", startIndex);
+
+					var length = biography.Length - (startIndex + start.Length);
+					if (endIndex != -1) length = endIndex - (startIndex + start.Length);
+					
+					var data = biography.Substring(startIndex + start.Length, length).Trim();
+
+					while (data.StartsWith(":") || data.StartsWith("=")) data = data.RemoveFromBegin(1).Trim();
+
+					return data;
+				}
+
+				return null;
+			}
+		}
+
+		public string CountryCodeIso3166 { get; set; } = "";
+		public string CountryName
+		{
+			get
+			{
+				return countryCodeIso3166ToCountryName.GetValue(CountryCodeIso3166, "");
+			}
+			set
+			{
+				CountryCodeIso3166 = countryCodeIso3166ToCountryName.Reverse.GetValue(value, "");
+			}
+		}
+		public string CountryFlagImageUrl
+		{
+			get
+			{
+				return GetCountryFlagImageUrl(CountryCodeIso3166);
+			}
+		}
+		public int DaysInTaw
+		{
+			get
+			{
+				return Period.Between(DateJoinedTaw.ToLocalDateTime(), DateTime.UtcNow.ToLocalDateTime(), PeriodUnits.Days).Days;
+			}
+		}
+		public string RankNameLong
+		{
+			get
+			{
+				return rankNameShortToRankNameLong.GetValue(RankNameShort, "Unknown rank");
+			}
+		}
+		public string RankImageSmallUrl
+		{
+			get
+			{
+				return rankNameShortToRankImageSmall.GetValue(RankNameShort, "http://i.imgur.com/jcHvcul.png"); // default is recruit image
+			}
+		}
+		public string RankImageBigUrl
+		{
+			get
+			{
+				return GetRankImageBigFromRankNameShort(RankNameShort);
+			}
+		}
 
 
 
-        [NonSerialized]
-        Unit mostImportantIngameUnit_cache;
-        public Unit MostImportantIngameUnit
-        {
-            get
-            {
-                if (mostImportantIngameUnit_cache == null)
-                {
-                    var unitsSortedAccordingToInGameImportance = unitToPositionNameShort
-                        .OrderByDescending(unitToPositionNameShort => {
+		[NonSerialized]
+		Unit mostImportantIngameUnit_cache;
+		public Unit MostImportantIngameUnit
+		{
+			get
+			{
+				if (mostImportantIngameUnit_cache == null)
+				{
+					var unitsSortedAccordingToInGameImportance = UnitToPositionNameShort
+						.OrderByDescending(unitToPositionNameShort =>
+						{
 							int priority = 0;
 
 							var squatTypeImportance = inGameUnitNamePriority.IndexOf(unitToPositionNameShort.Key.type.ToLower());
 							priority += squatTypeImportance;
 
-                            var positionNameShort = unitToPositionNameShort.Value;
-                            var positionImportance = positionNameShortIngamePriority.IndexOf(positionNameShort);
-                            priority += 10 * positionImportance;
+							var positionNameShort = unitToPositionNameShort.Value;
+							var positionImportance = positionNameShortIngamePriority.IndexOf(positionNameShort);
+							priority += 10 * positionImportance;
 
-                            return priority;
-                        });
+							return priority;
+						});
 
-                    mostImportantIngameUnit_cache = unitsSortedAccordingToInGameImportance.FirstOrDefault().Key;
-                }
-                return mostImportantIngameUnit_cache;
-            }
-        }
+					mostImportantIngameUnit_cache = unitsSortedAccordingToInGameImportance.FirstOrDefault().Key;
+				}
+				return mostImportantIngameUnit_cache;
+			}
+		}
 
-        public string MostImportantIngameUnitPositionNameShort
-        {
-            get
-            {
-                if (unitToPositionNameShort == null) return string.Empty;
-                return unitToPositionNameShort.Get(MostImportantIngameUnit, string.Empty);
-            }
-        }
+		public string MostImportantIngameUnitPositionNameShort
+		{
+			get
+			{
+				if (UnitToPositionNameShort == null) return string.Empty;
+				return UnitToPositionNameShort.GetValue(MostImportantIngameUnit, string.Empty);
+			}
+		}
 
-        public string MostImportantIngameUnitPositionNameLong
-        {
-            get
-            {
-                if (unitToPositionNameShort == null) return string.Empty;
-                return positionNameShortToPositionNameLong.Get(MostImportantIngameUnitPositionNameShort, string.Empty);
-            }
-        }
+		public string MostImportantIngameUnitPositionNameLong
+		{
+			get
+			{
+				if (UnitToPositionNameShort == null) return string.Empty;
+				return positionNameShortToPositionNameLong.GetValue(MostImportantIngameUnitPositionNameShort, string.Empty);
+			}
+		}
 
-        [NonSerialized]
-        Unit teamSpeakUnit_cache;
-        /// <summary>
-        /// Unit in which you hold position that you put next to your name in teamSpeak
-        /// </summary>
-        public Unit TeamSpeakUnit
-        {
-            get
-            {
-                if (teamSpeakUnit_cache == null)
-                {
-                    Unit highestPositionUnit = null;
-                    int highestPositionPriority = int.MinValue;
+		[NonSerialized]
+		Unit teamSpeakUnit_cache;
+		/// <summary>
+		/// Unit in which you hold position that you put next to your name in teamSpeak
+		/// </summary>
+		public Unit TeamSpeakUnit
+		{
+			get
+			{
+				if (teamSpeakUnit_cache == null)
+				{
+					Unit highestPositionUnit = null;
+					int highestPositionPriority = int.MinValue;
 
-                    foreach (var kvp in unitToPositionNameShort)
-                    {
-                        var positionNameShort = kvp.Value;
-                        var unit = kvp.Key;
+					foreach (var kvp in UnitToPositionNameShort)
+					{
+						var positionNameShort = kvp.Value;
+						var unit = kvp.Key;
 
-                        var positionPriority = positionNameShortTeamSpeakNamePriorityOrder.IndexOf(positionNameShort);
-                        if (positionPriority > highestPositionPriority)
-                        {
-                            highestPositionPriority = positionPriority;
-                            highestPositionUnit = unit;
-                        }
-                    }
-                    teamSpeakUnit_cache = highestPositionUnit;
-                }
-                return teamSpeakUnit_cache;
-            }
-        }
+						var positionPriority = positionNameShortTeamSpeakNamePriorityOrder.IndexOf(positionNameShort);
+						if (positionPriority > highestPositionPriority)
+						{
+							highestPositionPriority = positionPriority;
+							highestPositionUnit = unit;
+						}
+					}
+					teamSpeakUnit_cache = highestPositionUnit;
+				}
+				return teamSpeakUnit_cache;
+			}
+		}
 
-        /// <summary>
-        /// Short name (abbrevation) of position of unit in which you hold position that you put next to your name in teamSpeak
-        /// </summary>
-        public string TeamSpeakUnitPositionNameShort
-        {
-            get
-            {
-                if (TeamSpeakUnit == null) return "";
-                return unitToPositionNameShort.Get(TeamSpeakUnit, "");
-            }
-        }
+		/// <summary>
+		/// Short name (abbrevation) of position of unit in which you hold position that you put next to your name in teamSpeak
+		/// </summary>
+		public string TeamSpeakUnitPositionNameShort
+		{
+			get
+			{
+				if (TeamSpeakUnit == null) return "";
+				return UnitToPositionNameShort.GetValue(TeamSpeakUnit, "");
+			}
+		}
 
-        /// <summary>
-        /// Long name of position of unit in which you hold position that you put next to your name in teamSpeak
-        /// </summary>
-        public string TeamSpeakUnitPositionNameLong
-        {
-            get
-            {
-                return positionNameShortToPositionNameLong.Get(TeamSpeakUnitPositionNameShort, "");
-            }
-        }
+		/// <summary>
+		/// Long name of position of unit in which you hold position that you put next to your name in teamSpeak
+		/// </summary>
+		public string TeamSpeakUnitPositionNameLong
+		{
+			get
+			{
+				return positionNameShortToPositionNameLong.GetValue(TeamSpeakUnitPositionNameShort, "");
+			}
+		}
 
-        [NonSerialized]
-        string teamSpeakName_cache;
-        // this took me 4 hours, trying to find logic/algorithm in something that was made to look good, TODO: needs improving
-        public string TeamSpeakName
-        {
-            get
-            {
-                if (teamSpeakName_cache == null)
-                {
-                    string battalionPrefix = "";
-                    var positionNameShort = this.TeamSpeakUnitPositionNameShort;
+		[NonSerialized]
+		string teamSpeakName_cache;
+		// this took me 4 hours, trying to find logic/algorithm in something that was made to look good, TODO: needs improving
+		public string TeamSpeakName
+		{
+			get
+			{
+				if (teamSpeakName_cache == null)
+				{
+					string battalionPrefix = "";
+					var positionNameShort = this.TeamSpeakUnitPositionNameShort;
 
-                    // find battalion name short
-                    {
-                        foreach (var currentUnit in unitToPositionNameShort.Keys)
-                        {
-                            string newBattalionPrefix = "";
+					// find battalion name short
+					{
+						foreach (var currentUnit in UnitToPositionNameShort.Keys)
+						{
+							string newBattalionPrefix = "";
 
-                            var unit = currentUnit;
+							var unit = currentUnit;
 
-                            // walk the unit parent chain until we hit batallion or division                              
-                            while (unit.type != "Battalion" && unit.type != "Division" && unit.parentUnit != null) unit = unit.parentUnit;
+							// walk the unit parent chain until we hit batallion or division                              
+							while (unit.type != "Battalion" && unit.type != "Division" && unit.parentUnit != null) unit = unit.parentUnit;
 
-                            var doesNotHaveBattalionIndex = positionNameShortOwnedByDivision.Contains(positionNameShort);
+							var doesNotHaveBattalionIndex = positionNameShortOwnedByDivision.Contains(positionNameShort);
 
-                            if (unit.type == "Division")
-                            {
-                                if (unit.name == "Arma III") newBattalionPrefix = "AM ";
-                            }
-                            if (unit.type == "Battalion" && doesNotHaveBattalionIndex == false)
-                            {
-                                var nameParts = unit.name.Split(' '); // AM1 1st Battalion North American || AM2 2nd Battalion European
-                                newBattalionPrefix = nameParts[0];
+							if (unit.type.ToLower() == "division")
+							{
+								if (unit.name.ToLower() == "arma") newBattalionPrefix = "AM ";
+							}
+							if (unit.type.ToLower() == "battalion" && doesNotHaveBattalionIndex == false)
+							{
+								if (unit.name.ToLower().Contains("support") == false)
+								{
+									var nameParts = unit.name.Split(' '); // AM1 1st Battalion North American || AM2 2nd Battalion European
+									newBattalionPrefix = nameParts[0];
+									int lastCharAsInt;
+									var isLastCharNumber = int.TryParse(newBattalionPrefix.Last().ToString(), out lastCharAsInt);
+									if (isLastCharNumber)
+									{
+										newBattalionPrefix = newBattalionPrefix.Substring(0, newBattalionPrefix.Length - 1) + " " + lastCharAsInt;
+									}
+								}
+							}
 
-                                int lastCharAsInt;
-                                var isLastCharNumber = int.TryParse(newBattalionPrefix.Last().ToString(), out lastCharAsInt);
-                                if (isLastCharNumber)
-                                {
-                                    newBattalionPrefix = newBattalionPrefix.Substring(0, newBattalionPrefix.Length - 1) + " " + lastCharAsInt;
-                                }
-                            }
+							if (newBattalionPrefix.Length > battalionPrefix.Length) battalionPrefix = newBattalionPrefix;
+						}
+					}
 
-                            if (newBattalionPrefix.Length > battalionPrefix.Length) battalionPrefix = newBattalionPrefix;
-                        }
-                    }
-
-                    teamSpeakName_cache = name + " [" + (battalionPrefix + positionNameShort).Trim() + "]";
-                }
-
-
-                return teamSpeakName_cache;
-            }
-        }
-
-        public static string GetPersonProfilePageUrl(string personName)
-        {
-            return @"http://taw.net/member/" + personName + @".aspx";
-        }
-
-        public void ClearCache()
-        {
-            mostImportantIngameUnit_cache = null;
-            teamSpeakName_cache = null;
-            teamSpeakUnit_cache = null;
-        }
+					teamSpeakName_cache = Name + " [" + (battalionPrefix + positionNameShort).Trim() + "]";
+				}
 
 
-        public void UpdateInfoFromProfilePage(RoasterFactory roaster)
-        {
-            string responseText = null;
+				return teamSpeakName_cache;
+			}
+		}
 
-            var person = this;
+		public Person()
+		{
+			Init();
+		}
 
-            var url = GetPersonProfilePageUrl(person.name);
+		[OnDeserializing]
+		void Init(StreamingContext c)
+		{
+			Init();
+		}
 
-            do
-            {
-                if (responseText != null) roaster.Login();
+		void Init()
+		{
+			biography = new BiographyData(this);
+		}
 
-                var request = MyHttpWebRequest.Create(url);
-                request.CookieContainer = roaster.cookieContainer;
-                request.Method = "GET";
+		public static string GetPersonProfilePageUrl(string personName)
+		{
+			return @"http://taw.net/member/" + personName + @".aspx";
+		}
 
-                var response = request.GetResponse();
-                responseText = response.GetResponseStream().StreamReadTextToEnd();
+		public void ClearCache()
+		{
+			mostImportantIngameUnit_cache = null;
+			teamSpeakName_cache = null;
+			teamSpeakUnit_cache = null;
+		}
 
-            } while (roaster.IsLoggedIn(responseText) == false);
 
-            var html = responseText.HtmlStringToDocument();
+		public void UpdateInfoFromProfilePage(RoasterFactory roaster)
+		{
+			Log.Trace("updating profile for " + this.Name);
 
-            // steam profile id
-            var steamProfileLinkPrefix = "http://steamcommunity.com/profiles/";
-            var steamProfileLinkElement = html.GetElementbyId("hfSteam");
-            if (steamProfileLinkElement != null)
-            {
-                var steamProfileLink = steamProfileLinkElement.GetAttributeValue("href", steamProfileLinkPrefix + "-1");
-                var steamId = long.Parse(steamProfileLink.Substring(steamProfileLinkPrefix.Length));
-                person.steamId = steamId;
-            }
+			string responseText = null;
 
-            // avatar image
-            var avatarElement = html.DocumentNode.SelectSingleNode("//*[@class='dossieravatar']/img");
-            if (avatarElement != null)
-            {
-                var avatarImageLink = avatarElement.GetAttributeValue("src", null);
-                if (avatarImageLink != null)
-                {
-                    person.avatarImageUrl = "http://taw.net" + avatarImageLink;
-                }
-            }
+			var person = this;
+
+			var url = GetPersonProfilePageUrl(person.Name);
+
+			do
+			{
+				if (responseText != null) roaster.Login();
+
+				var request = MyHttpWebRequest.Create(url);
+				request.CookieContainer = roaster.cookieContainer;
+				request.Method = "GET";
+
+				var response = request.GetResponse();
+				responseText = response.GetResponseStream().StreamReadTextToEnd();
+
+			} while (roaster.IsLoggedIn(responseText) == false);
+
+			var html = responseText.HtmlStringToDocument();
+
+			// steam profile id
+			var steamProfileLinkPrefix = "http://steamcommunity.com/profiles/";
+			var steamProfileLinkElement = html.GetElementbyId("hfSteam");
+			if (steamProfileLinkElement != null)
+			{
+				var steamProfileLink = steamProfileLinkElement.GetAttributeValue("href", steamProfileLinkPrefix + "-1");
+				var steamId = long.Parse(steamProfileLink.Substring(steamProfileLinkPrefix.Length));
+				person.SteamId = steamId;
+			}
+
+			// avatar image
+			var avatarElement = html.DocumentNode.SelectSingleNode("//*[@class='dossieravatar']/img");
+			if (avatarElement != null)
+			{
+				var avatarImageLink = avatarElement.GetAttributeValue("src", null);
+				if (avatarImageLink != null)
+				{
+					person.AvatarImageUrl = "http://taw.net" + avatarImageLink;
+				}
+			}
 
 			// bio
 			var biographyElement = html.DocumentNode.SelectSingleNode("//*[@id='dossierbio']");
-			if (biographyElement != null) {
+			if (biographyElement != null)
+			{
 				var biography = biographyElement.InnerText.Trim();
 				var bioTextHeader = "Bio:";
 				if (biography.StartsWith(bioTextHeader)) biography = biography.Substring(bioTextHeader.Length);
-				person.biography = biography;
+				person.BiographyContents = biography;
 			}
 
 			var table = new HtmlTwoColsStringTable(html.DocumentNode.SelectNodes("//*[@class='dossiernexttopicture']/table//tr"));
 
-            // country
-            person.CountryName = table.Get("Location:", person.CountryName);
-            person.status = table.Get("Status:", person.status).ToLower();
-            {
-                var joined = table.Get("Joined:", "01-01-0001"); // 10-03-2014  month-day-year // wtf.. americans...
-                var joinedParts = joined.Split('-');
-                person.dateJoinedTaw = new DateTime(
-                    int.Parse(joinedParts[2]),
-                    int.Parse(joinedParts[0]),
-                    int.Parse(joinedParts[1])
-                );
-            }
+			// country
+			person.CountryName = table.GetValue("Location:", person.CountryName);
+			person.Status = table.GetValue("Status:", person.Status).ToLower();
+			{
+				var joined = table.GetValue("Joined:", "01-01-0001"); // 10-03-2014  month-day-year // wtf.. americans...
+				var joinedParts = joined.Split('-');
+				person.DateJoinedTaw = new DateTime(
+					int.Parse(joinedParts[2]),
+					int.Parse(joinedParts[0]),
+					int.Parse(joinedParts[1])
+				);
+			}
 
-            person.ClearCache();
-        }
+			person.LastProfileDataUpdatedDate = DateTime.UtcNow;
+			person.ClearCache();
+		}
 
-        public override string ToString()
-        {
-            return name + " rank:" + rankNameShort + " steamId:" + steamId;
-        }
+		public override string ToString()
+		{
+			return Name + " rank:" + RankNameShort + " steamId:" + SteamId;
+		}
 
-        public bool Equals(Person other)
-        {
-            if (other == null) return false;
-            return name == other.name;
-        }
+		public bool Equals(Person other)
+		{
+			if (other == null) return false;
+			return Name == other.Name;
+		}
 
-        public override int GetHashCode()
-        {
-            return name.GetHashCode();
-        }
-    }
+		public override int GetHashCode()
+		{
+			return Name.GetHashCode();
+		}
+	}
 
 }

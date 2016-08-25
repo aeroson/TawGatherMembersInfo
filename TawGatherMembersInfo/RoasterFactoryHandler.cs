@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.IO;
 using System.Threading.Tasks;
+using Neitri;
 
 namespace TawGatherMembersInfo
 {
@@ -27,7 +28,7 @@ namespace TawGatherMembersInfo
         {
             thread = new Thread(ThreadMain);
             thread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
-            thread.Start();
+			thread.Start();
         }
 
         public void Stop()
@@ -69,7 +70,7 @@ namespace TawGatherMembersInfo
                 var unitsIds = instances.config.Root.Descendants("unitsToGatherMemberInfo").First().Elements().Select(e => int.Parse(e.Value));
                 foreach (var unitId in unitsIds)
                 {
-                    var unit = roasterFactory.data.idToUnit.Get(unitId, null);
+                    var unit = roasterFactory.data.idToUnit.GetValue(unitId, null);
                     if (unit == null) continue;
                     foreach (var person in unit.GetAllPersons())
                     {

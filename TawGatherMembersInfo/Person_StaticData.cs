@@ -135,9 +135,17 @@ namespace TawGatherMembersInfo
                 "FS",
             };
 
-
-
-        public static BiDictionary<string, string> positionNameShortToPositionNameLong = new BiDictionary<string, string>
+		/*
+		ERROR: cannot find positionNameShortToPositionNameLong.Reverse[Operations Commander]
+		ERROR: cannot find positionNameShortToPositionNameLong.Reverse[Operations Lt.Commander]
+		ERROR: cannot find positionNameShortToPositionNameLong.Reverse[Operations Division Commander]
+		ERROR: cannot find positionNameShortToPositionNameLong.Reverse[Operations Division Commander]
+		ERROR: cannot find positionNameShortToPositionNameLong.Reverse[Operations Member]
+		ERROR: cannot find positionNameShortToPositionNameLong.Reverse[Operations Corps.Commander]
+		ERROR: cannot find positionNameShortToPositionNameLong.Reverse[Operations Corps.Lt.Commander]
+		ERROR: cannot find positionNameShortToPositionNameLong.Reverse[Operations Member]
+		*/
+		public static BiDictionary<string, string> positionNameShortToPositionNameLong = new BiDictionary<string, string>
             {
                 // Support staff doesnt use these, they just have one and the same behind their names
 

@@ -71,7 +71,49 @@
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="HelperClasses.cs" />
     <Compile Include="HttpServerHandler.cs" />
+    <Compile Include="Log.cs" />
     <Compile Include="MyHttpWebRequest.cs" />
+    <Compile Include="Neitri\Extensions\ActionExtensions.cs" />
+    <Compile Include="Neitri\Extensions\ArrayExtensions.cs" />
+    <Compile Include="Neitri\Extensions\AssemblyExtensions.cs" />
+    <Compile Include="Neitri\Extensions\BoolExtensions.cs" />
+    <Compile Include="Neitri\Extensions\ByteExtensions.cs" />
+    <Compile Include="Neitri\Extensions\DoubleExtensions.cs" />
+    <Compile Include="Neitri\Extensions\EnumerableExtensions.cs" />
+    <Compile Include="Neitri\Extensions\EnumExtensions.cs" />
+    <Compile Include="Neitri\Extensions\FloatExtensions.cs" />
+    <Compile Include="Neitri\Extensions\ICollectionExtensions.cs" />
+    <Compile Include="Neitri\Extensions\IDictionaryExtensions.cs" />
+    <Compile Include="Neitri\Extensions\IListExtensions.cs" />
+    <Compile Include="Neitri\Extensions\IntExtensions.cs" />
+    <Compile Include="Neitri\Extensions\JaggedArrayExtensions.cs" />
+    <Compile Include="Neitri\Extensions\RandomExtensions.cs" />
+    <Compile Include="Neitri\Extensions\StringExtensions.cs" />
+    <Compile Include="Neitri\Extensions\TypeExtensions.cs" />
+    <Compile Include="Neitri\IBinarySerializer.cs" />
+    <Compile Include="Neitri\IDependencyManager.cs" />
+    <Compile Include="Neitri\ILogging.cs" />
+    <Compile Include="Neitri\Logging\LogAggregator.cs" />
+    <Compile Include="Neitri\Logging\LogConsole.cs" />
+    <Compile Include="Neitri\Logging\LogFile.cs" />
+    <Compile Include="Neitri\NotNullAttribute.cs" />
+    <Compile Include="Neitri\Utils\ArrayUtil.cs" />
+    <Compile Include="Neitri\Utils\BiDictionary.cs" />
+    <Compile Include="Neitri\Utils\DeferredCollection.cs" />
+    <Compile Include="Neitri\Utils\DeferredSynchronizeInvoke.cs" />
+    <Compile Include="Neitri\Utils\FileChangedWatcher.cs" />
+    <Compile Include="Neitri\Utils\FileSystem.cs" />
+    <Compile Include="Neitri\Utils\FormatUtils.cs" />
+    <Compile Include="Neitri\Utils\MemberName.cs" />
+    <Compile Include="Neitri\Utils\MyWeakReference.cs" />
+    <Compile Include="Neitri\Utils\other.cs" />
+    <Compile Include="Neitri\Utils\PropertyDescriptors.cs" />
+    <Compile Include="Neitri\Utils\ReadOnlyDictionary.cs" />
+    <Compile Include="Neitri\Utils\Require.cs" />
+    <Compile Include="Neitri\Utils\TraceUtil.cs" />
+    <Compile Include="Neitri\Utils\Tuple.cs" />
+    <Compile Include="Neitri\Utils\TwoKeyDictionary.cs" />
+    <Compile Include="Neitri\Utils\ValueChanged.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RoasterData.cs" />
@@ -93,6 +135,7 @@
       <DependentUpon>EnterTawUserLoginInfo.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -102,15 +102,15 @@ namespace TawGatherMembersInfo
                 System.Threading.Thread.Sleep(lastRequestMadeMilisecondsAgo_limit - lastRequestMadeMilisecondsAgo);
             }
 
-            Console.WriteLine("totalRequestsMade:" + totalRequestsMade);
+            Log.Info("totalRequestsMade:" + totalRequestsMade);
 
-            //Console.WriteLine("totalRequestsMade:" + totalRequestsMade + " averageRequestsPerSecond:" + averagePerSecond);
+            //log.Info("totalRequestsMade:" + totalRequestsMade + " averageRequestsPerSecond:" + averagePerSecond);
             /*
             const float averagePerSecond_limit = 0.5f;
             if (averagePerSecond > averagePerSecond_limit)
             {
                 var throttleMiliseconds = (int)((averagePerSecond - averagePerSecond_limit) * 1000f * 50f);
-                Console.WriteLine("averageRequestsPerSecond above " + averagePerSecond_limit + " throttling for " + throttleMiliseconds + "ms");
+                log.Info("averageRequestsPerSecond above " + averagePerSecond_limit + " throttling for " + throttleMiliseconds + "ms");
                 System.Threading.Thread.Sleep(throttleMiliseconds);
             }
             */

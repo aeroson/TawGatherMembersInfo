@@ -7,165 +7,55 @@ using System.Threading;
 using System.Net;
 using System.IO;
 using System.Runtime.InteropServices;
+using Neitri;
 
 using HandlebarsDotNet;
 
 namespace TawGatherMembersInfo
 {
-    public class InstancesContainer
-    {
-        public RoasterFactoryHandler roaster;
-        public HttpServerHandler httpServer;
-        public XMLConfig config;
-    }
+	public class InstancesContainer
+	{
+		public RoasterFactoryHandler roaster;
+		public HttpServerHandler httpServer;
+		public XMLConfig config;
+	}
 
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            new Program(args);
-        }
+	class Program
+	{
+		InstancesContainer instances = new InstancesContainer();
 
-        InstancesContainer instaces = new InstancesContainer();
+		public static FileSystem fileSystem = new FileSystem();
 
+		static void Main(string[] args)
+		{
+			new Program(args);
+		}
 
-        void Start(string[] args)
-        {
+		public Program(string[] args)
+		{
+			{
+				var log = new Neitri.Logging.LogAgregator();
+				log.AddLogger(new Neitri.Logging.LogConsole());
 
+				var logFile = fileSystem.BaseDirectory.GetDirectory("data", "logs").CreateIfNotExists().GetFile(DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss") + ".txt");
+				var sw = new StreamWriter(logFile);
+				sw.AutoFlush = true;
+				log.AddLogger(new Neitri.Logging.LogFile(sw));
 
+				TawGatherMembersInfo.Log.log = log;
+			}
 
+			try
+			{
+				Log.Info("Starting ...");
+				Start(args);
+				Log.Info("Started");
 
-            var config = instaces.config = new XMLConfig();
-            config.LoadFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "config.xml"));
-
-
-            short port = short.Parse(config.Get("httpServerPort", "8000"));
-
-            var roaster = instaces.roaster = new RoasterFactoryHandler(instaces);
-
-            var httpServer = instaces.httpServer = new HttpServerHandler(instaces, port);
-
-            roaster.Run();
-            httpServer.Run();
-
-
-            roaster.OnRoasterDataUpdated += UpdateArma3SquadXml;
-
-
-        }
-
-        // try to get picture from teamSpeakUnit and go up the parent chain if not found
-        static string GetUnitImage(Unit rootUnit, Unit unit, string targetSquadXmlFolder)
-        {
-             if (unit == null) return null;
-
-            var unitImage = unit.id + ".paa";
-            var unitImageExists = File.Exists(Path.Combine(targetSquadXmlFolder, unitImage));
-            if (unitImageExists) return unitImage;
-
-            if (unitImageExists == false && unit.parentUnit != null)
-            {
-                unitImage = unit.parentUnit.id + "-child.paa";
-                unitImageExists = File.Exists(Path.Combine(targetSquadXmlFolder, unitImage));
-                if (unitImageExists) return unitImage;
-            }
-
-            if (unit == rootUnit) return null;
-            return GetUnitImage(rootUnit, unit.parentUnit, targetSquadXmlFolder);
-        }
-
-        void UpdateArma3SquadXml()
-        {           
-            var rootUnit = instaces.roaster.CurrentData.idToUnit.Get(2776, null); // 2776 == Arma 3 Division
-            if (rootUnit == null) return;
-
-            var targetSquadXmlFolder = instaces.config.Get("targetSquadXmlFolder", "squadxml");
-            string source = File.ReadAllText(Path.Combine(targetSquadXmlFolder, "{{name}}.xml.handlebars"));
-            var template = Handlebars.Compile(source);
-
-            Console.WriteLine("generating squad xml into: '" + targetSquadXmlFolder + "'");
-
-            foreach (var person in rootUnit.GetAllPersons())
-            {
-
-				string picture = null;
-
-				if(string.IsNullOrEmpty(person.biography) == false)
+				AppDomain.CurrentDomain.ProcessExit += (sender, a) =>
 				{
-					var bio = person.biography.ToLower();
-					var start = "squadxml logo:";
-					var startIndex = bio.IndexOf(start);
-					if (startIndex != -1)
-					{
-						var endIndex = bio.IndexOf("\r\n", startIndex);
-						if (endIndex == -1) endIndex = bio.IndexOf("\n\r", startIndex);
-						if (endIndex == -1) endIndex = bio.IndexOf("\n", startIndex);
-
-						var length = bio.Length - (startIndex + start.Length);
-						if (endIndex != -1) length = endIndex - (startIndex + start.Length);
-						picture = bio.Substring(startIndex + start.Length, length).Trim() + ".paa";
-					}
-				}
-
-				if (string.IsNullOrEmpty(picture))
-				{
-					picture = GetUnitImage(rootUnit, person.MostImportantIngameUnit, targetSquadXmlFolder) ?? "taw_paa.paa";
-				}
-  
-                var result = template(
-                    new
-                    {
-                        nick = "TAW.net",
-                        name = person.MostImportantIngameUnit.name,
-                        email = person.MostImportantIngameUnit.HighestRankingPerson.name.ToLower() + "@taw.net",
-                        web = "http://www.taw.net",
-                        picture = picture,
-                        title = "TAW - " + person.MostImportantIngameUnit.name,
-                        members = new[]
-                        {
-                            new
-                            {
-                                id = person.steamId,
-                                nick = person.TeamSpeakName,
-                                name = person.name,
-                                email = person.name.ToLower() + "@taw.net",
-                                icq = person.TeamSpeakUnit.name + " - " + person.TeamSpeakUnitPositionNameLong,
-                                remark = "Join us at www.TAW.net",
-                            }
-                        }
-                    }
-                );
-
-                File.WriteAllText(Path.Combine(targetSquadXmlFolder, person.name + ".xml"), result);
-
-            }
-
-            Console.WriteLine("done generating squad xml");
-
-        }
-
-        void Stop()
-        {
-            instaces.roaster.Stop();
-            instaces.httpServer.Stop();
-        }
-
-
-
-
-        public Program(string[] args)
-        {
-            try
-            {
-                Console.WriteLine("Starting ...");
-                Start(args);
-                Console.WriteLine("Started");
-
-                AppDomain.CurrentDomain.ProcessExit += (sender, a) =>
-                {
-                    Stop();
-                };
-                /*
+					Stop();
+				};
+				/*
                 var handler = new ConsoleEventDelegate((int eventType) =>
                 {
                     if (eventType == 2)
@@ -177,31 +67,153 @@ namespace TawGatherMembersInfo
                 SetConsoleCtrlHandler(handler, true);
                 */
 
-                while (Thread.CurrentThread.ThreadState == ThreadState.Running) Thread.Sleep(100);
+				while (Thread.CurrentThread.ThreadState == ThreadState.Running) Thread.Sleep(100);
 
-                Console.WriteLine("Stopping, this may take a while ...");
-                Stop();
-                Console.WriteLine("Stopped");
+				Log.Info("Stopping, this may take a while ...");
+				Stop();
+				Log.Info("Stopped");
 
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                Console.ReadKey();
-            }
+			}
+			catch (Exception e)
+			{
+				Log.Info(e);
+				Console.ReadKey();
+			}
 
-        }
-
-
-        // its pain in the ass to detect close in C#
-        //http://stackoverflow.com/questions/4646827/on-exit-for-a-console-application
-        private delegate bool ConsoleEventDelegate(int eventType);
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool SetConsoleCtrlHandler(ConsoleEventDelegate callback, bool add);
+		}
 
 
+		void Start(string[] args)
+		{
+			var config = instances.config = new XMLConfig();
+			config.LoadFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "config.xml"));
+
+			short port = short.Parse(config.GetValue("httpServerPort", "8000"));
+
+			var roaster = instances.roaster = new RoasterFactoryHandler(instances);
+
+			var httpServer = instances.httpServer = new HttpServerHandler(instances, port);
+
+			roaster.Run();
+			httpServer.Run();
+
+			roaster.OnRoasterDataUpdated += UpdateArma3SquadXml;
+		}
 
 
-    }
+		static FilePath GetUnitImage(Unit rootUnit, Person person, DirectoryPath targetSquadXmlFolder)
+		{
+			// try logo defined in taw profile biography
+			var image = person.Biography.GetData("squadxml logo", "arma squadxml logo");
+			if (image.IsNullOrEmpty() == false && image.EndsWith(".paa") == false) image += ".paa";
+			var file = targetSquadXmlFolder.GetFile(image);
+			if (file.Exists) return file;
+
+			// try logo from our unit
+			{
+				var unit = person.MostImportantIngameUnit;
+
+				do
+				{
+					file = targetSquadXmlFolder.GetFile(unit.id.ToString() + ".paa");
+					if (file.Exists)
+					{
+						var t = unit.type.ToLower();
+						if ((t == "battalion" || t == "platoon" || t == "division") && unit.personToPositionNameShort.GetValue(person).IsNullOrEmpty())
+						{
+							// if our unit for which we have image is either battalion or division, we also need to hold position in it,
+							// to prevent recruits from getting command image, i.e.: http://image.prntscr.com/image/d10305807da8433a88a9dbe06d8147e9.png
+						}
+						else return file;
+					}
+
+					file = targetSquadXmlFolder.GetFile(unit.id.ToString() + "-child.paa");
+					if (file.Exists) return file;
+
+					unit = unit.parentUnit; // walk up the tree;
+				}
+				while (unit != rootUnit);
+
+			}
+
+			file = targetSquadXmlFolder.GetFile("default.paa");
+			return file;
+		}
+
+		void UpdateArma3SquadXml()
+		{
+			var rootUnit = instances.roaster.CurrentData.idToUnit.GetValue(2776, null); // 2776 == Arma 3 Division
+			if (rootUnit == null) return;
+
+			var targetSquadXmlFolder = fileSystem.GetDirectory(instances.config.GetValue("targetSquadXmlFolder", "squadxml"));
+			string source = File.ReadAllText(targetSquadXmlFolder.GetFile("{{name}}.xml.handlebars").ExceptionIfNotExists());
+			var template = Handlebars.Compile(source);
+
+			Log.Info("generating squad xmls into: '" + targetSquadXmlFolder + "'");
+
+			foreach (var person in rootUnit.GetAllPersons())
+			{
+				var image = GetUnitImage(rootUnit, person, targetSquadXmlFolder);
+
+				var armaProfileName = person.Biography.GetData("profile name", "arma profile name");
+				if (armaProfileName.IsNullOrEmpty()) armaProfileName = person.TeamSpeakName;
+
+				Log.Trace("generating squad xml for: " + person.Name + " image:" + image + " armaProfileName:" + armaProfileName);
+
+				var rendered = template(
+					new
+					{
+						nick = "TAW.net",
+						name = person.MostImportantIngameUnit.name,
+						email = person.MostImportantIngameUnit.HighestRankingPerson.Name.ToLower() + "@taw.net",
+						web = "http://www.taw.net",
+						picture = image.Name,
+						title = "TAW - " + person.MostImportantIngameUnit.name,
+						fileGenerated = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
+						lastProfileDataUpdated = person.LastProfileDataUpdatedDate.ToString("yyyy-MM-dd HH:mm:ss"),
+						members = new[]
+						{
+							new
+							{
+								id = person.SteamId,
+								nick = armaProfileName,
+								name = person.Name,
+								email = person.Name.ToLower() + "@taw.net",
+								icq = person.TeamSpeakUnit.name + " - " + person.TeamSpeakUnitPositionNameLong,
+								remark = "Join us at www.TAW.net",
+							}
+						}
+					}
+				);
+
+				File.WriteAllText(targetSquadXmlFolder.GetFile(person.Name + ".xml"), rendered);
+
+			}
+
+			Log.Info("done generating squad xmls");
+
+		}
+
+		void Stop()
+		{
+			instances.roaster.Stop();
+			instances.httpServer.Stop();
+		}
+
+
+
+
+
+
+		// its pain in the ass to detect close in C#
+		//http://stackoverflow.com/questions/4646827/on-exit-for-a-console-application
+		private delegate bool ConsoleEventDelegate(int eventType);
+		[DllImport("kernel32.dll", SetLastError = true)]
+		private static extern bool SetConsoleCtrlHandler(ConsoleEventDelegate callback, bool add);
+
+
+
+
+	}
 
 }
