@@ -9,7 +9,7 @@ Example:
 
 ![Where to append the setting](http://image.prntscr.com/image/987090c5428f447795b735497363aaea.png)
 
-# Custom Arma 3 profile name
+# Custom Arma profile name
 
 This project is capable to correctly compose teamspeak names only for Arma divison members.
 Teamspeak names of personel from other divisions may not be correct.
