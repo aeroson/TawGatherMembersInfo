@@ -47,28 +47,16 @@ namespace TawGatherMembersInfo
 
 			try
 			{
-				Log.Info("Starting ...");
+				Log.Info("Starting ...");			
 				Start(args);
-				Log.Info("Started");
-
 				AppDomain.CurrentDomain.ProcessExit += (sender, a) =>
 				{
 					Stop();
 				};
-				/*
-                var handler = new ConsoleEventDelegate((int eventType) =>
-                {
-                    if (eventType == 2)
-                    {
-                        Stop();
-                    }
-                    return true;
-                });
-                SetConsoleCtrlHandler(handler, true);
-                */
+				Log.Info("Started");
 
-				while (Thread.CurrentThread.ThreadState == ThreadState.Running) Thread.Sleep(100);
-
+				Join();
+		
 				Log.Info("Stopping, this may take a while ...");
 				Stop();
 				Log.Info("Stopped");
@@ -76,7 +64,7 @@ namespace TawGatherMembersInfo
 			}
 			catch (Exception e)
 			{
-				Log.Info(e);
+				Log.Fatal(e);
 				Console.ReadKey();
 			}
 
@@ -100,6 +88,11 @@ namespace TawGatherMembersInfo
 			roaster.OnRoasterDataUpdated += UpdateArma3SquadXml;
 		}
 
+		void Join()
+		{
+			instances.roaster.Join();
+			instances.httpServer.Join();
+		}
 
 		static FilePath GetUnitImage(Unit rootUnit, Person person, DirectoryPath targetSquadXmlFolder)
 		{
@@ -142,8 +135,10 @@ namespace TawGatherMembersInfo
 
 		void UpdateArma3SquadXml()
 		{
-			var rootUnit = instances.roaster.CurrentData.idToUnit.GetValue(2776, null); // 2776 == Arma 3 Division
-			if (rootUnit == null) return;
+			// var rootUnit = instances.roaster.CurrentData.idToUnit.GetValue(2776, null); // 2776 == Arma 3 Division
+			// if (rootUnit == null) return;
+
+			var rootUnit = instances.roaster.CurrentData.rootUnit;
 
 			var targetSquadXmlFolder = fileSystem.GetDirectory(instances.config.GetValue("targetSquadXmlFolder", "squadxml"));
 			string source = File.ReadAllText(targetSquadXmlFolder.GetFile("{{name}}.xml.handlebars").ExceptionIfNotExists());
@@ -153,10 +148,15 @@ namespace TawGatherMembersInfo
 
 			foreach (var person in rootUnit.GetAllPersons())
 			{
-				var image = GetUnitImage(rootUnit, person, targetSquadXmlFolder);
-
+				if (person.Name.Contains("aeroson")) System.Diagnostics.Debugger.Break();
 				var armaProfileName = person.Biography.GetData("profile name", "arma profile name");
-				if (armaProfileName.IsNullOrEmpty()) armaProfileName = person.TeamSpeakName;
+				if (armaProfileName.IsNullOrEmpty())
+				{
+					if (person.IsTeamSpeakNameGuaranteedToBeCorrect == false) continue;
+					armaProfileName = person.TeamSpeakName;
+				}
+				
+				var image = GetUnitImage(rootUnit, person, targetSquadXmlFolder);
 
 				Log.Trace("generating squad xml for: " + person.Name + " image:" + image + " armaProfileName:" + armaProfileName);
 

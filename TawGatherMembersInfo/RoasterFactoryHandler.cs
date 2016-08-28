@@ -24,6 +24,10 @@ namespace TawGatherMembersInfo
         {
             this.instances = instances;
         }
+		public void Join()
+		{
+			thread.Join();
+		}
         public void Run()
         {
             thread = new Thread(ThreadMain);

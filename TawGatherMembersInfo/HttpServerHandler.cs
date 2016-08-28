@@ -23,7 +23,10 @@ namespace TawGatherMembersInfo
 			this.instances = instances;
 			this.serverPort = port;
 		}
-
+		public void Join()
+		{
+			thread.Join();
+		}
 		public void Run()
 		{
 			thread = new Thread(ThreadMain);

@@ -68,7 +68,7 @@ namespace TawGatherMembersInfo
 
 					var length = biography.Length - (startIndex + start.Length);
 					if (endIndex != -1) length = endIndex - (startIndex + start.Length);
-					
+
 					var data = biography.Substring(startIndex + start.Length, length).Trim();
 
 					while (data.StartsWith(":") || data.StartsWith("=")) data = data.RemoveFromBegin(1).Trim();
@@ -232,6 +232,30 @@ namespace TawGatherMembersInfo
 			}
 		}
 
+		public bool IsTeamSpeakNameGuaranteedToBeCorrect
+		{
+			get
+			{
+				return UnitToPositionNameShort.Keys.Any(u =>
+				{
+					var unit = u;
+					var type = unit.type.ToLower();
+
+					// walk the unit parent chain until we hit battalion or division             
+					while (type != "battalion" && type != "division" && unit.parentUnit != null)
+					{
+						unit = unit.parentUnit;
+						type = unit.type.ToLower();
+					}
+
+					var name = unit.name.ToLower();
+					if (type == "division") return name.Contains("arma ");
+					if (type == "battalion") return name.Contains("am1") || name.Contains("am2");
+					return false;
+				});
+			}
+		}
+
 		[NonSerialized]
 		string teamSpeakName_cache;
 		// this took me 4 hours, trying to find logic/algorithm in something that was made to look good, TODO: needs improving
@@ -251,19 +275,26 @@ namespace TawGatherMembersInfo
 							string newBattalionPrefix = "";
 
 							var unit = currentUnit;
+							var type = unit.type.ToLower();
 
-							// walk the unit parent chain until we hit batallion or division                              
-							while (unit.type != "Battalion" && unit.type != "Division" && unit.parentUnit != null) unit = unit.parentUnit;
+							// walk the unit parent chain until we hit battalion or division             
+							while (type != "battalion" && type != "division" && unit.parentUnit != null)
+							{
+								unit = unit.parentUnit;
+								type = unit.type.ToLower();
+							}
+
+							var name = unit.name.ToLower();
 
 							var doesNotHaveBattalionIndex = positionNameShortOwnedByDivision.Contains(positionNameShort);
 
-							if (unit.type.ToLower() == "division")
+							if (type == "division")
 							{
-								if (unit.name.ToLower() == "arma") newBattalionPrefix = "AM ";
+								if (name.Contains("arma ")) newBattalionPrefix = "AM ";
 							}
-							if (unit.type.ToLower() == "battalion" && doesNotHaveBattalionIndex == false)
+							if (type == "battalion" && doesNotHaveBattalionIndex == false)
 							{
-								if (unit.name.ToLower().Contains("support") == false)
+								if (name.Contains(" support ") == false)
 								{
 									var nameParts = unit.name.Split(' '); // AM1 1st Battalion North American || AM2 2nd Battalion European
 									newBattalionPrefix = nameParts[0];
