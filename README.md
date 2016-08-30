@@ -1,10 +1,10 @@
 # TawGatherMembersInfo
 Automatic gathering of TAW.net members information for automated processing purposes. 
-Such as automatic generation of TAW.net Arma division squad xmls.
+Such as automatic generation of Arma 3 squad xmls.
 
 # Arma squad xMLs:
 
-This project provides regulary and automatically generated squad xmls for all of TAW.net Arma.
+This project provides regulary and automatically generated squad xmls for all of TAW.net Arma members.
 Including all members of AM 1 and AM 2.
 Squad xmls are thus always up to date.
 
@@ -17,6 +17,9 @@ The URL: http://am2.taw.net/squadxml/aeroson.xml
 
 ### Custom squad xml logo
 See [custom-squad-xml-logo](https://github.com/TAW-Arma/TawGatherMembersInfo/tree/master/TawGatherMembersInfo/bin/Release/data/squadxml#custom-squad-xml-logo)
+
+### Custom Arma profile name
+See [custom-arma-profile-name](https://github.com/TAW-Arma/TawGatherMembersInfo/tree/master/TawGatherMembersInfo/bin/Release/data/squadxml#custom-arma-profile-name)
 
 
 # API
