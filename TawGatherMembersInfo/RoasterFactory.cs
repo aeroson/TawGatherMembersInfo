@@ -109,6 +109,8 @@ namespace TawGatherMembersInfo
         /// </summary>
         public void GatherBasicInformationFromUnitId1Roaster()
         {
+			Log.Enter();
+
 			data.ClearUnitToPersonRelations();
 
 			string responseText = null;
@@ -134,6 +136,7 @@ namespace TawGatherMembersInfo
             data.rootUnit = data.CreateUnit(null, "TAW");
             data.rootUnit.ParseUnitContents(this, roasterDiv.SelectSingleNode(roasterDiv.XPath + "/div/ul/ul"));
 
+			Log.Exit();
         }
 
         public void ClearCookies()

@@ -217,7 +217,9 @@ namespace TawGatherMembersInfo
 			get
 			{
 				if (TeamSpeakUnit == null) return "";
-				return UnitToPositionNameShort.GetValue(TeamSpeakUnit, "");
+				var ret = UnitToPositionNameShort.GetValue(TeamSpeakUnit, "");
+				if (ret.IsNullOrEmpty()) ret = ""; //TODO: bug UnitToPositionNameShort should not contain null values
+				return ret;
 			}
 		}
 
@@ -258,7 +260,8 @@ namespace TawGatherMembersInfo
 
 		[NonSerialized]
 		string teamSpeakName_cache;
-		// this took me 4 hours, trying to find logic/algorithm in something that was made to look good, TODO: needs improving
+		// during one day: this took me 4 hours, trying to find logic/algorithm in something that was made to look good, TODO: needs improving
+		// spend many more hours on it afterwards as well
 		public string TeamSpeakName
 		{
 			get
@@ -274,44 +277,55 @@ namespace TawGatherMembersInfo
 						{
 							string newBattalionPrefix = "";
 
+							// walk the unit parent chain until we hit battalion or division             
 							var unit = currentUnit;
 							var type = unit.type.ToLower();
-
-							// walk the unit parent chain until we hit battalion or division             
 							while (type != "battalion" && type != "division" && unit.parentUnit != null)
 							{
 								unit = unit.parentUnit;
 								type = unit.type.ToLower();
 							}
-
 							var name = unit.name.ToLower();
+
 
 							var doesNotHaveBattalionIndex = positionNameShortOwnedByDivision.Contains(positionNameShort);
 
-							if (type == "division")
+							// dont want to show purely support units, those are made purely for organization purposes ?
+							// only if its the only battalion person is in
+							if (name.Contains("support") == false || UnitToPositionNameShort.Count == 1)
 							{
-								if (name.Contains("arma ")) newBattalionPrefix = "AM ";
-							}
-							if (type == "battalion" && doesNotHaveBattalionIndex == false)
-							{
-								if (name.Contains(" support ") == false)
-								{
-									var nameParts = unit.name.Split(' '); // AM1 1st Battalion North American || AM2 2nd Battalion European
-									newBattalionPrefix = nameParts[0];
-									int lastCharAsInt;
-									var isLastCharNumber = int.TryParse(newBattalionPrefix.Last().ToString(), out lastCharAsInt);
-									if (isLastCharNumber)
-									{
-										newBattalionPrefix = newBattalionPrefix.Substring(0, newBattalionPrefix.Length - 1) + " " + lastCharAsInt;
-									}
-								}
+								if (type == "battalion" && doesNotHaveBattalionIndex) unit = unit.parentUnit;
+
+								var prefix = unit.TeamSpeakNamePrefix;
+								if (prefix.IsNullOrEmpty()) prefix = unit.parentUnit?.TeamSpeakNamePrefix; // if battalion has not valid prefix, try take one from division
+								if (prefix.IsNullOrEmpty() == false) newBattalionPrefix = prefix;
 							}
 
+							// take the longest prefix we found
 							if (newBattalionPrefix.Length > battalionPrefix.Length) battalionPrefix = newBattalionPrefix;
 						}
 					}
 
-					teamSpeakName_cache = Name + " [" + (battalionPrefix + positionNameShort).Trim() + "]";
+					battalionPrefix = battalionPrefix.Trim();
+					positionNameShort = positionNameShort.Trim();
+					if (positionNameShort.Length > 0)
+					{
+						if (battalionPrefix.IsNullOrEmpty())
+						{
+							teamSpeakName_cache = Name + " [" + positionNameShort + "]";
+						}
+						else
+						{
+							// separating space is already in battalion prefix, no need to have additiopnal space before position
+							if (battalionPrefix.Contains(" ") == false) battalionPrefix += " ";
+							teamSpeakName_cache = Name + " [" + battalionPrefix + positionNameShort + "]";
+						}
+					}
+					else
+					{
+						// we have no position, show only battalion
+						teamSpeakName_cache = Name + " [" + battalionPrefix + "]";
+					}
 				}
 
 

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Net;
 using System.IO;
 using System.Web;
+using System.IO.Compression;
 using Neitri;
 
 namespace TawGatherMembersInfo
@@ -20,6 +21,9 @@ namespace TawGatherMembersInfo
 		public HashSet<Unit> allUnits = new HashSet<Unit>();
 		public HashSet<Person> allPersons = new HashSet<Person>();
 		public Dictionary<string, Person> nameToPerson = new Dictionary<string, Person>();
+
+		public const string dataFileName = "backup.data.bin.gzip";
+		public const string personsOrderFileName = "backup.personsOrder.txt";
 
 		public int GetNextPersonId()
 		{
@@ -63,7 +67,7 @@ namespace TawGatherMembersInfo
 				else person.Id = GetNextPersonId();
 				nameToPerson[name] = person;
 				allPersons.Add(person);
-			}			
+			}
 			return person;
 		}
 		public Person GetOrUpdateOrCreatePerson(string text, Unit parentUnit)
@@ -124,7 +128,7 @@ namespace TawGatherMembersInfo
 
 
 			var person = GetOrCreateEmptyPerson(name);
-		
+
 			person.Name = name;
 			person.RankNameShort = rank;
 			if (onLeave) person.Status = "on leave";
@@ -136,13 +140,13 @@ namespace TawGatherMembersInfo
 			return person;
 		}
 
-		public void Save(Stream stream)
+		public void SaveToStream(Stream stream)
 		{
 			var serializer = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
 			serializer.Serialize(stream, this);
 		}
 
-		public static RoasterData Load(Stream stream)
+		public static RoasterData LoadFromStream(Stream stream)
 		{
 			var serializer = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
 			var data = serializer.Deserialize(stream) as RoasterData;
@@ -150,50 +154,68 @@ namespace TawGatherMembersInfo
 		}
 
 
-		public void Save(string pathAndName)
+		public void SaveToDirectory(DirectoryPath path)
 		{
-			Save(File.Open(pathAndName + ".data.bin", FileMode.Create, FileAccess.Write, FileShare.Write));
+			Log.Enter();
 
-			using (var s = new StreamWriter(File.Open(pathAndName + ".personsOrder.txt", FileMode.Create, FileAccess.Write, FileShare.Write)))
+			var dataBin = path.GetFile(dataFileName);
+			var personsOrder = path.GetFile(personsOrderFileName);
+
+			using (var fileStream = File.Open(dataBin, FileMode.Create, FileAccess.Write, FileShare.Write))
+			using (var zipStream = new GZipStream(fileStream, CompressionMode.Compress))
+			{
+				SaveToStream(zipStream);
+			}
+
+			using (var s = new StreamWriter(File.Open(personsOrder, FileMode.Create, FileAccess.Write, FileShare.Write)))
 			{
 				foreach (var p in allPersons.OrderBy((person) => person.Id))
 				{
 					s.WriteLine(p.Name);
 				}
 			}
-			Log.Info("saved roaster data to '" + pathAndName + ".data.bin' and '" + pathAndName + ".personsOrder.txt'");
+			Log.Info("saved roaster data to '" + dataBin + "' and '" + personsOrder + ".personsOrder.txt'");
+			Log.Exit();
 		}
 
 
-		public static RoasterData Load(string pathAndName)
+		public static RoasterData LoadFromDirectory(DirectoryPath path)
 		{
+			Log.Enter();
+
+			var dataBin = path.GetFile(dataFileName);
+			var personsOrder = path.GetFile(personsOrderFileName);
+
 			RoasterData data = null;
-			var dataPath = pathAndName + ".data.bin";
-			if (File.Exists(dataPath))
+			if (dataBin.Exists)
 			{
-				data = Load(File.Open(dataPath, FileMode.Open, FileAccess.Read, FileShare.Read));
-				Log.Info("loaded data from '" + dataPath + "'");
+				using (var fileStream = File.Open(dataBin, FileMode.Open, FileAccess.Read, FileShare.Read))
+				using (var zipStream = new GZipStream(fileStream, CompressionMode.Decompress))
+				{
+					data = LoadFromStream(zipStream);
+				}
+				Log.Info("loaded data from '" + dataBin + "'");
 			}
 			else
 			{
 				data = new RoasterData();
-				Log.Info("'" + dataPath + "' not found, creating empty data");
-
-				var personsOrderPath = pathAndName + ".personsOrder.txt";
-				if (File.Exists(personsOrderPath))
+				Log.Info("'" + dataBin + "' not found, creating empty data");
+				if (personsOrder.Exists)
 				{
-					Log.Info("found '" + personsOrderPath + "' creating name only persons to preserve IDs");
-					foreach (var line in File.ReadAllLines(personsOrderPath))
+					Log.Info("found '" + personsOrder + "' creating name only persons to preserve IDs");
+					foreach (var line in File.ReadAllLines(personsOrder))
 					{
 						data.GetOrCreateEmptyPerson(line);
 					}
 				}
 				else
 				{
-					Log.Info("'" + personsOrderPath + "' not found, no persons created at all");
+					Log.Info("'" + personsOrder + "' not found, no persons created at all");
 				}
 
 			}
+
+			Log.Exit();
 			return data;
 		}
 	}

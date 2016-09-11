@@ -74,7 +74,7 @@ namespace TawGatherMembersInfo
 		void Start(string[] args)
 		{
 			var config = instances.config = new XMLConfig();
-			config.LoadFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "config.xml"));
+			config.LoadFile(fileSystem.GetFile("data", "config.xml"));
 
 			short port = short.Parse(config.GetValue("httpServerPort", "8000"));
 
@@ -125,7 +125,7 @@ namespace TawGatherMembersInfo
 
 					unit = unit.parentUnit; // walk up the tree;
 				}
-				while (unit != rootUnit);
+				while (unit != rootUnit && unit != null);
 
 			}
 
@@ -141,24 +141,24 @@ namespace TawGatherMembersInfo
 			var rootUnit = instances.roaster.CurrentData.rootUnit;
 
 			var targetSquadXmlFolder = fileSystem.GetDirectory(instances.config.GetValue("targetSquadXmlFolder", "squadxml"));
-			string source = File.ReadAllText(targetSquadXmlFolder.GetFile("{{name}}.xml.handlebars").ExceptionIfNotExists());
+			string source = File.ReadAllText(targetSquadXmlFolder.GetFile("template.handlebars").ExceptionIfNotExists());
 			var template = Handlebars.Compile(source);
 
 			Log.Info("generating squad xmls into: '" + targetSquadXmlFolder + "'");
 
 			foreach (var person in rootUnit.GetAllPersons())
 			{
-				if (person.Name.Contains("aeroson")) System.Diagnostics.Debugger.Break();
+				// TODO: skip discharged persons
 				var armaProfileName = person.Biography.GetData("profile name", "arma profile name");
 				if (armaProfileName.IsNullOrEmpty())
 				{
-					if (person.IsTeamSpeakNameGuaranteedToBeCorrect == false) continue;
+					//if (person.IsTeamSpeakNameGuaranteedToBeCorrect == false) continue;
 					armaProfileName = person.TeamSpeakName;
 				}
 				
 				var image = GetUnitImage(rootUnit, person, targetSquadXmlFolder);
 
-				Log.Trace("generating squad xml for: " + person.Name + " image:" + image + " armaProfileName:" + armaProfileName);
+				Log.Trace("generating squad xml for: " + person.Name + " image:" + image.Name + " armaProfileName:" + armaProfileName);
 
 				var rendered = template(
 					new

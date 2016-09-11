@@ -28,7 +28,7 @@
             <h1><xsl:value-of select="/squad/name"/></h1>
             <p><em>Tag : </em><xsl:value-of select="/squad/@nick"/></p>
             <p><em>Email : </em><xsl:value-of select="/squad/email"/></p>
-            <p><em>Web Site : </em><a><xsl:attribute name="href"><xsl:value-of select="/squad/web"/></xsl:attribute><xsl:value-of select="/squad/web"/></a></p>
+            <p><em>Web Site : </em><a><xsl:attribute name="href"><xsl:value-of select="/squad/web"/>/member/<xsl:value-of select="/squad/member/name"/>.aspx</xsl:attribute><xsl:value-of select="/squad/web"/></a></p>
             <p><em>Title : </em><xsl:value-of select="/squad/title"/></p>
         </div>
         

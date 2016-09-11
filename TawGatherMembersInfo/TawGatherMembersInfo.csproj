@@ -73,6 +73,8 @@
     <Compile Include="HttpServerHandler.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="MyHttpWebRequest.cs" />
+    <Compile Include="Neitri\DependencyInjection\DependencyManager.cs" />
+    <Compile Include="Neitri\DependencyInjection\IOnDependencyResolved.cs" />
     <Compile Include="Neitri\Extensions\ActionExtensions.cs" />
     <Compile Include="Neitri\Extensions\ArrayExtensions.cs" />
     <Compile Include="Neitri\Extensions\AssemblyExtensions.cs" />

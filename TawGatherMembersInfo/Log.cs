@@ -34,5 +34,15 @@ namespace TawGatherMembersInfo
 		{
 			log.Warn(value);
 		}
+
+
+		public static void Enter()
+		{
+			Log.Info(nameof(Enter) + " " + Neitri.TraceUtil.ThisMethod(1));
+		}
+		public static void Exit()
+		{
+			Log.Info(nameof(Exit) + " " + Neitri.TraceUtil.ThisMethod(1));
+		}
 	}
 }

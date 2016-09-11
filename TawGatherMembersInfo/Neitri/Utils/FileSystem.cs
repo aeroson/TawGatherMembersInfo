@@ -221,6 +221,10 @@ namespace Neitri
 		public FileSystem()
 		{
 			BaseDirectory = GetDirectory(AppDomain.CurrentDomain.BaseDirectory);
+#if DEBUG
+			BaseDirectory = BaseDirectory.GetDirectory("..").GetDirectory("release");
+#endif
+			BaseDirectory.ExceptionIfNotExists();
 		}
 		public DirectoryPath GetDirectory(params string[] pathParts)
 		{

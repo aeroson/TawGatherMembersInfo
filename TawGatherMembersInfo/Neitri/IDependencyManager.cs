@@ -43,7 +43,7 @@ namespace Neitri
 	}
 
 
-	public static class IDependencyManagerExtensions
+	public static class ExtensionsIDependencyManager
 	{
 		public static IDependencyManager Register(this IDependencyManager me, params object[] instances)
 		{
