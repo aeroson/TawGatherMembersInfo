@@ -12,17 +12,15 @@ namespace TawGatherMembersInfo
 {
 	public class HttpServerHandler
 	{
-		InstancesContainer instances;
+		[Dependency]
+		Config config;
+
+		[Dependency]
+		RoasterManager roaster;
 
 		HttpListener httpListener;
 		Thread thread;
-		int serverPort;
 
-		public HttpServerHandler(InstancesContainer instances, int port)
-		{
-			this.instances = instances;
-			this.serverPort = port;
-		}
 		public void Join()
 		{
 			thread.Join();
@@ -43,7 +41,7 @@ namespace TawGatherMembersInfo
 
 		void ThreadMain()
 		{
-
+			var serverPort = config.HttpServerPort;
 
 			if (!HttpListener.IsSupported)
 			{
@@ -381,8 +379,7 @@ namespace TawGatherMembersInfo
 			var parameters = new Params(context.Request.RawUrl);
 			var authToken = parameters.GetValue("auth", "none");
 
-			var authTokens = instances.config.Root.Descendants("authenticationTokens").First().Elements().Select(e => e.Value).ToList();
-			if (authTokens.Contains(authToken) == false)
+			if (config.authTokens.Contains(authToken) == false)
 			{
 				o.WriteLine("{\n\terror:' bad auth token'\n}");
 			}
@@ -402,12 +399,12 @@ namespace TawGatherMembersInfo
 					if (rootUnitRegexPattern != null)
 					{
 						var rootUnitRegex = new System.Text.RegularExpressions.Regex(rootUnitRegexPattern);
-						rootUnit = instances.roaster.CurrentData.allUnits.First(u => rootUnitRegex.IsMatch(u.name));
+						rootUnit = roaster.CurrentRoaster.allUnits.First(u => rootUnitRegex.IsMatch(u.name));
 					}
 					else
 					{
 						var rootUnitId = int.Parse(parameters.GetValue("rootUnitId", "1"));
-						rootUnit = instances.roaster.CurrentData.idToUnit.GetValue(rootUnitId, null);
+						rootUnit = roaster.CurrentRoaster.idToUnit.GetValue(rootUnitId, null);
 					}
 
 
@@ -430,7 +427,7 @@ namespace TawGatherMembersInfo
 						if (format == "table" && version == "3")
 						{
 							var personsSet = new HashSet<Person>();
-							if (rootUnit == null) personsSet = instances.roaster.CurrentData.allPersons;
+							if (rootUnit == null) personsSet = roaster.CurrentRoaster.allPersons;
 							else rootUnit.FillWithAllPersons(personsSet);
 
 							Format_Table_Version_3(o, personsSet, fields, orderBy);

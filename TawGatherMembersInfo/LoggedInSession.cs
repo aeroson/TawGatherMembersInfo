@@ -15,10 +15,10 @@ using Microsoft.Win32;
 namespace TawGatherMembersInfo
 {
 
-    public partial class RoasterFactory
+    public partial class LoggedInSession
     {
 
-        public RoasterData data = new RoasterData();
+        public RoasterData roaster = new RoasterData();
 
         public CookieContainer cookieContainer { get; private set; }
 
@@ -29,7 +29,7 @@ namespace TawGatherMembersInfo
         string username;
         string password;
 
-        public RoasterFactory()
+        public LoggedInSession()
         {
             cookieContainer = new CookieContainer();
 
@@ -111,7 +111,7 @@ namespace TawGatherMembersInfo
         {
 			Log.Enter();
 
-			data.ClearUnitToPersonRelations();
+			roaster.ClearUnitToPersonRelations();
 
 			string responseText = null;
 
@@ -133,8 +133,8 @@ namespace TawGatherMembersInfo
 
             var roasterDiv = html.GetElementbyId("ctl00_bcr_UpdatePanel1");
 
-            data.rootUnit = data.CreateUnit(null, "TAW");
-            data.rootUnit.ParseUnitContents(this, roasterDiv.SelectSingleNode(roasterDiv.XPath + "/div/ul/ul"));
+            roaster.rootUnit = roaster.CreateUnit(null, "TAW");
+            roaster.rootUnit.ParseUnitContents(this, roasterDiv.SelectSingleNode(roasterDiv.XPath + "/div/ul/ul"));
 
 			Log.Exit();
         }

@@ -15,16 +15,16 @@ namespace TawGatherMembersInfo
 {
 	public class InstancesContainer
 	{
-		public RoasterFactoryHandler roaster;
+		public RoasterManager roaster;
 		public HttpServerHandler httpServer;
 		public XMLConfig config;
 	}
 
 	class Program
 	{
-		InstancesContainer instances = new InstancesContainer();
 
-		public static FileSystem fileSystem = new FileSystem();
+		IDependencyManager dependency = new Neitri.DependencyInjection.DependencyManager();
+		FileSystem fileSystem;
 
 		static void Main(string[] args)
 		{
@@ -33,8 +33,12 @@ namespace TawGatherMembersInfo
 
 		public Program(string[] args)
 		{
+			fileSystem = dependency.CreateAndRegister<FileSystem>();
+
 			{
 				var log = new Neitri.Logging.LogAgregator();
+				dependency.Register(log);
+
 				log.AddLogger(new Neitri.Logging.LogConsole());
 
 				var logFile = fileSystem.BaseDirectory.GetDirectory("data", "logs").CreateIfNotExists().GetFile(DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss") + ".txt");
@@ -70,17 +74,17 @@ namespace TawGatherMembersInfo
 
 		}
 
+		RoasterManager roaster;
+		HttpServerHandler httpServer;
+		Config config;
 
 		void Start(string[] args)
 		{
-			var config = instances.config = new XMLConfig();
+			config = dependency.CreateAndRegister<Config>();
 			config.LoadFile(fileSystem.GetFile("data", "config.xml"));
 
-			short port = short.Parse(config.GetValue("httpServerPort", "8000"));
-
-			var roaster = instances.roaster = new RoasterFactoryHandler(instances);
-
-			var httpServer = instances.httpServer = new HttpServerHandler(instances, port);
+			roaster = dependency.CreateAndRegister<RoasterManager>();
+			httpServer = dependency.CreateAndRegister<HttpServerHandler>();
 
 			roaster.Run();
 			httpServer.Run();
@@ -90,8 +94,8 @@ namespace TawGatherMembersInfo
 
 		void Join()
 		{
-			instances.roaster.Join();
-			instances.httpServer.Join();
+			roaster.Join();
+			httpServer.Join();
 		}
 
 		static FilePath GetUnitImage(Unit rootUnit, Person person, DirectoryPath targetSquadXmlFolder)
@@ -138,9 +142,9 @@ namespace TawGatherMembersInfo
 			// var rootUnit = instances.roaster.CurrentData.idToUnit.GetValue(2776, null); // 2776 == Arma 3 Division
 			// if (rootUnit == null) return;
 
-			var rootUnit = instances.roaster.CurrentData.rootUnit;
+			var rootUnit = roaster.CurrentRoaster.rootUnit;
 
-			var targetSquadXmlFolder = fileSystem.GetDirectory(instances.config.GetValue("targetSquadXmlFolder", "squadxml"));
+			var targetSquadXmlFolder = fileSystem.GetDirectory(config.GetValue("targetSquadXmlFolder", "squadxml"));
 			string source = File.ReadAllText(targetSquadXmlFolder.GetFile("template.handlebars").ExceptionIfNotExists());
 			var template = Handlebars.Compile(source);
 
@@ -148,7 +152,7 @@ namespace TawGatherMembersInfo
 
 			foreach (var person in rootUnit.GetAllPersons())
 			{
-				// TODO: skip discharged persons
+				// TODO: skip discharged perso is 
 				var armaProfileName = person.Biography.GetData("profile name", "arma profile name");
 				if (armaProfileName.IsNullOrEmpty())
 				{
@@ -196,8 +200,8 @@ namespace TawGatherMembersInfo
 
 		void Stop()
 		{
-			instances.roaster.Stop();
-			instances.httpServer.Stop();
+			roaster.Stop();
+			httpServer.Stop();
 		}
 
 

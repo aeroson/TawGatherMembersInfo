@@ -85,10 +85,10 @@ namespace TawGatherMembersInfo
 			return @"http://taw.net/unit/" + unitId + "/roster.aspx";
 		}
 
-		public void ParseUnitContents(RoasterFactory roasterFactory, HtmlNode htmlNode)
+		public void ParseUnitContents(LoggedInSession roasterFactory, HtmlNode htmlNode)
 		{
 			id = int.Parse(htmlNode.GetAttributeValue("id", "u-1").Substring(1));
-			roasterFactory.data.idToUnit[id] = this;
+			roasterFactory.roaster.idToUnit[id] = this;
 
 			foreach (var child in htmlNode.ChildNodes)
 			{
@@ -100,13 +100,13 @@ namespace TawGatherMembersInfo
 				{
 					// person
 					var name = child.InnerText;
-					var person = roasterFactory.data.GetOrUpdateOrCreatePerson(name, this);
+					var person = roasterFactory.roaster.GetOrUpdateOrCreatePerson(name, this);
 				}
 				else
 				{
 					// unit
 					var name = span.InnerText;
-					var childUnit = roasterFactory.data.CreateUnit(this, name);
+					var childUnit = roasterFactory.roaster.CreateUnit(this, name);
 					childUnit.ParseUnitContents(roasterFactory, ul);
 				}
 			}

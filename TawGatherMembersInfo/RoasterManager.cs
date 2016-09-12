@@ -9,22 +9,20 @@ using Neitri;
 
 namespace TawGatherMembersInfo
 {
-	public class RoasterFactoryHandler
+	public class RoasterManager
 	{
-		public RoasterData CurrentData { get; private set; }
+		public RoasterData CurrentRoaster { get; private set; }
 
 		public event Action OnRoasterDataUpdated;
-		RoasterFactory roasterFactory;
-		InstancesContainer instances;
+		LoggedInSession roasterFactory;
 		Thread thread;
 
 		[Dependency]
-		FileSystem fileSystem = new FileSystem();
+		FileSystem fileSystem;
 
-		public RoasterFactoryHandler(InstancesContainer instances)
-		{
-			this.instances = instances;
-		}
+		[Dependency]
+		Config config;
+
 		public void Join()
 		{
 			thread.Join();
@@ -44,23 +42,23 @@ namespace TawGatherMembersInfo
 		void PushDataToFront()
 		{
 			var stream = new System.IO.MemoryStream();
-			roasterFactory.data.SaveToStream(stream);
+			roasterFactory.roaster.SaveToStream(stream);
 			stream.Position = 0;
-			CurrentData = RoasterData.LoadFromStream(stream);
-			if (CurrentData.allUnits.Count > 0 && CurrentData.allPersons.Count > 0)
+			CurrentRoaster = RoasterData.LoadFromStream(stream);
+			if (CurrentRoaster.allUnits.Count > 0 && CurrentRoaster.allPersons.Count > 0)
 				OnRoasterDataUpdated?.Invoke();
 		}
 
 		void ThreadMain()
 		{
-			roasterFactory = new RoasterFactory();
+			roasterFactory = new LoggedInSession();
 
 			var path = fileSystem.GetDirectory("data");
-			roasterFactory.data = RoasterData.LoadFromDirectory(path);
+			roasterFactory.roaster = RoasterData.LoadFromDirectory(path);
 			PushDataToFront();
 			roasterFactory.GatherBasicInformationFromUnitId1Roaster();
 			PushDataToFront();
-			roasterFactory.data.SaveToDirectory(path);
+			roasterFactory.roaster.SaveToDirectory(path);
 
 			// if this is the startup then update profiles really fast
 			var isFirstRun = true;
@@ -73,10 +71,10 @@ namespace TawGatherMembersInfo
 				roasterFactory.GatherBasicInformationFromUnitId1Roaster();
 
 				var personsUpdated = new HashSet<Person>();
-				var unitsIds = instances.config.Root.Descendants("unitsToGatherMemberInfo").First().Elements().Select(e => int.Parse(e.Value));
+				var unitsIds = config.Root.Descendants("unitsToGatherMemberInfo").First().Elements().Select(e => int.Parse(e.Value));
 				foreach (var unitId in unitsIds)
 				{
-					var unit = roasterFactory.data.idToUnit.GetValue(unitId, null);
+					var unit = roasterFactory.roaster.idToUnit.GetValue(unitId, null);
 					if (unit == null) continue;
 					foreach (var person in unit.GetAllPersons())
 					{
@@ -91,7 +89,7 @@ namespace TawGatherMembersInfo
 				profileUpdateDelayMiliSeconds = 60 * 1000;
 
 				PushDataToFront();
-				roasterFactory.data.SaveToDirectory(path);
+				roasterFactory.roaster.SaveToDirectory(path);
 
 			}
 

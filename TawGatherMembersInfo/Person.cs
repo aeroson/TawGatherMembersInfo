@@ -362,7 +362,7 @@ namespace TawGatherMembersInfo
 		}
 
 
-		public void UpdateInfoFromProfilePage(RoasterFactory roaster)
+		public void UpdateInfoFromProfilePage(LoggedInSession roaster)
 		{
 			Log.Trace("updating profile for " + this.Name);
 
