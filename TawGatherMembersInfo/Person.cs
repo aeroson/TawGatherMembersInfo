@@ -26,9 +26,9 @@ namespace TawGatherMembersInfo
 		public string Status { get; set; } = "unknown"; // active, discharged, etc..
 		public int Id { get; set; } = 0;
 		public DateTime DateJoinedTaw { get; set; }
-		string BiographyContents { get; set; }
 		public DateTime LastProfileDataUpdatedDate { get; set; }
 
+		private string BiographyContents { get; set; } = "";
 		[NonSerialized]
 		BiographyData biography;
 		public BiographyData Biography => biography;

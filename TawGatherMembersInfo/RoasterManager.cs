@@ -71,7 +71,7 @@ namespace TawGatherMembersInfo
 				roasterFactory.GatherBasicInformationFromUnitId1Roaster();
 
 				var personsUpdated = new HashSet<Person>();
-				var unitsIds = config.Root.Descendants("unitsToGatherMemberInfo").First().Elements().Select(e => int.Parse(e.Value));
+				var unitsIds = config.UnitIdsToGatherMemberProfileInfo;
 				foreach (var unitId in unitsIds)
 				{
 					var unit = roasterFactory.roaster.idToUnit.GetValue(unitId, null);
