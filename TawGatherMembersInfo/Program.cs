@@ -1,16 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Net;
+﻿using Neitri;
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using Neitri;
-
-using HandlebarsDotNet;
-using TawGatherMembersInfo.Models;
 
 namespace TawGatherMembersInfo
 {
@@ -21,9 +12,8 @@ namespace TawGatherMembersInfo
 		public XMLConfig config;
 	}
 
-	class Program
+	internal class Program
 	{
-
 		IDependencyManager dependency = new Neitri.DependencyInjection.DependencyManager();
 		FileSystem fileSystem;
 
@@ -65,22 +55,22 @@ namespace TawGatherMembersInfo
 				Log.Info("Stopping, this may take a while ...");
 				Stop();
 				Log.Info("Stopped");
-
 			}
 			catch (Exception e)
 			{
 				Log.Fatal(e);
 				Console.ReadKey();
 			}
-
 		}
 
 		HttpServerHandler httpServer;
-		
+
 		[Dependency(Register = true)]
 		RoasterManager roaster;
+
 		[Dependency(Register = true)]
 		Config config;
+
 		[Dependency(Register = true)]
 		DbContextProvider db;
 
@@ -93,8 +83,6 @@ namespace TawGatherMembersInfo
 
 			roaster.Run();
 			httpServer.Run();
-
-			
 		}
 
 		void UpdateSquadXml()
@@ -109,27 +97,17 @@ namespace TawGatherMembersInfo
 			httpServer.Join();
 		}
 
-		
 		void Stop()
 		{
 			roaster.Stop();
 			httpServer.Stop();
 		}
 
-
-
-
-
-
 		// its pain in the ass to detect close in C#
 		//http://stackoverflow.com/questions/4646827/on-exit-for-a-console-application
-		private delegate bool ConsoleEventDelegate(int eventType);
+		delegate bool ConsoleEventDelegate(int eventType);
+
 		[DllImport("kernel32.dll", SetLastError = true)]
-		private static extern bool SetConsoleCtrlHandler(ConsoleEventDelegate callback, bool add);
-
-
-
-
+		static extern bool SetConsoleCtrlHandler(ConsoleEventDelegate callback, bool add);
 	}
-
 }

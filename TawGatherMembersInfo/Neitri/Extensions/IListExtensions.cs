@@ -3,29 +3,29 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-
 namespace Neitri
 {
 	public static class ILisExtensions
 	{
-        public static void Resize<T>(this List<T> list, int newCount, T valueToAdd)
-        {
-            int currentCount = list.Count;
-            if (newCount < currentCount)
-                list.RemoveRange(newCount, currentCount - newCount);
-            else if (newCount > currentCount)
-            {
-                if (newCount > list.Capacity)//this bit is purely an optimisation, to avoid multiple automatic capacity changes.
-                    list.Capacity = newCount;
-                list.AddRange(Enumerable.Repeat(valueToAdd, newCount - currentCount));
-            }
-        }
-        public static void Resize<T>(this List<T> list, int newCount) where T : new()
-        {
-            Resize(list, newCount, new T());
-        }
+		public static void Resize<T>(this List<T> list, int newCount, T valueToAdd)
+		{
+			int currentCount = list.Count;
+			if (newCount < currentCount)
+				list.RemoveRange(newCount, currentCount - newCount);
+			else if (newCount > currentCount)
+			{
+				if (newCount > list.Capacity)//this bit is purely an optimisation, to avoid multiple automatic capacity changes.
+					list.Capacity = newCount;
+				list.AddRange(Enumerable.Repeat(valueToAdd, newCount - currentCount));
+			}
+		}
 
-        public static void AddRange(this IList me, IEnumerable enumerable)
+		public static void Resize<T>(this List<T> list, int newCount) where T : new()
+		{
+			Resize(list, newCount, new T());
+		}
+
+		public static void AddRange(this IList me, IEnumerable enumerable)
 		{
 			if (me == null) throw new NullReferenceException("me");
 			if (enumerable == null) throw new NullReferenceException("enumerable");

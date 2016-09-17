@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Neitri
 {
@@ -13,10 +11,12 @@ namespace Neitri
 		{
 			get; set;
 		}
+
 		public string[] PathParts
 		{
 			get; set;
 		}
+
 		public string FullPath
 		{
 			get
@@ -24,6 +24,7 @@ namespace Neitri
 				return GetFullPath(Combine(PathParts));
 			}
 		}
+
 		public string Name
 		{
 			get
@@ -35,6 +36,7 @@ namespace Neitri
 				PathParts[PathParts.Length - 1] = value;
 			}
 		}
+
 		protected DirectoryPath ParentDirectory
 		{
 			get
@@ -42,6 +44,7 @@ namespace Neitri
 				return new DirectoryPath(FileSystem, PathParts.Take(PathParts.Length - 2).ToArray());
 			}
 		}
+
 		public PathBase(FileSystem fs, string[] pathParts)
 		{
 			this.FileSystem = fs;
@@ -50,6 +53,7 @@ namespace Neitri
 			// output: D:\SSD_GAMES\steamapps\common\Arma 3\@taw_div_core / addons\task_force_radio_items.pbo
 			this.PathParts = Split(Combine(pathParts));
 		}
+
 		string GetFullPath(params string[] pathParts)
 		{
 			if (pathParts.First().Contains(":"))
@@ -66,18 +70,22 @@ namespace Neitri
 				);
 			}
 		}
+
 		public override string ToString()
 		{
 			return Combine(PathParts);
 		}
+
 		protected string Combine(params string[] pathParts)
 		{
 			return string.Join("/", pathParts);
 		}
+
 		protected string[] Split(string path)
 		{
 			return path.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray();
 		}
+
 		protected string[] ArrayAdd(string[] arr, string add)
 		{
 			var ret = new string[arr.Length + 1];
@@ -85,6 +93,7 @@ namespace Neitri
 			ret[ret.Length] = add;
 			return ret;
 		}
+
 		protected string[] ArrayAdd(string[] arr1, string[] arr2)
 		{
 			var ret = new string[arr1.Length + arr2.Length];
@@ -93,6 +102,7 @@ namespace Neitri
 			return ret;
 		}
 	}
+
 	public class DirectoryPath : PathBase
 	{
 		public DirectoryPath Parent
@@ -102,14 +112,18 @@ namespace Neitri
 				return ParentDirectory;
 			}
 		}
+
 		public bool Exists => DirectoryExists();
+
 		public DirectoryPath(FileSystem fs, string[] pathParts) : base(fs, pathParts)
 		{
 		}
+
 		bool DirectoryExists()
 		{
 			return Directory.Exists(FullPath);
 		}
+
 		public DirectoryPath Create()
 		{
 			if (Exists) throw new Exception("can not create directory, directory '" + this + "' already exists");
@@ -126,31 +140,38 @@ namespace Neitri
 			if (Exists == false) Create();
 			return this;
 		}
+
 		public DirectoryPath ExceptionIfNotExists()
 		{
 			if (Exists == false) throw new Exception("directory '" + this + "' does not exist");
 			return this;
 		}
+
 		public FilePath GetFile(params string[] path)
 		{
 			return new FilePath(FileSystem, ArrayAdd(PathParts, path));
 		}
+
 		public IEnumerable<FilePath> FindFiles(string searchPattern)
 		{
 			return Directory.GetFiles(this.FullPath, searchPattern).Select(f => new FilePath(FileSystem, Split(f)));
 		}
+
 		public DirectoryPath GetDirectory(string path)
 		{
 			return new DirectoryPath(FileSystem, ArrayAdd(this.PathParts, Split(path)));
 		}
+
 		public DirectoryPath GetDirectory(params string[] pathParts)
 		{
 			return new DirectoryPath(FileSystem, ArrayAdd(this.PathParts, pathParts));
 		}
+
 		public override string ToString()
 		{
 			return this.FullPath;
 		}
+
 		public static implicit operator string(DirectoryPath me)
 		{
 			return me.FullPath;
@@ -166,14 +187,18 @@ namespace Neitri
 				return ParentDirectory;
 			}
 		}
+
 		public bool Exists => FileExists();
+
 		public FilePath(FileSystem fs, string[] pathParts) : base(fs, pathParts)
 		{
 		}
+
 		bool FileExists()
 		{
 			return File.Exists(FullPath);
 		}
+
 		/*
 		public FileStream Create()
 		{
@@ -187,32 +212,36 @@ namespace Neitri
 			return this;
 		}
 		*/
+
 		public FilePath ExceptionIfNotExists()
 		{
 			if (Exists == false) throw new Exception("file '" + FullPath + "' does not exist");
 			return this;
 		}
+
 		public FilePath CopyTo(FilePath other)
 		{
 			if (other.Exists) throw new NullReferenceException("can not copy file, file already exists '" + other.FullPath + "'");
 			File.Copy(this.FullPath, other.FullPath);
 			return this;
 		}
+
 		public FilePath Delete()
 		{
 			File.Delete(this.FullPath);
 			return this;
 		}
+
 		public override string ToString()
 		{
 			return this.FullPath;
 		}
+
 		public static implicit operator string(FilePath me)
 		{
 			return me.FullPath;
 		}
 	}
-
 
 	public class FileSystem
 	{
@@ -226,14 +255,15 @@ namespace Neitri
 #endif
 			BaseDirectory.ExceptionIfNotExists();
 		}
+
 		public DirectoryPath GetDirectory(params string[] pathParts)
 		{
 			return new DirectoryPath(this, pathParts);
 		}
+
 		public FilePath GetFile(params string[] pathParts)
 		{
 			return new FilePath(this, pathParts);
 		}
-
 	}
 }

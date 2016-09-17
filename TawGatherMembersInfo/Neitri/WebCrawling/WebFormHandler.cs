@@ -1,18 +1,14 @@
-﻿using System;
+﻿using HtmlAgilityPack;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
-using HtmlAgilityPack;
+using System.Linq;
 using System.Net;
-
 
 namespace Neitri.WebCrawling
 {
 	public class WebFormHandler
 	{
-
 		public class ParamsCollection : Dictionary<string, string>
 		{
 			public string ToData()
@@ -26,18 +22,16 @@ namespace Neitri.WebCrawling
 			}
 		}
 
-
 		HtmlNode formHtmlElement;
 		CookieContainer cookieContainer;
 		ParamsCollection paramsCollection = new ParamsCollection();
 		ParamsCollection submitInputs = new ParamsCollection();
 		string rootFormUrl;
 
-
 		public WebFormHandler(MyHttpWebResponse response, CookieContainer cookieContainer)
 		{
 			this.rootFormUrl = response.RootUrl;
-            var document = response.HtmlDocument;
+			var document = response.HtmlDocument;
 			this.formHtmlElement = document.DocumentNode.SelectSingleNode("//form");
 			this.cookieContainer = cookieContainer;
 			Init();
@@ -54,7 +48,7 @@ namespace Neitri.WebCrawling
 		void Init()
 		{
 			HtmlNodeCollection elements;
-			
+
 			// hidden, text, password
 			elements = formHtmlElement.SelectNodes("//input[@type='hidden']|//input[@type='text']|//input[@type='password']");
 			if (elements != null)
@@ -113,7 +107,6 @@ namespace Neitri.WebCrawling
 					if (name != null) submitInputs[name] = e.GetAttributeValue("value", null);
 				}
 			}
-
 		}
 
 		public bool InputExists(string inputName)
@@ -121,6 +114,7 @@ namespace Neitri.WebCrawling
 			inputName = GlobSearch(inputName, paramsCollection);
 			return paramsCollection.ContainsKey(inputName);
 		}
+
 		public void FillInput(string inputName, string inputValue)
 		{
 			if (inputName == null) throw new NullReferenceException();
@@ -180,6 +174,5 @@ namespace Neitri.WebCrawling
 
 			return response;
 		}
-
 	}
 }

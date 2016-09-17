@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
-using System.IO;
-using Neitri;
-using HtmlAgilityPack;
-using Neitri.WebCrawling;
 
 namespace Neitri.WebCrawling
 {
@@ -63,7 +54,6 @@ namespace Neitri.WebCrawling
 			}
 		}
 
-
 		HttpWebRequest httpWebRequest;
 
 		//static Queue<DateTime> timesOfRequestsMade = new Queue<DateTime>();
@@ -87,10 +77,12 @@ namespace Neitri.WebCrawling
 			};
 			return myHttpWebRequest;
 		}
+
 		public MyHttpWebResponse GetResponse()
 		{
 			return new MyHttpWebResponse((HttpWebResponse)httpWebRequest.GetResponse());
 		}
+
 		public Stream GetRequestStream()
 		{
 			return httpWebRequest.GetRequestStream();

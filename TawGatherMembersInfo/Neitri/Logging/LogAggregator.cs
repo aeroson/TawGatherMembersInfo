@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Neitri.Logging
 {
@@ -14,6 +10,7 @@ namespace Neitri.Logging
 		{
 			loggers.Add(log);
 		}
+
 		public void Error<T>(T value)
 		{
 			for (int i = 0; i < loggers.Count; i++) loggers[i].Error(value);

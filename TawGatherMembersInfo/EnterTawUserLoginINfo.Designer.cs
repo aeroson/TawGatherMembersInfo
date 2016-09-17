@@ -5,7 +5,7 @@
         /// <summary>
         /// Required designer variable.
         /// </summary>
-        private System.ComponentModel.IContainer components = null;
+        System.ComponentModel.IContainer components = null;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -26,7 +26,7 @@
         /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
         /// </summary>
-        private void InitializeComponent()
+        void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EnterTawUserLoginInfo));
             this.cancel = new System.Windows.Forms.Button();
@@ -143,13 +143,13 @@
 
         #endregion
 
-        private System.Windows.Forms.Button cancel;
-        private System.Windows.Forms.Button login;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.CheckBox rememeberLoginDetails;
-        private System.Windows.Forms.TextBox username;
-        private System.Windows.Forms.TextBox password;
+        System.Windows.Forms.Button cancel;
+        System.Windows.Forms.Button login;
+        System.Windows.Forms.Label label1;
+        System.Windows.Forms.Label label3;
+        System.Windows.Forms.Label label2;
+        System.Windows.Forms.CheckBox rememeberLoginDetails;
+        System.Windows.Forms.TextBox username;
+        System.Windows.Forms.TextBox password;
     }
 }

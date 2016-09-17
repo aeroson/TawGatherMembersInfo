@@ -1,13 +1,8 @@
-﻿using Neitri.DependencyInjection;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 
 namespace Neitri
 {
-
 	public class Profiler : IDisposable
 	{
 		string name;
@@ -21,11 +16,11 @@ namespace Neitri
 			this.time.Start();
 			this.log = log;
 		}
+
 		public void Dispose()
 		{
 			this.time.Stop();
 			log.Trace("'" + name + "' took " + time.ElapsedMilliseconds + " ms");
 		}
 	}
-
 }

@@ -1,22 +1,19 @@
 ﻿using HandlebarsDotNet;
 using Neitri;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TawGatherMembersInfo.Models;
 
 namespace TawGatherMembersInfo
 {
 	public class ArmaSquadXml
 	{
-
 		[Dependency]
 		DbContextProvider db;
+
 		[Dependency]
 		Config config;
+
 		[Dependency]
 		FileSystem fileSystem;
 
@@ -45,7 +42,7 @@ namespace TawGatherMembersInfo
 
 			foreach (var person in rootUnit.GetAllPersons())
 			{
-				// TODO: skip discharged perso is 
+				// TODO: skip discharged perso is
 				var armaProfileName = person.Biography.GetData("profile name", "arma profile name");
 				if (armaProfileName.IsNullOrEmpty())
 				{
@@ -84,13 +81,10 @@ namespace TawGatherMembersInfo
 				);
 
 				File.WriteAllText(targetSquadXmlFolder.GetFile(person.Name + ".xml"), rendered);
-
 			}
 
 			Log.Info("done generating squad xmls");
-
 		}
-
 
 		FilePath GetUnitImage(Unit rootUnit, Person person, DirectoryPath targetSquadXmlFolder)
 		{
@@ -110,7 +104,7 @@ namespace TawGatherMembersInfo
 					if (file.Exists)
 					{
 						var t = unit.Type.ToLower();
-						if ((t == "battalion" || t == "platoon" || t == "division") && unit.personToPositionNameShort.GetValue(person).IsNullOrEmpty())
+						if ((t == "battalion" || t == "platoon" || t == "division") && unit.PersonToPositionNameShort.GetValue(person).IsNullOrEmpty())
 						{
 							// if our unit for which we have image is either battalion or division, we also need to hold position in it,
 							// to prevent recruits from getting command image, i.e.: http://image.prntscr.com/image/d10305807da8433a88a9dbe06d8147e9.png
@@ -124,12 +118,10 @@ namespace TawGatherMembersInfo
 					unit = unit.ParentUnit; // walk up the tree;
 				}
 				while (unit != rootUnit && unit != null);
-
 			}
 
 			file = targetSquadXmlFolder.GetFile("default.paa");
 			return file;
 		}
-
 	}
 }

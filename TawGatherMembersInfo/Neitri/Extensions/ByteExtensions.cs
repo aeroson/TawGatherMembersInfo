@@ -1,35 +1,32 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Neitri
 {
-    public static class ByteExtensions
-    {
-        // from http://stackoverflow.com/questions/623104/byte-to-hex-string
-        /// <summary>
-        /// Returns hex representation of byte array, {1, 2, 4, 8, 16, 32} would return 010204081020.
-        /// </summary>
-        /// <param name="bytes"></param>
-        /// <returns></returns>
-        public static string ToHexString(this byte[] bytes)
-        {
-            char[] c = new char[bytes.Length * 2];
+	public static class ByteExtensions
+	{
+		// from http://stackoverflow.com/questions/623104/byte-to-hex-string
+		/// <summary>
+		/// Returns hex representation of byte array, {1, 2, 4, 8, 16, 32} would return 010204081020.
+		/// </summary>
+		/// <param name="bytes"></param>
+		/// <returns></returns>
+		public static string ToHexString(this byte[] bytes)
+		{
+			char[] c = new char[bytes.Length * 2];
 
-            byte b;
+			byte b;
 
-            for (int bx = 0, cx = 0; bx < bytes.Length; ++bx, ++cx)
-            {
-                b = ((byte)(bytes[bx] >> 4));
-                c[cx] = (char)(b > 9 ? b + 0x37 + 0x20 : b + 0x30);
+			for (int bx = 0, cx = 0; bx < bytes.Length; ++bx, ++cx)
+			{
+				b = ((byte)(bytes[bx] >> 4));
+				c[cx] = (char)(b > 9 ? b + 0x37 + 0x20 : b + 0x30);
 
-                b = ((byte)(bytes[bx] & 0x0F));
-                c[++cx] = (char)(b > 9 ? b + 0x37 + 0x20 : b + 0x30);
-            }
+				b = ((byte)(bytes[bx] & 0x0F));
+				c[++cx] = (char)(b > 9 ? b + 0x37 + 0x20 : b + 0x30);
+			}
 
-            return new string(c);
-        }
+			return new string(c);
+		}
 
 		// from http://stackoverflow.com/questions/16340/how-do-i-generate-a-hashcode-from-a-byte-array-in-c
 		public static int ComputeHashCodeSlow(this byte[] data)
@@ -51,7 +48,6 @@ namespace Neitri
 			}
 		}
 
-
 		public static int ComputeHashCodeFast(this byte[] byteArray)
 		{
 			// http://stackoverflow.com/questions/16340/how-do-i-generate-a-hashcode-from-a-byte-array-in-c
@@ -66,7 +62,5 @@ namespace Neitri
 			return ret;
 			*/
 		}
-
-
 	}
 }

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace Neitri
 {
@@ -18,6 +16,7 @@ namespace Neitri
 
 			return For(expression.Body);
 		}
+
 		public static string For<T>(Expression<Func<T>> expression)
 		{
 			if (expression == null)
@@ -28,6 +27,7 @@ namespace Neitri
 
 			return For(expression.Body);
 		}
+
 		public static string GetMemberName<T>(this T instance, Expression<Action<T>> expression)
 		{
 			return For(expression);
@@ -43,6 +43,7 @@ namespace Neitri
 
 			return For(expression.Body);
 		}
+
 		public static string For(Expression<Action> expression)
 		{
 			if (expression == null)
@@ -54,8 +55,7 @@ namespace Neitri
 			return For(expression.Body);
 		}
 
-
-		private static string For(Expression expression)
+		static string For(Expression expression)
 		{
 			if (expression == null)
 			{
@@ -89,7 +89,7 @@ namespace Neitri
 			throw new ArgumentException("Invalid expression");
 		}
 
-		private static string For(UnaryExpression unaryExpression)
+		static string For(UnaryExpression unaryExpression)
 		{
 			if (unaryExpression.Operand is MethodCallExpression)
 			{

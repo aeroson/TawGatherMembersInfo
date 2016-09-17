@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Collections;
-using System;
+using System.Reflection;
 
 namespace Neitri.DependencyInjection
 {
@@ -17,11 +16,11 @@ namespace Neitri.DependencyInjection
 		{
 			Register(this);
 		}
+
 		public DependencyManager(IDependencyManager parent) : this()
 		{
 			this.parent = parent;
 		}
-
 
 		public IDependencyManager Register(object instance)
 		{
@@ -36,7 +35,6 @@ namespace Neitri.DependencyInjection
 			return this;
 		}
 
-
 		public object Resolve(Type type)
 		{
 			object instance = GetInstance(type);
@@ -45,6 +43,7 @@ namespace Neitri.DependencyInjection
 			if (parent == null) throw new NullReferenceException("unable to resolve " + type);
 			return parent.Resolve(type);
 		}
+
 		public bool CanResolve(Type type)
 		{
 			var instance = GetInstance(type);
@@ -88,7 +87,6 @@ namespace Neitri.DependencyInjection
 			return this;
 		}
 
-
 		/// <summary>
 		/// Creates new instance and then resolves it's dependencies.
 		/// </summary>
@@ -108,7 +106,6 @@ namespace Neitri.DependencyInjection
 			BuildUp(instance);
 			return instance;
 		}
-
 
 		bool IsConstructorUsable(ConstructorInfo ctor, Type typeToCreate, object[] paramsToStartWith)
 		{
@@ -164,13 +161,13 @@ namespace Neitri.DependencyInjection
 
 			var instance = Activator.CreateInstance(type, BuildConstrutorArgs(constructor, type, args));
 			return instance;
-
 		}
 
 		Type GetTypeFor(Type type)
 		{
 			return registeredTypes.FirstOrDefault(t => TypeImplements(t, type));
 		}
+
 		bool CanCreateFor(Type type)
 		{
 			type = GetTypeFor(type);
@@ -188,8 +185,5 @@ namespace Neitri.DependencyInjection
 		{
 			return instances.FirstOrDefault(i => TypeImplements(i.GetType(), type));
 		}
-
-
 	}
-
 }

@@ -1,20 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TawGatherMembersInfo.Models
 {
-    [Serializable]
-    public class PersonToUnit
-    {
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long Id { get; set; }
-        public virtual Person Person { get; set; }
-        public virtual Unit Unit { get; set; }
-        public virtual string PositionNameShort { get; set; }
-    }
+	[Serializable]
+	public class PersonToUnit
+	{
+		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		public long Id { get; set; }
+
+		public virtual Person Person { get; set; }
+		public virtual Unit Unit { get; set; }
+		public virtual string PositionNameShort { get; set; }
+	}
 }

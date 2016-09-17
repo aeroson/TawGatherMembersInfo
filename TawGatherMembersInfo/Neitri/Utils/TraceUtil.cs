@@ -1,20 +1,12 @@
-using System.Collections;
+using System;
 using System.Diagnostics;
-using System.Linq.Expressions;
 using System.Linq;
 using System.Text;
-using System;
-using Neitri.DependencyInjection;
 
 namespace Neitri
 {
-
-
-
-
 	public static class TraceUtil
 	{
-
 		public static string GetMethodName(int skipFrames)
 		{
 			skipFrames++;
@@ -82,6 +74,5 @@ namespace Neitri
 			var st = new StackTrace(1, true);
 			return st.ToString();
 		}
-
 	}
 }

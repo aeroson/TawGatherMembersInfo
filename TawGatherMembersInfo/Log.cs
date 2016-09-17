@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Neitri;
+﻿using Neitri;
 
 namespace TawGatherMembersInfo
 {
 	public static class Log
 	{
 		public static ILogging log;
+
 		public static void Error<T>(T value)
 		{
 			log.Error(value);
@@ -35,11 +31,11 @@ namespace TawGatherMembersInfo
 			log.Warn(value);
 		}
 
-
 		public static void Enter()
 		{
 			Log.Info(nameof(Enter) + " " + Neitri.TraceUtil.ThisMethod(1));
 		}
+
 		public static void Exit()
 		{
 			Log.Info(nameof(Exit) + " " + Neitri.TraceUtil.ThisMethod(1));

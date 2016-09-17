@@ -153,6 +153,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="app.manifest" />
+    <Compile Include="HttpServerHandler.PerRequestHandler.cs" />
     <None Include="packages.config" />
     <Compile Include="Models\Unit.cs" />
     <Compile Include="Models\Person_StaticData.cs" />

@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
+﻿using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TawGatherMembersInfo.Models;
 
 namespace TawGatherMembersInfo
 {
-
 	public class MyDbContext : DbContext
 	{
 		public Unit RootUnit => Units.OrderBy(u => u.TawId).FirstOrDefault();
@@ -17,19 +12,18 @@ namespace TawGatherMembersInfo
 		public virtual IDbSet<Unit> Units { get; set; }
 		public virtual IDbSet<PersonToEvent> PersonsToEvents { get; set; }
 		public virtual IDbSet<PersonToUnit> PersonsToUnits { get; set; }
+
 		public MyDbContext() : base("DefaultConnection")
 		{
-
 		}
+
 		protected override void OnModelCreating(DbModelBuilder modelBuilder)
 		{
-
 		}
 	}
 
 	public class DbContextProvider
 	{
-
 		public MyDbContext NewContext
 		{
 			get

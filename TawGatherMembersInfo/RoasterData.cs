@@ -1,19 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Net;
-using System.IO;
-using System.Web;
-using System.IO.Compression;
-using Neitri;
-using TawGatherMembersInfo.Models;
-
-namespace TawGatherMembersInfo
+﻿namespace TawGatherMembersInfo
 {
-    /*
+	/*
 	[Serializable]
 	public class RoasterData
 	{
@@ -98,7 +85,7 @@ namespace TawGatherMembersInfo
 			}
 			return person;
 		}
-		
+
 		public void SaveToStream(Stream stream)
 		{
 			var serializer = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
@@ -111,7 +98,6 @@ namespace TawGatherMembersInfo
 			var data = serializer.Deserialize(stream) as RoasterData;
 			return data;
 		}
-
 
 		public void SaveToDirectory(DirectoryPath path)
 		{
@@ -136,7 +122,6 @@ namespace TawGatherMembersInfo
 			Log.Info("saved roaster data to '" + dataBin + "' and '" + personsOrder + ".personsOrder.txt'");
 			Log.Exit();
 		}
-
 
 		public static RoasterData LoadFromDirectory(DirectoryPath path)
 		{
@@ -171,7 +156,6 @@ namespace TawGatherMembersInfo
 				{
 					Log.Info("'" + personsOrder + "' not found, no persons created at all");
 				}
-
 			}
 
 			Log.Exit();
@@ -179,5 +163,4 @@ namespace TawGatherMembersInfo
 		}
 	}
     */
-
 }

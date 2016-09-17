@@ -1,13 +1,9 @@
 ﻿using HtmlAgilityPack;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Neitri.WebCrawling
 {
-
 	public class HtmlTable : List<List<HtmlNode>>
 	{
 		/// <summary>
@@ -33,8 +29,8 @@ namespace Neitri.WebCrawling
 	{
 		public HtmlTwoColsStringTable(HtmlNode tableNode) : this(tableNode?.SelectNodes("./tr | ./tbody/tr"))
 		{
-
 		}
+
 		public HtmlTwoColsStringTable(HtmlNodeCollection tableRows)
 		{
 			if (tableRows == null) return;
@@ -59,8 +55,8 @@ namespace Neitri.WebCrawling
 	{
 		public HtmlOneColsStringTable(HtmlNode tableNode) : this(tableNode?.SelectNodes("./tr | ./tbody/tr"))
 		{
-
 		}
+
 		public HtmlOneColsStringTable(HtmlNodeCollection tableRows)
 		{
 			if (tableRows == null) return;

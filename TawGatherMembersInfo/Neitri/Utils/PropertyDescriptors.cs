@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
 
 namespace Neitri
 {
-
 	/// <summary>
 	/// Generic interface to get or set values using reflection into both fields and properties
 	/// </summary>
@@ -16,19 +15,25 @@ namespace Neitri
 		bool CanWrite { get; }
 		Type DeclaringType { get; }
 		Type Type { get; }
+
 		bool IsDefined(Type attributeType, bool inherit = true);
+
 		object[] GetCustomAttributes(Type attributeType, bool inherit = true);
+
 		T[] GetCustomAttributes<T>(bool inherit = true) where T : Attribute;
+
 		object Read(object target);
+
 		void Write(object target, object value);
+
 		/// <summary>
 		/// Get the target.GetType(), if target is null returns IPropertyDescriptor.Type
 		/// </summary>
 		/// <param name="target"></param>
 		/// <returns></returns>
 		Type GetRealType(object target);
-
 	}
+
 	public static class PropertyDescriptorUtils
 	{
 		public static T GetCustomAttribute<T>(this IPropertyDescriptor me, bool inherit = true) where T : Attribute
@@ -37,6 +42,7 @@ namespace Neitri
 			if (attributes == null || attributes.Length == 0) return null;
 			return (T)attributes[0];
 		}
+
 		public static bool IsDefined<T>(this IPropertyDescriptor me, bool inherit = true) where T : Attribute
 		{
 			return me.IsDefined(typeof(T));
@@ -65,7 +71,7 @@ namespace Neitri
 			return ret;
 		}
 
-		private static IPropertyDescriptor GetOnePart(
+		static IPropertyDescriptor GetOnePart(
 			Type type,
 			string name,
 			BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetProperty | BindingFlags.SetProperty | BindingFlags.IgnoreCase
@@ -101,8 +107,8 @@ namespace Neitri
 				);
 		}
 
-
 		#region IPropertyDescriptor implementations for field, property and sequence
+
 		class FieldDescriptor : IPropertyDescriptor
 		{
 			public string Name { get { return fieldInfo.Name; } }
@@ -111,43 +117,52 @@ namespace Neitri
 			public Type Type { get { return fieldInfo.FieldType; } }
 			public Type DeclaringType { get { return fieldInfo.DeclaringType; } }
 			readonly FieldInfo fieldInfo;
+
 			public bool IsDefined(Type attributeType, bool inherit = true)
 			{
 				return fieldInfo.IsDefined(attributeType, inherit);
 			}
+
 			public T[] GetCustomAttributes<T>(bool inherit = true) where T : Attribute
 			{
 				return fieldInfo.GetCustomAttributes(typeof(T), inherit).Cast<T>().ToArray();
 			}
+
 			public object[] GetCustomAttributes(Type attributeType, bool inherit = true)
 			{
 				return fieldInfo.GetCustomAttributes(attributeType, inherit);
 			}
+
 			public static implicit operator FieldDescriptor(FieldInfo fieldInfo)
 			{
 				return new FieldDescriptor(fieldInfo);
 			}
+
 			public FieldDescriptor(FieldInfo fieldInfo)
 			{
 				this.fieldInfo = fieldInfo;
 			}
+
 			public object Read(object target)
 			{
 				if (!CanRead) return null;
 				if (target == null && fieldInfo.IsStatic == false) return null;
 				return fieldInfo.GetValue(target);
 			}
+
 			public void Write(object target, object value)
 			{
 				if (!CanWrite) return;
 				if (target == null && fieldInfo.IsStatic == false) return;
 				fieldInfo.SetValue(target, value);
 			}
+
 			public Type GetRealType(object target)
 			{
 				if (target == null) return Type;
 				return target.GetType();
 			}
+
 			public override string ToString()
 			{
 				return Type.FullName + " " + DeclaringType.FullName + "." + Name;
@@ -162,43 +177,52 @@ namespace Neitri
 			public Type Type { get { return propertyInfo.PropertyType; } }
 			public Type DeclaringType { get { return propertyInfo.DeclaringType; } }
 			readonly PropertyInfo propertyInfo;
+
 			public bool IsDefined(Type attributeType, bool inherit = true)
 			{
 				return propertyInfo.IsDefined(attributeType, inherit);
 			}
+
 			public T[] GetCustomAttributes<T>(bool inherit = true) where T : Attribute
 			{
 				return propertyInfo.GetCustomAttributes(typeof(T), inherit).Cast<T>().ToArray();
 			}
+
 			public object[] GetCustomAttributes(Type attributeType, bool inherit = true)
 			{
 				return propertyInfo.GetCustomAttributes(attributeType, inherit);
 			}
+
 			public static implicit operator PropertyDescriptor(PropertyInfo propertyInfo)
 			{
 				return new PropertyDescriptor(propertyInfo);
 			}
+
 			public PropertyDescriptor(PropertyInfo propertyInfo)
 			{
 				this.propertyInfo = propertyInfo;
 			}
+
 			public object Read(object target)
 			{
 				if (CanRead == false) return null;
 				if (target == null && propertyInfo.GetGetMethod().IsStatic == false) return null;
 				return propertyInfo.GetValue(target, null);
 			}
+
 			public void Write(object target, object value)
 			{
 				if (CanWrite == false) return;
 				if (target == null && propertyInfo.GetSetMethod().IsStatic == false) return;
 				propertyInfo.SetValue(target, value, null);
 			}
+
 			public Type GetRealType(object target)
 			{
 				if (target == null) return Type;
 				return target.GetType();
 			}
+
 			public override string ToString()
 			{
 				return Type.FullName + " " + DeclaringType.FullName + "." + Name;
@@ -214,44 +238,49 @@ namespace Neitri
 			public Type DeclaringType { get { return holder.DeclaringType; } }
 			readonly IPropertyDescriptor holder;
 			readonly IPropertyDescriptor property;
+
 			public SequenceWrapper(IPropertyDescriptor holder, IPropertyDescriptor property)
 			{
 				this.holder = holder;
 				this.property = property;
 			}
+
 			public bool IsDefined(Type attributeType, bool inherit = true)
 			{
 				return holder.IsDefined(attributeType, inherit);
 			}
+
 			public T[] GetCustomAttributes<T>(bool inherit = true) where T : Attribute
 			{
 				return holder.GetCustomAttributes<T>(inherit);
 			}
+
 			public object[] GetCustomAttributes(Type attributeType, bool inherit = true)
 			{
 				return holder.GetCustomAttributes(attributeType, inherit);
 			}
+
 			public object Read(object target)
 			{
 				return property.Read(holder.Read(target));
 			}
+
 			public void Write(object target, object value)
 			{
 				property.Write(holder.Read(target), value);
 			}
+
 			public Type GetRealType(object target)
 			{
 				return property.GetRealType(target);
 			}
+
 			public override string ToString()
 			{
 				return property.Type.FullName + " " + holder.DeclaringType.FullName + "." + Name;
 			}
 		}
 
-		#endregion
-
-
+		#endregion IPropertyDescriptor implementations for field, property and sequence
 	}
-
 }
