@@ -37,9 +37,9 @@ namespace Neitri
 	public class DependencyAttribute : Attribute
 	{
 		/// <summary>
-		/// Automatically register type if type is not registered.
+        /// Automatically create and register instance of this type.
 		/// </summary>
-		public bool RegisterType { get; set; }
+		public bool Register { get; set; }
 	}
 
 

@@ -10,172 +10,144 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TawGatherMembersInfo.Models
 {
-	[Serializable]
-	public class Unit
-	{
+    [Serializable]
+    public class Unit
+    {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long Id { get; set; }
+        public virtual long Id { get; set; }
         [Index(IsUnique = true)]
-        public int TawId { get; set; }
+        public virtual int TawId { get; set; }
         /// <summary>
         /// Possible values: Division, Batallion, Platoon, Squad, Fire Team, and more
         /// </summary>
-        public string type = "";
-		public string name = "noname";
-		public int id = -1;
-		public Unit parentUnit;
-		public HashSet<Unit> childUnits = new HashSet<Unit>();
-		public Dictionary<Person, string> personToPositionNameShort = new Dictionary<Person, string>();
+        public virtual string Type { get; set; } = "";
+        public virtual string Name { get; set; } = "noname";
+        public virtual Unit ParentUnit { get; set; }
+        public virtual ICollection<Unit> ChildUnits { get; set; }
+        public virtual ICollection<PersonToUnit> Persons { get; set; }
+        //public Dictionary<Person, string> personToPositionNameShort = new Dictionary<Person, string>();
 
-		public Person HighestRankingPerson
-		{
-			get
-			{
-				Person highestPerson = null;
-				int highestPriority = int.MinValue;
+        public Person HighestRankingPerson
+        {
+            get
+            {
+                Person highestPerson = null;
+                int highestPriority = int.MinValue;
 
-				foreach (var kvp in personToPositionNameShort)
-				{
-					var positionNameShort = kvp.Value;
-					var person = kvp.Key;
+                foreach (var kvp in Persons)
+                {
+                    var positionNameShort = kvp.PositionNameShort;
+                    var person = kvp.Person;
 
-					var positionPriority = Person.positionNameShortTeamSpeakNamePriorityOrder.IndexOf(positionNameShort);
-					if (positionPriority > highestPriority)
-					{
-						highestPriority = positionPriority;
-						highestPerson = person;
-					}
-				}
+                    var positionPriority = Person.positionNameShortTeamSpeakNamePriorityOrder.IndexOf(positionNameShort);
+                    if (positionPriority > highestPriority)
+                    {
+                        highestPriority = positionPriority;
+                        highestPerson = person;
+                    }
+                }
 
-				return highestPerson;
-			}
-		}
+                return highestPerson;
+            }
+        }
 
-		/// <summary>
-		/// Returns the prefix you use fot TeamSpeak name
-		/// AM1 1st Battalion North American == AM 1
-		/// AM2 2nd Battalion European == AM 2
-		/// SOCOP = SOCOP
-		/// </summary>
-		public string TeamSpeakNamePrefix
-		{
-			get
-			{
-				// special use cases
-				if (type.ToLower() == "division" && name.ToLower().Contains("arma ")) return "AM";
+        /// <summary>
+        /// Returns the prefix you use fot TeamSpeak name
+        /// AM1 1st Battalion North American == AM 1
+        /// AM2 2nd Battalion European == AM 2
+        /// SOCOP = SOCOP
+        /// </summary>
+        public string TeamSpeakNamePrefix
+        {
+            get
+            {
+                // special use cases
+                if (Type.ToLower() == "division" && Name.ToLower().Contains("arma ")) return "AM";
 
-				var prefix = "";
-				var nameParts = name.Split(' '); // AM1 1st Battalion North American || AM2 2nd Battalion European
-				prefix = nameParts[0];
-				int lastCharAsInt;
-				var isLastCharNumber = int.TryParse(prefix.Last().ToString(), out lastCharAsInt);
-				if (isLastCharNumber)
-				{
-					// first part of battalion name is TS prefix
-					prefix = prefix.Substring(0, prefix.Length - 1) + " " + lastCharAsInt;
-				}
+                var prefix = "";
+                var nameParts = Name.Split(' '); // AM1 1st Battalion North American || AM2 2nd Battalion European
+                prefix = nameParts[0];
+                int lastCharAsInt;
+                var isLastCharNumber = int.TryParse(prefix.Last().ToString(), out lastCharAsInt);
+                if (isLastCharNumber)
+                {
+                    // first part of battalion name is TS prefix
+                    prefix = prefix.Substring(0, prefix.Length - 1) + " " + lastCharAsInt;
+                }
 
-				// special use case
-				if (prefix == "TAW") return null;
+                // special use case
+                if (prefix == "TAW") return null;
 
-				// prefix must be uppercase, if not its not valid, then return null
-				if (prefixValidRegexp.IsMatch(prefix)) return prefix;
-				return null;
-			}
-		}
-		static Regex prefixValidRegexp = new Regex("^[0-9 A-Z]*$");
+                // prefix must be uppercase, if not its not valid, then return null
+                if (prefixValidRegexp.IsMatch(prefix)) return prefix;
+                return null;
+            }
+        }
+        static Regex prefixValidRegexp = new Regex("^[0-9 A-Z]*$");
 
-		public static string GetUnitRoasterPage(int unitId)
-		{
-			if (unitId < 1) throw new IndexOutOfRangeException("unit id must be 1 or more");
-			return @"http://taw.net/unit/" + unitId + "/roster.aspx";
-		}
+        public static string GetUnitRoasterPage(int unitTawId)
+        {
+            if (unitTawId < 1) throw new IndexOutOfRangeException("unit id must be 1 or more");
+            return @"http://taw.net/unit/" + unitTawId + "/roster.aspx";
+        }
 
-		public void ParseUnitContents(LoggedInSession roasterFactory, HtmlNode htmlNode)
-		{
-			id = int.Parse(htmlNode.GetAttributeValue("id", "u-1").Substring(1));
-			roasterFactory.roaster.idToUnit[id] = this;
+        /// <summary>
+        /// Fills provided hashset with all persons from this unit and child units, recursive call.
+        /// </summary>
+        /// <param name="persons"></param>
+        public void FillWithAllPersons(HashSet<Person> persons)
+        {
+            foreach (var kvp in this.Persons) persons.Add(kvp.Person);
+            foreach (var unit in ChildUnits) unit.FillWithAllPersons(persons);
+        }
 
-			foreach (var child in htmlNode.ChildNodes)
-			{
+        public HashSet<Person> GetAllPersons()
+        {
+            var hs = new HashSet<Person>();
+            FillWithAllPersons(hs);
+            return hs;
+        }
 
-				var span = child.SelectSingleNode(child.XPath + "/span"); // contains the name of this unit
-				var ul = child.SelectSingleNode(child.XPath + "/ul"); // list that contains all child units or persons
+        public string PrettyTreePrint(int depth = 0)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine();
+            for (int i = 1; i < depth; i++) sb.Append("|");
+            sb.Append("|unit=" + Type + "=" + Name + " tawId:" + Id);
+            foreach (var c in Persons)
+            {
+                sb.AppendLine();
+                for (int i = 0; i < depth; i++) sb.Append("|");
+                sb.Append("|");
+                sb.Append("person=" + c.Person + "=" + c.PositionNameShort);
+            }
+            foreach (var c in ChildUnits)
+            {
+                sb.Append(c.PrettyTreePrint(depth + 1));
+            }
+            return sb.ToString();
+        }
 
-				if (span == null && ul == null)
-				{
-					// person
-					var name = child.InnerText;
-					var person = roasterFactory.roaster.GetOrUpdateOrCreatePersonFromUnitPage(name, this);
-				}
-				else
-				{
-					// unit
-					var name = span.InnerText;
-					var childUnit = roasterFactory.roaster.CreateUnit(this, name);
-					childUnit.ParseUnitContents(roasterFactory, ul);
-				}
-			}
-
-		}
-
-		/// <summary>
-		/// Fills provided hashset with all persons from this unit and child units, recursive call.
-		/// </summary>
-		/// <param name="persons"></param>
-		public void FillWithAllPersons(HashSet<Person> persons)
-		{
-			foreach (var kvp in personToPositionNameShort) persons.Add(kvp.Key);
-			foreach (var unit in childUnits) unit.FillWithAllPersons(persons);
-		}
-
-		public HashSet<Person> GetAllPersons()
-		{
-			var hs = new HashSet<Person>();
-			FillWithAllPersons(hs);
-			return hs;
-		}
-
-		public string PrettyTreePrint(int depth = 0)
-		{
-			var sb = new StringBuilder();
-			sb.AppendLine();
-			for (int i = 1; i < depth; i++) sb.Append("|");
-			sb.Append("|unit=" + type + "=" + name + " tawId:" + id);
-			foreach (var c in personToPositionNameShort)
-			{
-				sb.AppendLine();
-				for (int i = 0; i < depth; i++) sb.Append("|");
-				sb.Append("|");
-				sb.Append("person=" + c.Value + "=" + c.Key);
-			}
-			foreach (var c in childUnits)
-			{
-				sb.Append(c.PrettyTreePrint(depth + 1));
-			}
-			return sb.ToString();
-		}
-
-		public override string ToString()
-		{
-			return type + " - " + name;
-		}
+        public override string ToString()
+        {
+            return Type + " - " + Name;
+        }
         public override bool Equals(object obj)
         {
             return Equals(obj as Unit);
         }
 
         public bool Equals(Unit other)
-		{
-			if (other == null) return false;
-            return id == other.id;
-		}
+        {
+            if (other == null) return false;
+            return Id == other.Id;
+        }
 
-		public override int GetHashCode()
-		{
-			return id.GetHashCode();
-		}
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
 
-	}
+    }
 
 }

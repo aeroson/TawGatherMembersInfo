@@ -77,6 +77,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArmaSquadXml.cs" />
     <Compile Include="BiDictionary.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="EnterTawUserLoginInfo.cs">
@@ -146,7 +147,7 @@
     <Compile Include="LoggedInSession.cs" />
     <Compile Include="Models\Person.cs" />
     <Compile Include="RoasterManager.cs" />
-    <Compile Include="WebFormHandler.cs" />
+    <Compile Include="WebDataParser.cs" />
     <Compile Include="XMLConfig.cs" />
   </ItemGroup>
   <ItemGroup>

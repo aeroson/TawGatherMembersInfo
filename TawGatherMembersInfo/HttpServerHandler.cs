@@ -29,7 +29,8 @@ namespace TawGatherMembersInfo
 		public void Run()
 		{
 			thread = new Thread(ThreadMain);
-			thread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
+            thread.Name = this.GetType().ToString();
+            thread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
 			thread.Start();
 		}
 
@@ -220,9 +221,9 @@ namespace TawGatherMembersInfo
 				o.WriteLine("<td>" + p.DateJoinedTaw.Month + "</td>");
 				o.WriteLine("<td>" + p.DateJoinedTaw.Day + "</td>");
 				o.WriteLine("<td>" + p.DaysInTaw + "</td>");
-				o.WriteLine("<td>" + p.MostImportantIngameUnit.name + "</td>");
-				o.WriteLine("<td>" + p.MostImportantIngameUnit.type + "</td>");
-				o.WriteLine("<td>" + p.MostImportantIngameUnit.id + "</td>");
+				o.WriteLine("<td>" + p.MostImportantIngameUnit.Name + "</td>");
+				o.WriteLine("<td>" + p.MostImportantIngameUnit.Type + "</td>");
+				o.WriteLine("<td>" + p.MostImportantIngameUnit.Id + "</td>");
 				o.WriteLine("<td>" + p.MostImportantIngameUnitPositionNameLong + "</td>");
 				o.WriteLine("<td>" + p.MostImportantIngameUnitPositionNameShort + "</td>");
 				o.WriteLine("<td>" + p.RankImageBigUrl + "</td>");
@@ -233,9 +234,9 @@ namespace TawGatherMembersInfo
 				o.WriteLine("<td>" + p.TeamSpeakName + "</td>");
 				o.WriteLine("<td>" + p.TeamSpeakUnitPositionNameLong + "</td>");
 				o.WriteLine("<td>" + p.TeamSpeakUnitPositionNameShort + "</td>");
-				o.WriteLine("<td>" + p.TeamSpeakUnit.name + "</td>");
-				o.WriteLine("<td>" + p.TeamSpeakUnit.type + "</td>");
-				o.WriteLine("<td>" + p.TeamSpeakUnit.id + "</td>");
+				o.WriteLine("<td>" + p.TeamSpeakUnit.Name + "</td>");
+				o.WriteLine("<td>" + p.TeamSpeakUnit.Type + "</td>");
+				o.WriteLine("<td>" + p.TeamSpeakUnit.Id + "</td>");
 
 				o.WriteLine("</tr>");
 			}
@@ -338,9 +339,9 @@ namespace TawGatherMembersInfo
 				if (id) o.WriteLine("<td>" + p.Id + "</td>");
 				if (mostImportantIngameUnit)
 				{
-					o.WriteLine("<td>" + p.MostImportantIngameUnit.name + "</td>");
-					o.WriteLine("<td>" + p.MostImportantIngameUnit.type + "</td>");
-					o.WriteLine("<td>" + p.MostImportantIngameUnit.id + "</td>");
+					o.WriteLine("<td>" + p.MostImportantIngameUnit.Name + "</td>");
+					o.WriteLine("<td>" + p.MostImportantIngameUnit.Type + "</td>");
+					o.WriteLine("<td>" + p.MostImportantIngameUnit.Id + "</td>");
 					o.WriteLine("<td>" + p.MostImportantIngameUnitPositionNameLong + "</td>");
 					o.WriteLine("<td>" + p.MostImportantIngameUnitPositionNameShort + "</td>");
 				}
@@ -355,9 +356,9 @@ namespace TawGatherMembersInfo
 				if (teamSpeak)
 				{
 					o.WriteLine("<td>" + p.TeamSpeakName + "</td>");
-					o.WriteLine("<td>" + p.TeamSpeakUnit.name + "</td>");
-					o.WriteLine("<td>" + p.TeamSpeakUnit.type + "</td>");
-					o.WriteLine("<td>" + p.TeamSpeakUnit.id + "</td>");
+					o.WriteLine("<td>" + p.TeamSpeakUnit.Name + "</td>");
+					o.WriteLine("<td>" + p.TeamSpeakUnit.Type + "</td>");
+					o.WriteLine("<td>" + p.TeamSpeakUnit.Id + "</td>");
 					o.WriteLine("<td>" + p.TeamSpeakUnitPositionNameLong + "</td>");
 					o.WriteLine("<td>" + p.TeamSpeakUnitPositionNameShort + "</td>");
 				}
@@ -400,7 +401,7 @@ namespace TawGatherMembersInfo
 					if (rootUnitRegexPattern != null)
 					{
 						var rootUnitRegex = new System.Text.RegularExpressions.Regex(rootUnitRegexPattern);
-						rootUnit = roaster.FrontRoaster.allUnits.First(u => rootUnitRegex.IsMatch(u.name));
+						rootUnit = roaster.FrontRoaster.allUnits.First(u => rootUnitRegex.IsMatch(u.Name));
 					}
 					else
 					{

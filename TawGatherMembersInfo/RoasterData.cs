@@ -13,7 +13,7 @@ using TawGatherMembersInfo.Models;
 
 namespace TawGatherMembersInfo
 {
-
+    /*
 	[Serializable]
 	public class RoasterData
 	{
@@ -37,21 +37,21 @@ namespace TawGatherMembersInfo
 			return allPersons.Count;
 		}
 
-		public Unit GetUnitByTawId(int tawId)
+		public Unit GetUnitByTawId(long tawId)
 		{
 			return idToUnit.GetValue(tawId);
 		}
-        public Unit GetOrCreateUnit(int tawId, string name)
+        public Unit GetOrCreateUnit(long tawId, string name)
         {
             var unit = GetUnitByTawId(tawId);
             if(unit == null)
             {
                 unit = new Unit();
-                unit.name = name;
-                unit.id = tawId;
+                unit.Name = name;
+                unit.Id = tawId;
 
                 allUnits.Add(unit);
-                idToUnit[unit.id] = unit;
+                idToUnit[unit.Id] = unit;
             }
             return unit;
         }
@@ -60,12 +60,12 @@ namespace TawGatherMembersInfo
 		{
 			var parts = text.Split('-');
 			var unit = new Unit();
-			unit.type = parts[0].Trim();
-			if (parts.Length == 1) unit.name = unit.type;
-			else unit.name = parts[1].Trim();
-			unit.parentUnit = parentUnit;
+			unit.Type = parts[0].Trim();
+			if (parts.Length == 1) unit.Name = unit.Type;
+			else unit.Name = parts[1].Trim();
+			unit.ParentUnit = parentUnit;
 			allUnits.Add(unit);
-			if (unit.parentUnit != null) unit.parentUnit.childUnits.Add(unit);
+			if (unit.ParentUnit != null) unit.ParentUnit.ChildUnits.Add(unit);
 			return unit;
 		}
 
@@ -98,76 +98,7 @@ namespace TawGatherMembersInfo
 			}
 			return person;
 		}
-		public Person GetOrUpdateOrCreatePersonFromUnitPage(string text, Unit parentUnit)
-		{
-			/*
-                text use cases:
-                Commander-in-Chief - DOC, GEN5
-                Commanding Officer - Constance, CPT
-                Executive Officer - Deceded, LTC
-                BetaHook, PFC - On Leave
-                Guthrie, PFC - On Leave
-                Constance, CPT
-                Juvenis, COL
-            */
-
-			string name = "unnamed";
-			string rank = "unranked";
-			string positionNameLong = "";
-			string positionNameShort = "";
-			bool onLeave = false;
-
-			{
-				var dashIndex = text.LastIndexOf("-");
-
-				if (dashIndex != -1)
-				{
-					var part1 = text.Substring(0, dashIndex - 1).Trim();
-					var part2 = text.Substring(dashIndex + 1).Trim();
-
-					if (part2.ToLower().Contains("on leave"))
-					{
-						onLeave = true;
-						var parts = part1.Split(',');
-						name = parts[0].Trim();
-						rank = parts[1].Trim();
-					}
-					else
-					{
-						positionNameLong = part1;
-						var parts = part2.Split(',');
-						name = parts[0].Trim();
-						rank = parts[1].Trim();
-					}
-				}
-				else
-				{
-					var parts = text.Split(',');
-					name = parts[0].Trim();
-					rank = parts[1].Trim();
-				}
-
-				if (positionNameLong != "")
-				{
-					positionNameShort = Person.positionNameShortToPositionNameLong.Reverse.GetValue(positionNameLong, null);
-					if (positionNameShort == null) Log.Error("cannot find positionNameShortToPositionNameLong.Reverse[" + positionNameLong + "]");
-				}
-			}
-
-
-			var person = GetOrCreateEmptyPersonFromName(name);
-
-			person.Name = name;
-			person.RankNameShort = rank;
-			if (onLeave) person.Status = "on leave";
-
-			parentUnit.personToPositionNameShort[person] = positionNameShort;
-			person.UnitToPositionNameShort[parentUnit] = positionNameShort;
-			allPersons.Add(person);
-
-			return person;
-		}
-
+		
 		public void SaveToStream(Stream stream)
 		{
 			var serializer = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
@@ -247,5 +178,6 @@ namespace TawGatherMembersInfo
 			return data;
 		}
 	}
+    */
 
 }

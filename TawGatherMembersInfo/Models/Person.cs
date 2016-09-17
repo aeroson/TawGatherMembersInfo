@@ -24,7 +24,7 @@ namespace TawGatherMembersInfo.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
 
-        public Dictionary<Unit, string> UnitToPositionNameShort { get; set; } = new Dictionary<Unit, string>();
+        //public Dictionary<Unit, string> UnitToPositionNameShort { get; set; } = new Dictionary<Unit, string>();
 
         [Index(IsUnique = true), StringLength(200)]
         public virtual string Name { get; set; } = "unnamed";
@@ -36,12 +36,14 @@ namespace TawGatherMembersInfo.Models
         public virtual DateTime LastProfileDataUpdatedDate { get; set; }
         public virtual string CountryCodeIso3166 { get; set; } = "";
         public virtual ICollection<PersonToEvent> Attended { get; set; } = new HashSet<PersonToEvent>();
-        //public virtual ICollection<PersonToUnit> Units { get; set; } = new HashSet<PersonToUnit>();
+        public virtual ICollection<PersonToUnit> Units { get; set; } = new HashSet<PersonToUnit>();
 
         public virtual string BiographyContents { get; set; } = "";
         [NonSerialized]
         BiographyData biography;
         public BiographyData Biography => biography;
+
+        public Dictionary<Unit, string> UnitToPositionNameShort => Units.ToDictionary(i => i.Unit, i => i.PositionNameShort);
 
         public class BiographyData
         {
@@ -152,7 +154,7 @@ namespace TawGatherMembersInfo.Models
                         {
                             int priority = 0;
 
-                            var squatTypeImportance = inGameUnitNamePriority.IndexOf(unitToPositionNameShort.Key.type.ToLower());
+                            var squatTypeImportance = inGameUnitNamePriority.IndexOf(unitToPositionNameShort.Key.Type.ToLower());
                             priority += squatTypeImportance;
 
                             var positionNameShort = unitToPositionNameShort.Value;
@@ -250,16 +252,16 @@ namespace TawGatherMembersInfo.Models
                 return UnitToPositionNameShort.Keys.Any(u =>
                 {
                     var unit = u;
-                    var type = unit.type.ToLower();
+                    var type = unit.Type.ToLower();
 
                     // walk the unit parent chain until we hit battalion or division             
-                    while (type != "battalion" && type != "division" && unit.parentUnit != null)
+                    while (type != "battalion" && type != "division" && unit.ParentUnit != null)
                     {
-                        unit = unit.parentUnit;
-                        type = unit.type.ToLower();
+                        unit = unit.ParentUnit;
+                        type = unit.Type.ToLower();
                     }
 
-                    var name = unit.name.ToLower();
+                    var name = unit.Name.ToLower();
                     if (type == "division") return name.Contains("arma ");
                     if (type == "battalion") return name.Contains("am1") || name.Contains("am2");
                     return false;
@@ -288,13 +290,13 @@ namespace TawGatherMembersInfo.Models
 
                             // walk the unit parent chain until we hit battalion or division             
                             var unit = currentUnit;
-                            var type = unit.type.ToLower();
-                            while (type != "battalion" && type != "division" && unit.parentUnit != null)
+                            var type = unit.Type.ToLower();
+                            while (type != "battalion" && type != "division" && unit.ParentUnit != null)
                             {
-                                unit = unit.parentUnit;
-                                type = unit.type.ToLower();
+                                unit = unit.ParentUnit;
+                                type = unit.Type.ToLower();
                             }
-                            var name = unit.name.ToLower();
+                            var name = unit.Name.ToLower();
 
 
                             var doesNotHaveBattalionIndex = positionNameShortOwnedByDivision.Contains(positionNameShort);
@@ -303,10 +305,10 @@ namespace TawGatherMembersInfo.Models
                             // only if its the only battalion person is in
                             if (name.Contains("support") == false || UnitToPositionNameShort.Count == 1)
                             {
-                                if (type == "battalion" && doesNotHaveBattalionIndex) unit = unit.parentUnit;
+                                if (type == "battalion" && doesNotHaveBattalionIndex) unit = unit.ParentUnit;
 
                                 var prefix = unit.TeamSpeakNamePrefix;
-                                if (prefix.IsNullOrEmpty()) prefix = unit.parentUnit?.TeamSpeakNamePrefix; // if battalion has not valid prefix, try take one from division
+                                if (prefix.IsNullOrEmpty()) prefix = unit.ParentUnit?.TeamSpeakNamePrefix; // if battalion has not valid prefix, try take one from division
                                 if (prefix.IsNullOrEmpty() == false) newBattalionPrefix = prefix;
                             }
 
@@ -347,6 +349,7 @@ namespace TawGatherMembersInfo.Models
             Init();
         }
 
+
         [OnDeserializing]
         void Init(StreamingContext c)
         {
@@ -368,84 +371,6 @@ namespace TawGatherMembersInfo.Models
             mostImportantIngameUnit_cache = null;
             teamSpeakName_cache = null;
             teamSpeakUnit_cache = null;
-        }
-
-
-        public void UpdateInfoFromProfilePage(LoggedInSession roaster)
-        {
-            Log.Trace("updating profile for " + this.Name + " start");
-
-            string responseText = null;
-
-            var person = this;
-
-            var url = GetPersonProfilePageUrl(person.Name);
-
-            do
-            {
-                if (responseText != null) roaster.Login();
-
-                var request = MyHttpWebRequest.Create(url);
-                request.CookieContainer = roaster.cookieContainer;
-                request.Method = "GET";
-
-                var response = request.GetResponse();
-                responseText = response.ResponseText;
-
-            } while (roaster.IsLoggedIn(responseText) == false);
-
-            var html = responseText.ToHtmlDocument();
-
-            // steam profile id
-            var steamProfileLinkPrefix = "http://steamcommunity.com/profiles/";
-            var steamProfileLinkElement = html.GetElementbyId("hfSteam");
-            if (steamProfileLinkElement != null)
-            {
-                var steamProfileLink = steamProfileLinkElement.GetAttributeValue("href", steamProfileLinkPrefix + "-1");
-                var steamId = long.Parse(steamProfileLink.Substring(steamProfileLinkPrefix.Length));
-                person.SteamId = steamId;
-            }
-
-            // avatar image
-            var avatarElement = html.DocumentNode.SelectSingleNode("//*[@class='dossieravatar']/img");
-            if (avatarElement != null)
-            {
-                var avatarImageLink = avatarElement.GetAttributeValue("src", null);
-                if (avatarImageLink != null)
-                {
-                    person.AvatarImageUrl = "http://taw.net" + avatarImageLink;
-                }
-            }
-
-            // bio
-            var biographyElement = html.DocumentNode.SelectSingleNode("//*[@id='dossierbio']");
-            if (biographyElement != null)
-            {
-                var biography = biographyElement.InnerText.Trim();
-                var bioTextHeader = "Bio:";
-                if (biography.StartsWith(bioTextHeader)) biography = biography.Substring(bioTextHeader.Length);
-                person.BiographyContents = biography;
-            }
-
-            var table = new HtmlTwoColsStringTable(html.DocumentNode.SelectNodes("//*[@class='dossiernexttopicture']/table//tr"));
-
-            // country
-            person.CountryName = table.GetValue("Location:", person.CountryName);
-            person.Status = table.GetValue("Status:", person.Status).ToLower();
-            {
-                var joined = table.GetValue("Joined:", "01-01-0001"); // 10-03-2014  month-day-year // wtf.. americans...
-                var joinedParts = joined.Split('-');
-                person.DateJoinedTaw = new DateTime(
-                    int.Parse(joinedParts[2]),
-                    int.Parse(joinedParts[0]),
-                    int.Parse(joinedParts[1])
-                );
-            }
-
-            person.LastProfileDataUpdatedDate = DateTime.UtcNow;
-            person.ClearCache();
-
-            Log.Trace("updating profile for " + this.Name + " end");
         }
 
         public override string ToString()

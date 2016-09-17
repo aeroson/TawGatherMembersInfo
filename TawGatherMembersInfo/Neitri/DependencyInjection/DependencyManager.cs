@@ -70,7 +70,7 @@ namespace Neitri.DependencyInjection
 				var dependencyAttribute = member.GetCustomAttribute<DependencyAttribute>(true);
 				if (dependencyAttribute != null)
 				{
-					if (dependencyAttribute.RegisterType) this.RegisterType(member.Type);
+					if (dependencyAttribute.Register) this.RegisterType(member.Type);
 				}
 
 				if (member.Read(instance) == null)

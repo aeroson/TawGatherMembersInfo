@@ -22,9 +22,9 @@ namespace TawGatherMembersInfo.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
         public virtual Person Person { get; set; }
+        public virtual Event Event { get; set; }
         public virtual AttendanceType AttendanceType { get; set; } = AttendanceType.Unknown;
         public virtual DateTime TimeStamp { get; set; }
-        public virtual Event Event { get; set; }
 
         public override string ToString()
         {

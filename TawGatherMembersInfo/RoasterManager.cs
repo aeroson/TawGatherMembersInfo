@@ -6,34 +6,34 @@ using System.Threading;
 using System.IO;
 using System.Threading.Tasks;
 using Neitri;
+using TawGatherMembersInfo.Models;
 
 namespace TawGatherMembersInfo
 {
 	public class RoasterManager
 	{
-		public RoasterData FrontRoaster { get; private set; }
 
-		RoasterData WorkingRoaster
-		{
-			get
-			{
-				return session.roaster;
-			}
-			set
-			{
-				session.roaster = value;
-			}
-		}
-
-		public event Action OnRoasterDataUpdated;
 		LoggedInSession session;
 		Thread thread;
+		WebDataParser dataParser;
+
+		[Dependency]
+		DbContextProvider db;
 
 		[Dependency]
 		FileSystem fileSystem;
 
 		[Dependency]
 		Config config;
+
+
+
+
+		public RoasterManager(IDependencyManager dependency)
+		{
+			session = dependency.CreateAndRegister<LoggedInSession>();
+			dataParser = dependency.Create<WebDataParser>();
+		}
 
 		public void Join()
 		{
@@ -42,6 +42,7 @@ namespace TawGatherMembersInfo
 		public void Run()
 		{
 			thread = new Thread(ThreadMain);
+			thread.Name = this.GetType().ToString();
 			thread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
 			thread.Start();
 		}
@@ -51,28 +52,24 @@ namespace TawGatherMembersInfo
 			if (thread != null && thread.IsAlive) thread.Abort();
 		}
 
-		void PushDataToFront()
+
+		/// <summary>
+		/// Gather basic information from unit roaster, still needs more detailed updating for each person from his/her profile page.
+		/// </summary>
+		public void GatherBasicInformationFromUnitId1Roaster()
 		{
-			var stream = new System.IO.MemoryStream();
-			WorkingRoaster.SaveToStream(stream);
-			stream.Position = 0;
-			FrontRoaster = RoasterData.LoadFromStream(stream);
-			if (FrontRoaster.allUnits.Count > 0 && FrontRoaster.allPersons.Count > 0)
-				OnRoasterDataUpdated?.Invoke();
+			dataParser.UpdateUnitContents(1);
 		}
+
 
 		void ThreadMain()
 		{
-			session = new LoggedInSession();
+			//var path = fileSystem.GetDirectory("data");
+			//WorkingRoaster = RoasterData.LoadFromDirectory(path);
+			//PushDataToFront();
+			GatherBasicInformationFromUnitId1Roaster();
 
-			var path = fileSystem.GetDirectory("data");
-			WorkingRoaster = RoasterData.LoadFromDirectory(path);
-			PushDataToFront();
-			session.GatherBasicInformationFromUnitId1Roaster();
-			PushDataToFront();
-			WorkingRoaster.SaveToDirectory(path);
-
-            //var allRanks = WorkingRoaster.allPersons.Select(p => p.RankNameShort).Distinct().ToArray();
+			//var allRanks = WorkingRoaster.allPersons.Select(p => p.RankNameShort).Distinct().ToArray();
 
 			// if this is the startup then update profiles really fast
 			var isFirstRun = true;
@@ -82,7 +79,7 @@ namespace TawGatherMembersInfo
 			{
 
 				session.ClearCookies();
-				session.GatherBasicInformationFromUnitId1Roaster();
+				GatherBasicInformationFromUnitId1Roaster();
 
 				/*
 				var personsUpdated = new HashSet<Person>();
@@ -100,7 +97,7 @@ namespace TawGatherMembersInfo
 				}
 				*/
 
-                /*
+				/*
                 foreach(var person in WorkingRoaster.allPersons)
                 {
                     person.UpdateInfoFromProfilePage(session);
@@ -112,8 +109,8 @@ namespace TawGatherMembersInfo
 				{
 					for (int i = 0; i < 1000; i++)
 					{
-						session.GatherEventData(WorkingRoaster.nextEventIdToGather);
-						WorkingRoaster.nextEventIdToGather++;
+						//dataParser.ParseEventData(WorkingRoaster.nextEventIdToGather);
+						//WorkingRoaster.nextEventIdToGather++;
 					}
 
 				}
@@ -122,9 +119,6 @@ namespace TawGatherMembersInfo
 
 				if (isFirstRun) isFirstRun = false;
 				profileUpdateDelayMiliSeconds = 60 * 1000;
-
-				PushDataToFront();
-				WorkingRoaster.SaveToDirectory(path);
 
 			}
 
