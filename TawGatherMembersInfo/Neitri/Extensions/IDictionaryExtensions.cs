@@ -39,8 +39,7 @@ namespace Neitri
 	        TValue value;
 	        if (!dictionary.TryGetValue(key, out value))
 	        {
-	            if (typeof(TValue).IsClass) value = System.Activator.CreateInstance<TValue>();
-	            else value = default(TValue);
+	            value = default(TValue);
 	        }
 	        return value;
 	    }

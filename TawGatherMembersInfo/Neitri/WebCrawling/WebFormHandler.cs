@@ -36,8 +36,8 @@ namespace Neitri.WebCrawling
 
 		public WebFormHandler(MyHttpWebResponse response, CookieContainer cookieContainer)
 		{
-			this.rootFormUrl = response.RootUrl;	
-			var document = response.GetHtml();
+			this.rootFormUrl = response.RootUrl;
+            var document = response.HtmlDocument;
 			this.formHtmlElement = document.DocumentNode.SelectSingleNode("//form");
 			this.cookieContainer = cookieContainer;
 			Init();

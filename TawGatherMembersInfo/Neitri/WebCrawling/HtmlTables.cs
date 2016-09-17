@@ -10,12 +10,15 @@ namespace Neitri.WebCrawling
 
 	public class HtmlTable : List<List<HtmlNode>>
 	{
+		/// <summary>
+		/// Excludes th, takes only contents of tr td
+		/// </summary>
 		public HtmlTable(HtmlNode tableNode)
 		{
-			foreach (var tr in tableNode.SelectNodes(tableNode.XPath + "/tr"))
+			foreach (var tr in tableNode.SelectNodes("./tr"))
 			{
 				var trData = new List<HtmlNode>();
-				var childs = tr.SelectNodes(tr.XPath + "/td");
+				var childs = tr.SelectNodes("./td");
 				if (childs == null) continue;
 				foreach (var td in childs)
 				{
@@ -38,7 +41,7 @@ namespace Neitri.WebCrawling
 			foreach (var tr in tableRows)
 			{
 				var trData = new List<HtmlNode>();
-				var childs = tr.SelectNodes(tr.XPath + "/td");
+				var childs = tr.SelectNodes("./td");
 				if (childs == null) continue;
 				foreach (var td in childs)
 				{
@@ -64,7 +67,7 @@ namespace Neitri.WebCrawling
 			foreach (var tr in tableRows)
 			{
 				var trData = new List<HtmlNode>();
-				var childs = tr.SelectNodes(tr.XPath + "/td");
+				var childs = tr.SelectNodes("./td");
 				if (childs == null) continue;
 				foreach (var td in childs)
 				{

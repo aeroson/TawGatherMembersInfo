@@ -399,12 +399,12 @@ namespace TawGatherMembersInfo
 					if (rootUnitRegexPattern != null)
 					{
 						var rootUnitRegex = new System.Text.RegularExpressions.Regex(rootUnitRegexPattern);
-						rootUnit = roaster.CurrentRoaster.allUnits.First(u => rootUnitRegex.IsMatch(u.name));
+						rootUnit = roaster.FrontRoaster.allUnits.First(u => rootUnitRegex.IsMatch(u.name));
 					}
 					else
 					{
 						var rootUnitId = int.Parse(parameters.GetValue("rootUnitId", "1"));
-						rootUnit = roaster.CurrentRoaster.idToUnit.GetValue(rootUnitId, null);
+						rootUnit = roaster.FrontRoaster.idToUnit.GetValue(rootUnitId, null);
 					}
 
 
@@ -427,7 +427,7 @@ namespace TawGatherMembersInfo
 						if (format == "table" && version == "3")
 						{
 							var personsSet = new HashSet<Person>();
-							if (rootUnit == null) personsSet = roaster.CurrentRoaster.allPersons;
+							if (rootUnit == null) personsSet = roaster.FrontRoaster.allPersons;
 							else rootUnit.FillWithAllPersons(personsSet);
 
 							Format_Table_Version_3(o, personsSet, fields, orderBy);

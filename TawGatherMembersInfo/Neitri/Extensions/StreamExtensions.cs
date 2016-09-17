@@ -9,7 +9,7 @@ namespace Neitri
 {
 	public static class StreamExtensions
 	{
-		public static string StreamReadTextToEnd(this Stream s)
+		public static string ReadTextToEnd(this Stream s)
 		{
 			using (var sr = new StreamReader(s))
 			{

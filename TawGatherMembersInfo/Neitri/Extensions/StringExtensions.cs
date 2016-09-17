@@ -1,4 +1,7 @@
-﻿namespace Neitri
+﻿using System;
+using System.Text.RegularExpressions;
+
+namespace Neitri
 {
 	public static class StringExtensions
 	{
@@ -23,6 +26,29 @@
 		public static bool IsNullOrEmpty(this string s)
 		{
 			return string.IsNullOrEmpty(s);
+		}
+
+		public static bool IsNullOrWhiteSpace(this string s)
+		{
+			return string.IsNullOrWhiteSpace(s);
+		}
+
+		public static string TakeStringBetween(this string str, string start, string end, StringComparison comparison = StringComparison.InvariantCulture)
+		{
+			var startIndex = str.IndexOf(start, comparison);
+			if (startIndex == -1) return null;
+			startIndex += start.Length;
+			var endIndex = str.IndexOf(end, startIndex);
+			if (endIndex == -1) return null;
+			return str.Substring(startIndex, endIndex - startIndex);
+		}
+
+		public static string TakeStringAfter(this string str, string after, StringComparison comparison = StringComparison.InvariantCulture)
+		{
+			var startIndex = str.IndexOf(after, comparison);
+			if (startIndex == -1) return null;
+			startIndex += after.Length;
+			return str.RemoveFromBegin(startIndex);
 		}
 
 		// from http://stackoverflow.com/questions/623104/byte-to-hex-string
@@ -65,6 +91,52 @@
 				}
 				return hash;
 			}
+		}
+
+		private static Regex whiteSpaces = new Regex("\\s+", RegexOptions.Compiled);
+		public static string RemoveWhiteSpaces(this string str)
+		{
+			return whiteSpaces.Replace(str, string.Empty);
+		}
+
+		/// <summary>
+		/// Number of edits needed to turn one string into another.
+		/// Taken from https://www.dotnetperls.com/levenshtein
+		/// </summary>
+		/// <param name="s"></param>
+		/// <param name="t"></param>
+		/// <returns></returns>
+		public static int LevenshteinDistanceTo(this string s, string t)
+		{
+			int n = s.Length;
+			int m = t.Length;
+			int[,] d = new int[n + 1, m + 1];
+
+			// Step 1
+			if (n == 0) return m;
+			if (m == 0) return n;
+
+			// Step 2
+			for (int i = 0; i <= n; d[i, 0] = i++) { }
+			for (int j = 0; j <= m; d[0, j] = j++) { }
+
+			// Step 3
+			for (int i = 1; i <= n; i++)
+			{
+				//Step 4
+				for (int j = 1; j <= m; j++)
+				{
+					// Step 5
+					int cost = (t[j - 1] == s[i - 1]) ? 0 : 1;
+
+					// Step 6
+					d[i, j] = Math.Min(
+						Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
+						d[i - 1, j - 1] + cost);
+				}
+			}
+			// Step 7
+			return d[n, m];
 		}
 	}
 

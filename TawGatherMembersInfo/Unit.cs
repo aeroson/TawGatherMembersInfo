@@ -14,9 +14,9 @@ namespace TawGatherMembersInfo
 		/// <summary>
 		/// Possible values: Division, Batallion, Platoon, Squad, Fire Team, and more
 		/// </summary>
-		public string type;
-		public string name;
-		public int id;
+		public string type = "";
+		public string name = "noname";
+		public int id = -1;
 		public Unit parentUnit;
 		public HashSet<Unit> childUnits = new HashSet<Unit>();
 		public Dictionary<Person, string> personToPositionNameShort = new Dictionary<Person, string>();
@@ -100,7 +100,7 @@ namespace TawGatherMembersInfo
 				{
 					// person
 					var name = child.InnerText;
-					var person = roasterFactory.roaster.GetOrUpdateOrCreatePerson(name, this);
+					var person = roasterFactory.roaster.GetOrUpdateOrCreatePersonFromUnitPage(name, this);
 				}
 				else
 				{
@@ -154,16 +154,20 @@ namespace TawGatherMembersInfo
 		{
 			return type + " - " + name;
 		}
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as Unit);
+        }
 
-		public bool Equals(Unit other)
+        public bool Equals(Unit other)
 		{
 			if (other == null) return false;
-			return name == other.name && type == other.type;
+            return id == other.id;
 		}
 
 		public override int GetHashCode()
 		{
-			return name.GetHashCode() ^ type.GetHashCode();
+			return id.GetHashCode();
 		}
 
 	}

@@ -89,7 +89,7 @@ namespace TawGatherMembersInfo
 			roaster.Run();
 			httpServer.Run();
 
-			roaster.OnRoasterDataUpdated += UpdateArma3SquadXml;
+			// roaster.OnRoasterDataUpdated += UpdateArma3SquadXml;
 		}
 
 		void Join()
@@ -142,7 +142,7 @@ namespace TawGatherMembersInfo
 			// var rootUnit = instances.roaster.CurrentData.idToUnit.GetValue(2776, null); // 2776 == Arma 3 Division
 			// if (rootUnit == null) return;
 
-			var rootUnit = roaster.CurrentRoaster.rootUnit;
+			var rootUnit = roaster.FrontRoaster.rootUnit;
 
 			var targetSquadXmlFolder = fileSystem.GetDirectory(config.GetValue("targetSquadXmlFolder", "squadxml"));
 			string source = File.ReadAllText(targetSquadXmlFolder.GetFile("template.handlebars").ExceptionIfNotExists());

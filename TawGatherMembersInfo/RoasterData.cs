@@ -21,14 +21,39 @@ namespace TawGatherMembersInfo
 		public HashSet<Unit> allUnits = new HashSet<Unit>();
 		public HashSet<Person> allPersons = new HashSet<Person>();
 		public Dictionary<string, Person> nameToPerson = new Dictionary<string, Person>();
+		public HashSet<Event> allEvents = new HashSet<Event>();
+		public Dictionary<int, Event> idToEvent = new Dictionary<int, Event>();
 
-		public const string dataFileName = "backup.data.bin.gzip";
+        // 70038 = 08-13-2016 21:30
+        // 72065 = 09-13-2016 20:30
+		public int nextEventIdToGather = 65000; // this 65000 is guaranteed to be over 60 days old
+
+        public const string dataFileName = "backup.data.bin.gzip";
 		public const string personsOrderFileName = "backup.personsOrder.txt";
 
 		public int GetNextPersonId()
 		{
 			return allPersons.Count;
 		}
+
+		public Unit GetUnitByTawId(int tawId)
+		{
+			return idToUnit.GetValue(tawId);
+		}
+        public Unit GetOrCreateUnit(int tawId, string name)
+        {
+            var unit = GetUnitByTawId(tawId);
+            if(unit == null)
+            {
+                unit = new Unit();
+                unit.name = name;
+                unit.id = tawId;
+
+                allUnits.Add(unit);
+                idToUnit[unit.id] = unit;
+            }
+            return unit;
+        }
 
 		public Unit CreateUnit(Unit parentUnit, string text)
 		{
@@ -56,8 +81,10 @@ namespace TawGatherMembersInfo
 			}
 		}
 
-		public Person GetOrCreateEmptyPerson(string name, int? id = null)
+		public Person GetOrCreateEmptyPersonFromName(string name, int? id = null)
 		{
+            name = name?.Trim();
+            if (name == null) return null;
 			Person person;
 			if (nameToPerson.TryGetValue(name, out person) == false)
 			{
@@ -70,7 +97,7 @@ namespace TawGatherMembersInfo
 			}
 			return person;
 		}
-		public Person GetOrUpdateOrCreatePerson(string text, Unit parentUnit)
+		public Person GetOrUpdateOrCreatePersonFromUnitPage(string text, Unit parentUnit)
 		{
 			/*
                 text use cases:
@@ -127,7 +154,7 @@ namespace TawGatherMembersInfo
 			}
 
 
-			var person = GetOrCreateEmptyPerson(name);
+			var person = GetOrCreateEmptyPersonFromName(name);
 
 			person.Name = name;
 			person.RankNameShort = rank;
@@ -205,7 +232,7 @@ namespace TawGatherMembersInfo
 					Log.Info("found '" + personsOrder + "' creating name only persons to preserve IDs");
 					foreach (var line in File.ReadAllLines(personsOrder))
 					{
-						data.GetOrCreateEmptyPerson(line);
+						data.GetOrCreateEmptyPersonFromName(line);
 					}
 				}
 				else

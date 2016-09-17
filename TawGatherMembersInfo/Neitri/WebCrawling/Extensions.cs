@@ -12,9 +12,9 @@ namespace Neitri.WebCrawling
 	{
 		public static HtmlDocument GetHtml(this HttpWebResponse response)
 		{
-			return response.GetResponseStream().StreamReadTextToEnd().HtmlStringToDocument();
+			return response.GetResponseStream().ReadTextToEnd().ToHtmlDocument();
 		}
-		public static HtmlDocument HtmlStringToDocument(this string htmlText)
+		public static HtmlDocument ToHtmlDocument(this string htmlText)
 		{
 			var html = new HtmlDocument();
 			html.LoadHtml(htmlText);

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using HtmlAgilityPack;
 using System.Net;
-
+using Neitri.WebCrawling;
 
 namespace TawGatherMembersInfo
 {
@@ -54,7 +54,7 @@ namespace TawGatherMembersInfo
         {
             paramsCollection[inputName] = inputValue;
         }
-        public HttpWebResponse SubmitForm()
+        public MyHttpWebResponse SubmitForm()
         {
             var url = formHtmlElement.GetAttributeValue("action", "?");
             if (url.StartsWith("/") == false && url.StartsWith(@"\") == false) url = "/" + url;
@@ -86,7 +86,7 @@ namespace TawGatherMembersInfo
             }
             
             var response = request.GetResponse();
-            response.GetResponseStream();
+			response.EnsureReponseWasRequested();
 
             return response;
         }

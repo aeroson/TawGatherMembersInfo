@@ -11,10 +11,22 @@ namespace TawGatherMembersInfo
 {
 	public class RoasterManager
 	{
-		public RoasterData CurrentRoaster { get; private set; }
+		public RoasterData FrontRoaster { get; private set; }
+
+		RoasterData WorkingRoaster
+		{
+			get
+			{
+				return session.roaster;
+			}
+			set
+			{
+				session.roaster = value;
+			}
+		}
 
 		public event Action OnRoasterDataUpdated;
-		LoggedInSession roasterFactory;
+		LoggedInSession session;
 		Thread thread;
 
 		[Dependency]
@@ -42,23 +54,23 @@ namespace TawGatherMembersInfo
 		void PushDataToFront()
 		{
 			var stream = new System.IO.MemoryStream();
-			roasterFactory.roaster.SaveToStream(stream);
+			WorkingRoaster.SaveToStream(stream);
 			stream.Position = 0;
-			CurrentRoaster = RoasterData.LoadFromStream(stream);
-			if (CurrentRoaster.allUnits.Count > 0 && CurrentRoaster.allPersons.Count > 0)
+			FrontRoaster = RoasterData.LoadFromStream(stream);
+			if (FrontRoaster.allUnits.Count > 0 && FrontRoaster.allPersons.Count > 0)
 				OnRoasterDataUpdated?.Invoke();
 		}
 
 		void ThreadMain()
 		{
-			roasterFactory = new LoggedInSession();
+			session = new LoggedInSession();
 
 			var path = fileSystem.GetDirectory("data");
-			roasterFactory.roaster = RoasterData.LoadFromDirectory(path);
+			WorkingRoaster = RoasterData.LoadFromDirectory(path);
 			PushDataToFront();
-			roasterFactory.GatherBasicInformationFromUnitId1Roaster();
+			session.GatherBasicInformationFromUnitId1Roaster();
 			PushDataToFront();
-			roasterFactory.roaster.SaveToDirectory(path);
+			WorkingRoaster.SaveToDirectory(path);
 
 			// if this is the startup then update profiles really fast
 			var isFirstRun = true;
@@ -67,29 +79,42 @@ namespace TawGatherMembersInfo
 			while (true)
 			{
 
-				roasterFactory.ClearCookies();
-				roasterFactory.GatherBasicInformationFromUnitId1Roaster();
+				session.ClearCookies();
+				session.GatherBasicInformationFromUnitId1Roaster();
 
+				/*
 				var personsUpdated = new HashSet<Person>();
-				var unitsIds = config.UnitIdsToGatherMemberProfileInfo;
-				foreach (var unitId in unitsIds)
+				foreach (var unitId in config.UnitIdsToGatherMemberProfileInfo)
 				{
-					var unit = roasterFactory.roaster.idToUnit.GetValue(unitId, null);
+					var unit = WorkingRoaster.idToUnit.GetValue(unitId, null);
 					if (unit == null) continue;
 					foreach (var person in unit.GetAllPersons())
 					{
 						if (personsUpdated.Contains(person)) continue;
 						personsUpdated.Add(person);
-						person.UpdateInfoFromProfilePage(roasterFactory);
+						person.UpdateInfoFromProfilePage(session);
 						Thread.Sleep(profileUpdateDelayMiliSeconds);
 					}
 				}
+				*/
+
+				// gather events
+				{
+					for (int i = 0; i < 1000; i++)
+					{
+						session.GatherEventData(WorkingRoaster.nextEventIdToGather);
+						WorkingRoaster.nextEventIdToGather++;
+					}
+
+				}
+
+
 
 				if (isFirstRun) isFirstRun = false;
 				profileUpdateDelayMiliSeconds = 60 * 1000;
 
 				PushDataToFront();
-				roasterFactory.roaster.SaveToDirectory(path);
+				WorkingRoaster.SaveToDirectory(path);
 
 			}
 

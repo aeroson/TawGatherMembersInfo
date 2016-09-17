@@ -11,6 +11,9 @@ using NodaTime.Extensions;
 
 using Neitri;
 using System.Runtime.Serialization;
+using Neitri.WebCrawling;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace TawGatherMembersInfo
 {
@@ -18,15 +21,20 @@ namespace TawGatherMembersInfo
 	[Serializable]
 	public partial class Person : IEquatable<Person>
 	{
-		public Dictionary<Unit, string> UnitToPositionNameShort { get; set; } = new Dictionary<Unit, string>();
-		public string Name { get; set; } = "unnamed";
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; }
+
+        public Dictionary<Unit, string> UnitToPositionNameShort { get; set; } = new Dictionary<Unit, string>();
+
+        [Index(IsUnique = true), StringLength(200)]
+        public string Name { get; set; } = "unnamed";
 		public string RankNameShort { get; set; } = "";
 		public long SteamId { get; set; }
 		public string AvatarImageUrl { get; set; } = "";
 		public string Status { get; set; } = "unknown"; // active, discharged, etc..
-		public int Id { get; set; } = 0;
 		public DateTime DateJoinedTaw { get; set; }
 		public DateTime LastProfileDataUpdatedDate { get; set; }
+		public HashSet<Attended> Attended { get; set; } = new HashSet<Attended>();
 
 		private string BiographyContents { get; set; } = "";
 		[NonSerialized]
@@ -381,11 +389,11 @@ namespace TawGatherMembersInfo
 				request.Method = "GET";
 
 				var response = request.GetResponse();
-				responseText = response.GetResponseStream().StreamReadTextToEnd();
+                responseText = response.ResponseText;
 
 			} while (roaster.IsLoggedIn(responseText) == false);
 
-			var html = responseText.HtmlStringToDocument();
+			var html = responseText.ToHtmlDocument();
 
 			// steam profile id
 			var steamProfileLinkPrefix = "http://steamcommunity.com/profiles/";
@@ -441,8 +449,11 @@ namespace TawGatherMembersInfo
 		{
 			return Name + " rank:" + RankNameShort + " steamId:" + SteamId;
 		}
-
-		public bool Equals(Person other)
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as Person);
+        }
+        public bool Equals(Person other)
 		{
 			if (other == null) return false;
 			return Name == other.Name;
