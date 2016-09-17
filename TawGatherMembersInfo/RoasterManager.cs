@@ -72,6 +72,8 @@ namespace TawGatherMembersInfo
 			PushDataToFront();
 			WorkingRoaster.SaveToDirectory(path);
 
+            //var allRanks = WorkingRoaster.allPersons.Select(p => p.RankNameShort).Distinct().ToArray();
+
 			// if this is the startup then update profiles really fast
 			var isFirstRun = true;
 			var profileUpdateDelayMiliSeconds = 100;
@@ -98,7 +100,15 @@ namespace TawGatherMembersInfo
 				}
 				*/
 
+                /*
+                foreach(var person in WorkingRoaster.allPersons)
+                {
+                    person.UpdateInfoFromProfilePage(session);
+                }
+                var b = WorkingRoaster.allPersons.Select(p => p.Status).ToArray();
+                */
 				// gather events
+
 				{
 					for (int i = 0; i < 1000; i++)
 					{

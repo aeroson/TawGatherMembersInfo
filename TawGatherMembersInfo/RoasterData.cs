@@ -9,6 +9,7 @@ using System.IO;
 using System.Web;
 using System.IO.Compression;
 using Neitri;
+using TawGatherMembersInfo.Models;
 
 namespace TawGatherMembersInfo
 {

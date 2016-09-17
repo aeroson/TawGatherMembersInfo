@@ -65,8 +65,7 @@ namespace Neitri.WebCrawling
 
 
 		HttpWebRequest httpWebRequest;
-		static long totalRequestsMade = 0;
-		static DateTime lastRequestMade;
+
 		//static Queue<DateTime> timesOfRequestsMade = new Queue<DateTime>();
 
 		//http://stackoverflow.com/questions/703272/could-not-establish-trust-relationship-for-ssl-tls-secure-channel-soap
@@ -90,38 +89,6 @@ namespace Neitri.WebCrawling
 		}
 		public MyHttpWebResponse GetResponse()
 		{
-			totalRequestsMade++;
-			var now = DateTime.UtcNow;
-
-			/*
-            const float keepForSeconds = 10;
-            while (timesOfRequestsMade.Count > 0 && (now - timesOfRequestsMade.Peek()).TotalSeconds > keepForSeconds) timesOfRequestsMade.Dequeue();
-            var averagePerSecond = timesOfRequestsMade.Count / keepForSeconds;
-            */
-
-			var lastRequestMadeMilisecondsAgo = (int)((now - lastRequestMade).TotalMilliseconds);
-			var lastRequestMadeMilisecondsAgo_limit = 2000;
-			if (lastRequestMadeMilisecondsAgo > 0 && lastRequestMadeMilisecondsAgo < lastRequestMadeMilisecondsAgo_limit)
-			{
-				//System.Threading.Thread.Sleep(lastRequestMadeMilisecondsAgo_limit - lastRequestMadeMilisecondsAgo);
-			}
-
-			//Log.Info("totalRequestsMade:" + totalRequestsMade);
-
-			//log.Info("totalRequestsMade:" + totalRequestsMade + " averageRequestsPerSecond:" + averagePerSecond);
-			/*
-            const float averagePerSecond_limit = 0.5f;
-            if (averagePerSecond > averagePerSecond_limit)
-            {
-                var throttleMiliseconds = (int)((averagePerSecond - averagePerSecond_limit) * 1000f * 50f);
-                log.Info("averageRequestsPerSecond above " + averagePerSecond_limit + " throttling for " + throttleMiliseconds + "ms");
-                System.Threading.Thread.Sleep(throttleMiliseconds);
-            }
-            */
-
-			now = DateTime.UtcNow;
-			lastRequestMade = now;
-			//timesOfRequestsMade.Enqueue(now);
 			return new MyHttpWebResponse((HttpWebResponse)httpWebRequest.GetResponse());
 		}
 		public Stream GetRequestStream()

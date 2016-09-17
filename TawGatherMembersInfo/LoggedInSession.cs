@@ -12,6 +12,7 @@ using HtmlAgilityPack;
 
 using Microsoft.Win32;
 using Neitri.WebCrawling;
+using TawGatherMembersInfo.Models;
 
 namespace TawGatherMembersInfo
 {

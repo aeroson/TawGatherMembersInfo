@@ -5,16 +5,22 @@ using System.Text;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using System.Text.RegularExpressions;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
-namespace TawGatherMembersInfo
+namespace TawGatherMembersInfo.Models
 {
 	[Serializable]
 	public class Unit
 	{
-		/// <summary>
-		/// Possible values: Division, Batallion, Platoon, Squad, Fire Team, and more
-		/// </summary>
-		public string type = "";
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; }
+        [Index(IsUnique = true)]
+        public int TawId { get; set; }
+        /// <summary>
+        /// Possible values: Division, Batallion, Platoon, Squad, Fire Team, and more
+        /// </summary>
+        public string type = "";
 		public string name = "noname";
 		public int id = -1;
 		public Unit parentUnit;

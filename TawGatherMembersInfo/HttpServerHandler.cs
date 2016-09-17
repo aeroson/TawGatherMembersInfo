@@ -7,6 +7,7 @@ using System.Threading;
 using System.Net;
 using System.IO;
 using Neitri;
+using TawGatherMembersInfo.Models;
 
 namespace TawGatherMembersInfo
 {

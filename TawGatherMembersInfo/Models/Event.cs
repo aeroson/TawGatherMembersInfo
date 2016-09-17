@@ -7,60 +7,32 @@ using System.Threading.Tasks;
 using Neitri.WebCrawling;
 using Neitri;
 using System.Globalization;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TawGatherMembersInfo
+namespace TawGatherMembersInfo.Models
 {
-    public enum AttendanceType
-    {
-        Attended,
-        Missed, // == AWOL
-        Excused,
-        Unknown
-    }
-
-    [Serializable]
-    public class Attended : IEquatable<Attended>
-    {
-        public Person person;
-        public AttendanceType attendanceType = AttendanceType.Unknown;
-        public DateTime timeStamp;
-        public Event evt;
-
-        public override string ToString()
-        {
-            return person.Name + "<->" + evt;
-        }
-
-        public bool Equals(Attended other)
-        {
-            if (other == null) return false;
-            return person.Id == other.person.Id && evt.tawId == other.evt.tawId;
-        }
-
-        public override int GetHashCode()
-        {
-            return person.GetHashCode() ^ evt.GetHashCode();
-        }
-
-    }
 
 
     // http://taw.net/member/aeroson/events/all.aspx
     [Serializable]
     public class Event : IEquatable<Event>
     {
-        public int tawId;
-        public string name;
-        public string description;
-        public string type;
-        public string unityName;
-        public Unit unit;
-        public bool mandatory;
-        public bool cancelled;
-        public DateTime from;
-        public DateTime to;
-        public Person takenBy; // attendance taken by
-        public HashSet<Attended> allAttended = new HashSet<Attended>();
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; }
+        [Index(IsUnique = true)]
+        public virtual int TawId { get; set; }
+        public virtual string name { get; set; }
+        public virtual string description { get; set; }
+        public virtual string type { get; set; }
+        public virtual string unityName { get; set; }
+        public virtual Unit unit { get; set; }
+        public virtual bool mandatory { get; set; }
+        public virtual bool cancelled { get; set; }
+        public virtual DateTime from { get; set; }
+        public virtual DateTime to { get; set; }
+        public virtual Person takenBy { get; set; } // attendance taken by
+        public virtual ICollection<PersonToEvent> Attended { get; set; }  = new HashSet<PersonToEvent>();
 
 
         public static string GetEventPage(int eventTawId)
@@ -86,12 +58,12 @@ namespace TawGatherMembersInfo
         public bool Equals(Event other)
         {
             if (other == null) return false;
-            return tawId == other.tawId;
+            return TawId == other.TawId;
         }
 
         public override int GetHashCode()
         {
-            return tawId.GetHashCode();
+            return TawId.GetHashCode();
         }
 
         DateTime ParseUsTime([NotNull] string str)
@@ -118,10 +90,10 @@ namespace TawGatherMembersInfo
             else
             {
                 evt = new Event();
-                evt.tawId = eventTawId;
+                evt.TawId = eventTawId;
                 evt.ParseEventData(roaster, response.ResponseText);
                 roaster.allEvents.Add(evt);
-                roaster.idToEvent[evt.tawId] = evt;
+                roaster.idToEvent[evt.TawId] = evt;
             }
         }
 
@@ -171,11 +143,11 @@ namespace TawGatherMembersInfo
             attendessDoc.LoadHtml(attendeesText);
             var attendeesTable = new HtmlTable(attendessDoc.DocumentNode);
 
-            foreach (var attended in allAttended)
+            foreach (var attended in Attended)
             {
-                attended.person.Attended.Remove(attended);
+                attended.Person.Attended.Remove(attended);
             }
-            allAttended.Clear();
+            Attended.Clear();
 
             foreach (var row in attendeesTable)
             {
@@ -183,22 +155,22 @@ namespace TawGatherMembersInfo
                 var nameHref = row[0].SelectSingleNode("a").GetAttributeValue("href", "");
                 if (nameHref.StartsWith("/member"))
                 {
-                    var attended = new Attended();
-                    attended.evt = this;
+                    var attended = new PersonToEvent();
+                    attended.Event = this;
 
-                    attended.person = roaster.GetOrCreateEmptyPersonFromName(name);
+                    attended.Person = roaster.GetOrCreateEmptyPersonFromName(name);
 
                     var attendanceStr = row[1]?.InnerText?.Trim();
                     AttendanceType attendanceType = AttendanceType.Unknown;
-                    if (attendanceStr != null && Enum.TryParse(attendanceStr.ToLowerInvariant(), true, out attendanceType)) attended.attendanceType = attendanceType;
+                    if (attendanceStr != null && Enum.TryParse(attendanceStr.ToLowerInvariant(), true, out attendanceType)) attended.AttendanceType = attendanceType;
 
                     var timestampStr = row[2]?.InnerText?.Trim();
                     DateTime timestamp;
                     //if (DateTime.TryParseExact(timestampStr, "MM-dd-yyyy hh:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out timestamp)) attended.timeStamp = timestamp;
-                    if (DateTime.TryParse(timestampStr, out timestamp)) attended.timeStamp = timestamp;
+                    if (DateTime.TryParse(timestampStr, out timestamp)) attended.TimeStamp = timestamp;
 
-                    attended.person.Attended.Add(attended);
-                    allAttended.Add(attended);
+                    attended.Person.Attended.Add(attended);
+                    Attended.Add(attended);
                 }
                 else if (nameHref.StartsWith("/unit"))
                 {

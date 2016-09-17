@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using Neitri;
 
 using HandlebarsDotNet;
+using TawGatherMembersInfo.Models;
 
 namespace TawGatherMembersInfo
 {
