@@ -6,7 +6,7 @@ Such as automatic generation of Arma 3 squad xmls.
 
 This project provides regulary and automatically generated squad xmls for all of TAW.net Arma members.
 Including all members of AM 1 and AM 2.
-Squad xmls are thus always up to date.
+Squad xmls are thus always up to date (the changes may take up to several hours to propagate).
 
 ### What is squad xml
 ![What is squad xml](http://am2.taw.net/squadxml/what_is_squadxml.png)
