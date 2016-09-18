@@ -62,7 +62,8 @@ namespace Neitri.DependencyInjection
 				BindingFlags.Public | BindingFlags.NonPublic |
 				BindingFlags.GetProperty | BindingFlags.SetProperty |
 				BindingFlags.FlattenHierarchy
-			).Where(m => m.CanWrite && m.CanRead && m.IsDefined<DependencyAttribute>(true));
+			).Where(m => m.CanWrite && m.CanRead && m.IsDefined<DependencyAttribute>(true))
+			.OrderBy(p => p.GetCustomAttribute<DependencyAttribute>(true).Order);
 
 			foreach (var member in members)
 			{

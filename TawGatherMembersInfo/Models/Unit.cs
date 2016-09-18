@@ -8,11 +8,10 @@ using System.Text.RegularExpressions;
 
 namespace TawGatherMembersInfo.Models
 {
-	[Serializable]
 	public class Unit
 	{
 		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public virtual long Id { get; set; }
+		public virtual long UnitId { get; set; }
 
 		[Index(IsUnique = true)]
 		public virtual int TawId { get; set; }
@@ -20,9 +19,12 @@ namespace TawGatherMembersInfo.Models
 		/// <summary>
 		/// Possible values: Division, Batallion, Platoon, Squad, Fire Team, and more
 		/// </summary>
+		[StringLength(500)]
 		public virtual string Type { get; set; } = "";
 
+		[StringLength(500)]
 		public virtual string Name { get; set; } = "noname";
+
 		public virtual Unit ParentUnit { get; set; }
 		public virtual ICollection<Unit> ChildUnits { get; set; }
 		public virtual ICollection<PersonToUnit> Persons { get; set; }
@@ -94,20 +96,31 @@ namespace TawGatherMembersInfo.Models
 			return @"http://taw.net/unit/" + unitTawId + "/roster.aspx";
 		}
 
-		/// <summary>
-		/// Fills provided hashset with all persons from this unit and child units, recursive call.
-		/// </summary>
-		/// <param name="persons"></param>
-		public void FillWithAllPersons(HashSet<Person> persons)
+		void FillWithAllPeopleNames(HashSet<string> people)
 		{
-			foreach (var kvp in this.Persons) persons.Add(kvp.Person);
-			foreach (var unit in ChildUnits) unit.FillWithAllPersons(persons);
+			var names = this.Persons.Select(p => p.Person.Name);
+			people.UnionWith(names);
+			foreach (var unit in ChildUnits) unit.FillWithAllPeopleNames(people);
 		}
 
-		public HashSet<Person> GetAllPersons()
+		public HashSet<string> GetAllPeopleNames()
+		{
+			var hs = new HashSet<string>();
+			FillWithAllPeopleNames(hs);
+			return hs;
+		}
+
+		void FillWithAllPeople(HashSet<Person> people)
+		{
+			var names = this.Persons.Select(p => p.Person);
+			people.UnionWith(names);
+			foreach (var unit in ChildUnits) unit.FillWithAllPeople(people);
+		}
+
+		public HashSet<Person> GetAllPeople()
 		{
 			var hs = new HashSet<Person>();
-			FillWithAllPersons(hs);
+			FillWithAllPeople(hs);
 			return hs;
 		}
 
@@ -116,7 +129,7 @@ namespace TawGatherMembersInfo.Models
 			var sb = new StringBuilder();
 			sb.AppendLine();
 			for (int i = 1; i < depth; i++) sb.Append("|");
-			sb.Append("|unit=" + Type + "=" + Name + " tawId:" + Id);
+			sb.Append("|unit=" + Type + "=" + Name + " tawId:" + UnitId);
 			foreach (var c in Persons)
 			{
 				sb.AppendLine();
@@ -144,12 +157,12 @@ namespace TawGatherMembersInfo.Models
 		public bool Equals(Unit other)
 		{
 			if (other == null) return false;
-			return Id == other.Id;
+			return UnitId == other.UnitId;
 		}
 
 		public override int GetHashCode()
 		{
-			return Id.GetHashCode();
+			return UnitId.GetHashCode();
 		}
 	}
 }

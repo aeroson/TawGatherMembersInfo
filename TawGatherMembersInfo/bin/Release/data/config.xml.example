@@ -12,4 +12,6 @@
 		<unitId>2776</unitId><!-- Arma 3 division -->
 	</unitsToGatherMemberInfo>
 
+	<mySqlConnectionString>Server=[ip];Database=taw-gather-members-info;Uid=root;Pwd=[password]</mySqlConnectionString>
+
 </configuration>

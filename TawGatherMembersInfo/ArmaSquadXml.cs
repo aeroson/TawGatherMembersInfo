@@ -40,7 +40,7 @@ namespace TawGatherMembersInfo
 
 			Log.Info("generating squad xmls into: '" + targetSquadXmlFolder + "'");
 
-			foreach (var person in rootUnit.GetAllPersons())
+			foreach (var person in rootUnit.GetAllPeople())
 			{
 				// TODO: skip discharged perso is
 				var armaProfileName = person.Biography.GetData("profile name", "arma profile name");
@@ -100,7 +100,7 @@ namespace TawGatherMembersInfo
 
 				do
 				{
-					file = targetSquadXmlFolder.GetFile(unit.Id.ToString() + ".paa");
+					file = targetSquadXmlFolder.GetFile(unit.UnitId.ToString() + ".paa");
 					if (file.Exists)
 					{
 						var t = unit.Type.ToLower();
@@ -112,7 +112,7 @@ namespace TawGatherMembersInfo
 						else return file;
 					}
 
-					file = targetSquadXmlFolder.GetFile(unit.Id.ToString() + "-child.paa");
+					file = targetSquadXmlFolder.GetFile(unit.UnitId.ToString() + "-child.paa");
 					if (file.Exists) return file;
 
 					unit = unit.ParentUnit; // walk up the tree;

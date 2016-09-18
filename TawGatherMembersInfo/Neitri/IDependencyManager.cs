@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace Neitri
 {
@@ -43,6 +44,14 @@ namespace Neitri
 		/// Automatically create and register instance of this type.
 		/// </summary>
 		public bool Register { get; set; }
+
+		public int Order { get; private set; }
+
+		// CallerLineNumber used as order to resolve, idea from: http://stackoverflow.com/a/17998371/782022
+		public DependencyAttribute([CallerLineNumber] int order = 0)
+		{
+			Order = order;
+		}
 	}
 
 	public static class ExtensionsIDependencyManager
@@ -59,6 +68,11 @@ namespace Neitri
 		public static IDependencyManager Register<TManager>(this IDependencyManager me) where TManager : new()
 		{
 			return me.RegisterType(typeof(TManager));
+		}
+
+		public static T Resolve<T>(this IDependencyManager me) where T : class
+		{
+			return me.Resolve(typeof(T)) as T;
 		}
 
 		/// <summary>

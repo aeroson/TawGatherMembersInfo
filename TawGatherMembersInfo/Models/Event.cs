@@ -6,28 +6,32 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace TawGatherMembersInfo.Models
 {
 	// http://taw.net/member/aeroson/events/all.aspx
-	[Serializable]
 	public class Event : IEquatable<Event>
 	{
 		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public long Id { get; set; }
+		public long EventId { get; set; }
 
 		[Index(IsUnique = true)]
-		public virtual int TawId { get; set; }
+		public virtual long TawId { get; set; }
 
-		public virtual string name { get; set; }
-		public virtual string description { get; set; }
-		public virtual string type { get; set; }
-		public virtual string unityName { get; set; }
-		public virtual Unit unit { get; set; }
-		public virtual bool mandatory { get; set; }
-		public virtual bool cancelled { get; set; }
-		public virtual DateTime from { get; set; }
-		public virtual DateTime to { get; set; }
-		public virtual Person takenBy { get; set; } // attendance taken by
-		public virtual ICollection<PersonToEvent> Attended { get; set; } = new HashSet<PersonToEvent>();
+		[StringLength(500)]
+		public virtual string Name { get; set; }
 
-		public static string GetEventPage(int eventTawId)
+		[Column(TypeName = "text")]
+		public virtual string Description { get; set; }
+
+		[StringLength(500)]
+		public virtual string Type { get; set; }
+
+		public virtual Unit Unit { get; set; }
+		public virtual bool Mandatory { get; set; }
+		public virtual bool Cancelled { get; set; }
+		public virtual DateTime From { get; set; }
+		public virtual DateTime To { get; set; }
+		public virtual Person TakenBy { get; set; } // attendance taken by
+		public virtual ICollection<PersonToEvent> Attended { get; set; }
+
+		public static string GetEventPage(long eventTawId)
 		{
 			return @"http://taw.net/event/" + eventTawId + ".aspx";
 		}
@@ -40,7 +44,7 @@ namespace TawGatherMembersInfo.Models
 
 		public override string ToString()
 		{
-			return name + " desc:" + description;
+			return Name + " desc:" + Description;
 		}
 
 		public override bool Equals(object obj)

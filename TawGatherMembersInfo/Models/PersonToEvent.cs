@@ -6,17 +6,20 @@ namespace TawGatherMembersInfo.Models
 {
 	public enum AttendanceType
 	{
-		Attended,
-		Missed, // == AWOL
-		Excused,
-		Unknown
+		Unknown = 0,
+		Attended = 1,
+		Excused = 2,
+		Missed = 3, // == AWOL
 	}
 
-	[Serializable]
+	[Table("PeopleToEvents")]
 	public class PersonToEvent : IEquatable<PersonToEvent>
 	{
-		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public long Id { get; set; }
+		[Key, Column(Order = 0)]
+		public long PersonId { get; set; }
+
+		[Key, Column(Order = 1)]
+		public long EventId { get; set; }
 
 		public virtual Person Person { get; set; }
 		public virtual Event Event { get; set; }
@@ -31,7 +34,7 @@ namespace TawGatherMembersInfo.Models
 		public bool Equals(PersonToEvent other)
 		{
 			if (other == null) return false;
-			return Person.Id == other.Person.Id && Event.TawId == other.Event.TawId;
+			return Person.PersonId == other.Person.PersonId && Event.TawId == other.Event.TawId;
 		}
 
 		public override int GetHashCode()

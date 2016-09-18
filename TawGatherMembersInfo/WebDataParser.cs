@@ -30,6 +30,7 @@ namespace TawGatherMembersInfo
 				using (data = db.NewContext)
 				{
 					ParseUnitContents(roasterDiv, null);
+					data.SaveChanges();
 				}
 			}
 		}
@@ -44,10 +45,13 @@ namespace TawGatherMembersInfo
 			var tawId = int.Parse(unitNameA.GetAttributeValue("href", "/unit/-1.aspx").TakeStringBetweenLast("/", ".aspx"));
 			var name = unitNameA.InnerText;
 
+			Log.Trace("parsing unit from units roaster, taw unit id: " + tawId);
+
 			var unit = GetUnit(tawId, name);
 			unit.Type = type;
-
 			if (parentUnit != null) unit.ParentUnit = parentUnit;
+
+			data.SaveChanges();
 
 			var children = unitNamePlusUl.SelectSingleNode("ul");
 
@@ -70,12 +74,12 @@ namespace TawGatherMembersInfo
 
 		Person GetPersonFromName(string name)
 		{
-			var person = data.Persons.FirstOrDefault(p => p.Name == name);
+			var person = data.People.FirstOrDefault(p => p.Name == name);
 			if (person == null)
 			{
 				person = new Person();
 				person.Name = name;
-				person = data.Persons.Add(person);
+				person = data.People.Add(person);
 			}
 			return person;
 		}
@@ -155,15 +159,17 @@ namespace TawGatherMembersInfo
 			person.RankNameShort = rank;
 			if (onLeave) person.Status = "on leave";
 
-			var personToUnit = data.PersonsToUnits.FirstOrDefault(p => p.Person == person && p.Unit == unit);
+			var personToUnit = data.PeopleToUnits.FirstOrDefault(p => p.PersonId == person.PersonId && p.UnitId == unit.UnitId);
 			if (personToUnit == null)
 			{
 				personToUnit = new PersonToUnit();
 				personToUnit.Person = person;
 				personToUnit.Unit = unit;
-				personToUnit = data.PersonsToUnits.Add(personToUnit);
+				personToUnit = data.PeopleToUnits.Add(personToUnit);
 			}
 			personToUnit.PositionNameShort = positionNameShort;
+
+			data.SaveChanges();
 		}
 
 		public void UpdateInfoFromProfilePage(string personName)
@@ -176,9 +182,11 @@ namespace TawGatherMembersInfo
 				var response = session.GetUrl(url);
 				var html = response.HtmlDocument;
 
+				Log.Trace("updating profile for " + personName + " got web response");
+
 				using (data = db.NewContext)
 				{
-					var person = data.Persons.FirstOrDefault(p => p.Name == personName);
+					var person = data.People.FirstOrDefault(p => p.Name == personName);
 					if (person == null)
 					{
 						Log.Error("person with name " + personName + " was not found in database");
@@ -233,9 +241,11 @@ namespace TawGatherMembersInfo
 
 					person.LastProfileDataUpdatedDate = DateTime.UtcNow;
 					person.ClearCache();
+
+					data.SaveChanges();
 				}
 
-				Log.Trace("updating profile for " + personName + " end");
+				Log.Trace("updating profile for " + personName + " parsed and saved");
 			}
 		}
 
@@ -245,16 +255,20 @@ namespace TawGatherMembersInfo
 			return DateTime.Parse(str);
 		}
 
-		public void ParseEventData(int eventTawId)
+		public void ParseEventData(long eventTawId)
 		{
 			lock (this)
 			{
+				Log.Trace("parsing event data, taw event id: " + eventTawId + " start");
 				var url = Event.GetEventPage(eventTawId);
 				var response = session.GetUrl(url);
+				Log.Trace("parsing event data, taw event id: " + eventTawId + " got web response");
 				using (data = db.NewContext)
 				{
 					ParseEventData_1(response);
+					data.SaveChanges();
 				}
+				Log.Trace("parsing event data, taw event id: " + eventTawId + " parsed and saved");
 			}
 		}
 
@@ -269,6 +283,14 @@ namespace TawGatherMembersInfo
 			var eventTawIdStr = uriPath.Split('/', '\\').Last().RemoveFromEnd(".aspx".Length);
 			var eventTawId = int.Parse(eventTawIdStr);
 
+			var htmlText = response.ResponseText;
+			htmlText = htmlText?.TakeStringAfter("ctl00_ctl00_bcr_bcr_UpdatePanel\">");
+			if (htmlText.Contains("This is a Base Event and should never be seen"))
+			{
+				Log.Trace("event " + eventTawId + " is invalid 'base event', skipping");
+				return; // http://taw.net/event/65132.aspx
+			}
+
 			var evt = data.Events.FirstOrDefault(e => e.TawId == eventTawId);
 			if (evt == null)
 			{
@@ -276,7 +298,7 @@ namespace TawGatherMembersInfo
 				evt.TawId = eventTawId;
 				evt = data.Events.Add(evt);
 			}
-			ParseEventData_2(evt, response.ResponseText);
+			ParseEventData_2(evt, htmlText);
 		}
 
 		void ParseEventData_2(Event evt, string htmlText)
@@ -284,10 +306,7 @@ namespace TawGatherMembersInfo
 			// this page is so badly coded the HTML is invalid, chrome shows it correctly though, kudos to it
 			// but HtmlAgilityPack just fails on it
 
-			htmlText = htmlText?.TakeStringAfter("ctl00_ctl00_bcr_bcr_UpdatePanel\">");
-
-			var eventInfoText = htmlText?.TakeStringBetween("<table cellpadding=\"20\" cellspacing=\"5\">", "</table>");
-			if (eventInfoText == null) return; // "This is a Base Event and should never be seen. Please report this Issue." http://taw.net/event/65132.aspx
+			var eventInfoText = htmlText.TakeStringBetween("<table cellpadding=\"20\" cellspacing=\"5\">", "</table>");
 
 			var eventInfoDoc = new HtmlDocument();
 			eventInfoDoc.LoadHtml(eventInfoText);
@@ -301,30 +320,32 @@ namespace TawGatherMembersInfo
 			Mandatory	Yes
 			Cancelled	No
 			*/
-			evt.name = eventInfo["Name"];
-			evt.description = eventInfo["Description"];
-			evt.type = eventInfo["Type"];
-			evt.mandatory = eventInfo["Mandatory"] == "Yes";
-			evt.cancelled = eventInfo["Cancelled"] == "Yes";
+			evt.Name = eventInfo["Name"];
+			evt.Description = eventInfo["Description"];
+			evt.Type = eventInfo["Type"];
+			evt.Mandatory = eventInfo["Mandatory"] == "Yes";
+			evt.Cancelled = eventInfo["Cancelled"] == "Yes";
 
 			var when = eventInfo["When"];
 
 			var strFrom = when.TakeStringBetween("from:", "to:", StringComparison.InvariantCultureIgnoreCase).Trim();
-			if (strFrom != null) evt.from = ParseUsTime(strFrom);
+			if (strFrom != null) evt.From = ParseUsTime(strFrom);
 
 			var strTo = when.TakeStringAfter("to:", StringComparison.InvariantCultureIgnoreCase).Trim();
-			if (strTo != null) evt.to = ParseUsTime(strTo);
+			if (strTo != null) evt.To = ParseUsTime(strTo);
 
 			var attendeesText = htmlText.TakeStringBetween("<table width=100%>", "</table>");
 			var attendessDoc = new HtmlDocument();
 			attendessDoc.LoadHtml(attendeesText);
 			var attendeesTable = new HtmlTable(attendessDoc.DocumentNode);
 
-			foreach (var attended in evt.Attended)
+			/*
+			if (evt.Attended?.Count > 0)
 			{
-				attended.Person.Attended.Remove(attended);
+				foreach (var attended in evt.Attended) attended.Person.Attended.Remove(attended);
+				evt.Attended.Clear();
 			}
-			evt.Attended.Clear();
+			*/
 
 			foreach (var row in attendeesTable)
 			{
@@ -332,28 +353,31 @@ namespace TawGatherMembersInfo
 				var nameHref = row[0].SelectSingleNode("a").GetAttributeValue("href", "");
 				if (nameHref.StartsWith("/member"))
 				{
-					var attended = new PersonToEvent();
-					attended.Event = evt;
+					var person = GetPersonFromName(name);
 
-					attended.Person = GetPersonFromName(name);
+					var personToEvent = data.PeopleToEvents.FirstOrDefault(p => p.EventId == evt.EventId && p.PersonId == person.PersonId);
+					if (personToEvent == null)
+					{
+						personToEvent = new PersonToEvent();
+						personToEvent.Event = evt;
+						personToEvent.Person = person;
+						personToEvent = data.PeopleToEvents.Add(personToEvent);
+					}
 
 					var attendanceStr = row[1]?.InnerText?.Trim();
 					AttendanceType attendanceType = AttendanceType.Unknown;
-					if (attendanceStr != null && Enum.TryParse(attendanceStr.ToLowerInvariant(), true, out attendanceType)) attended.AttendanceType = attendanceType;
+					if (attendanceStr != null && Enum.TryParse(attendanceStr.ToLowerInvariant(), true, out attendanceType)) personToEvent.AttendanceType = attendanceType;
 
 					var timestampStr = row[2]?.InnerText?.Trim();
 					DateTime timestamp;
 					//if (DateTime.TryParseExact(timestampStr, "MM-dd-yyyy hh:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out timestamp)) attended.timeStamp = timestamp;
-					if (DateTime.TryParse(timestampStr, out timestamp)) attended.TimeStamp = timestamp;
-
-					attended.Person.Attended.Add(attended);
-					evt.Attended.Add(attended);
+					if (DateTime.TryParse(timestampStr, out timestamp)) personToEvent.TimeStamp = timestamp;
 				}
 				else if (nameHref.StartsWith("/unit"))
 				{
 					var unitTawIdStr = nameHref.Split('/', '\\').Last().RemoveFromEnd(".aspx".Length);
 					var unitTawId = int.Parse(unitTawIdStr);
-					evt.unit = GetUnit(unitTawId, name);
+					evt.Unit = GetUnit(unitTawId, name);
 				}
 				else
 				{

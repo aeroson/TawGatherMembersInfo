@@ -10,27 +10,37 @@ using System.Runtime.Serialization;
 
 namespace TawGatherMembersInfo.Models
 {
-	[Serializable]
 	public partial class Person : IEquatable<Person>
 	{
 		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public long Id { get; set; }
+		public long PersonId { get; set; }
 
 		//public Dictionary<Unit, string> UnitToPositionNameShort { get; set; } = new Dictionary<Unit, string>();
 
-		[Index(IsUnique = true), StringLength(200)]
+		[Index(IsUnique = true), StringLength(500)]
 		public virtual string Name { get; set; } = "unnamed";
 
+		[StringLength(100)]
 		public virtual string RankNameShort { get; set; } = "";
+
 		public virtual long SteamId { get; set; }
+
+		[StringLength(1000)]
 		public virtual string AvatarImageUrl { get; set; } = "";
+
+		[StringLength(100)]
 		public virtual string Status { get; set; } = "unknown"; // active, discharged, etc..
+
 		public virtual DateTime DateJoinedTaw { get; set; }
 		public virtual DateTime LastProfileDataUpdatedDate { get; set; }
-		public virtual string CountryCodeIso3166 { get; set; } = "";
-		public virtual ICollection<PersonToEvent> Attended { get; set; } = new HashSet<PersonToEvent>();
-		public virtual ICollection<PersonToUnit> Units { get; set; } = new HashSet<PersonToUnit>();
 
+		[StringLength(10)]
+		public virtual string CountryCodeIso3166 { get; set; } = ""; // https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
+
+		public virtual ICollection<PersonToEvent> Attended { get; set; }
+		public virtual ICollection<PersonToUnit> Units { get; set; }
+
+		[Column(TypeName = "text")]
 		public virtual string BiographyContents { get; set; } = "";
 
 		[NonSerialized]
@@ -90,6 +100,7 @@ namespace TawGatherMembersInfo.Models
 			}
 		}
 
+		[NotMapped]
 		public string CountryName
 		{
 			get

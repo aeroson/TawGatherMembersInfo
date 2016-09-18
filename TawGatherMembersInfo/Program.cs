@@ -5,26 +5,33 @@ using System.Runtime.InteropServices;
 
 namespace TawGatherMembersInfo
 {
-	public class InstancesContainer
+	public class Program
 	{
-		public RoasterManager roaster;
-		public HttpServerHandler httpServer;
-		public XMLConfig config;
-	}
+		public static IDependencyManager dependency = new Neitri.DependencyInjection.DependencyManager();
 
-	internal class Program
-	{
-		IDependencyManager dependency = new Neitri.DependencyInjection.DependencyManager();
+		HttpServerHandler httpServer;
+
+		[Dependency(Register = true)]
+		Config config;
+
+		[Dependency(Register = true)]
 		FileSystem fileSystem;
+
+		[Dependency(Register = true)]
+		DbContextProvider db;
+
+		[Dependency(Register = true)]
+		RoasterManager roaster;
 
 		static void Main(string[] args)
 		{
 			new Program(args);
 		}
 
-		public Program(string[] args)
+		Program(string[] args)
 		{
-			fileSystem = dependency.CreateAndRegister<FileSystem>();
+			dependency.BuildUp(this);
+			config.LoadFile(fileSystem.GetFile("data", "config.xml"));
 
 			{
 				var log = new Neitri.Logging.LogAgregator();
@@ -38,47 +45,30 @@ namespace TawGatherMembersInfo
 				log.AddLogger(new Neitri.Logging.LogFile(sw));
 
 				TawGatherMembersInfo.Log.log = log;
+				dependency.Register(log);
 			}
 
-			try
+			Log.Info("Starting ...");
+			Start(args);
+			AppDomain.CurrentDomain.ProcessExit += (sender, a) =>
 			{
-				Log.Info("Starting ...");
-				Start(args);
-				AppDomain.CurrentDomain.ProcessExit += (sender, a) =>
-				{
-					Stop();
-				};
-				Log.Info("Started");
-
-				Join();
-
-				Log.Info("Stopping, this may take a while ...");
 				Stop();
-				Log.Info("Stopped");
-			}
-			catch (Exception e)
-			{
-				Log.Fatal(e);
-				Console.ReadKey();
-			}
+			};
+			Log.Info("Started");
+
+			Join();
+
+			Log.Info("Stopping, this may take a while ...");
+			Stop();
+			Log.Info("Stopped");
 		}
-
-		HttpServerHandler httpServer;
-
-		[Dependency(Register = true)]
-		RoasterManager roaster;
-
-		[Dependency(Register = true)]
-		Config config;
-
-		[Dependency(Register = true)]
-		DbContextProvider db;
 
 		void Start(string[] args)
 		{
-			dependency.BuildUp(this);
+			// DB TEST
 
-			config.LoadFile(fileSystem.GetFile("data", "config.xml"));
+			var u = db.NewContext.RootUnit;
+
 			httpServer = dependency.Create<HttpServerHandler>();
 
 			roaster.Run();
