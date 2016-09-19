@@ -1,6 +1,8 @@
 ﻿using Neitri;
 using System;
+using System.Data.Entity;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace TawGatherMembersInfo
@@ -66,13 +68,52 @@ namespace TawGatherMembersInfo
 		void Start(string[] args)
 		{
 			// DB TEST
-
 			var u = db.NewContext.RootUnit;
+
+			//TestPrintAttendanceReport();
 
 			httpServer = dependency.Create<HttpServerHandler>();
 
 			roaster.Run();
 			httpServer.Run();
+		}
+
+		void TestPrintAttendanceReport()
+		{
+			using (var ctx = db.NewContext)
+			{
+				var armaUnit = ctx.Units.First(u => u.TawId == 2776);
+				var people = armaUnit.GetAllPeople();
+
+				Console.WriteLine("UnitName	UserName	Rank	Trainings	Attended	Excused	AWOL	Unknown	Mandatory AVG	Total AVG	Days In Rank");
+				foreach (var person in people)
+				{
+					var allEvents = person.Attended.Where(a => a.Event.Cancelled == false);
+					var trainings = allEvents.Count();
+					var attended = allEvents.Count(a => a.AttendanceType == Models.AttendanceType.Attended);
+					var excused = allEvents.Count(a => a.AttendanceType == Models.AttendanceType.Excused);
+					var awol = allEvents.Count(a => a.AttendanceType == Models.AttendanceType.Missed);
+
+					var mandatoryEvents = allEvents.Where(a => a.Event.Mandatory);
+					var mandatoryEventsCount = mandatoryEvents.Count();
+					var mandatoryEventsAttended = mandatoryEvents.Count(a => a.AttendanceType == Models.AttendanceType.Attended);
+					var mandatoryAvg = 0;
+					if (mandatoryEventsAttended > 0) mandatoryAvg = (int)Math.Ceiling(100 * mandatoryEventsAttended / (float)mandatoryEventsCount);
+
+					Console.WriteLine(
+						person.TeamSpeakUnit.Name + "\t" +
+						person.Name + "\t" +
+						person.RankNameLong + "\t" +
+						trainings + "\t" +
+						attended + "\t" +
+						excused + "\t" +
+						awol + "\t" +
+						mandatoryAvg + "%\t" +
+						"0" + "\t" +
+						"0" + "\t"
+					);
+				}
+			}
 		}
 
 		void UpdateSquadXml()

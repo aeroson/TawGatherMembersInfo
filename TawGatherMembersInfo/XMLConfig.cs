@@ -9,14 +9,14 @@ namespace TawGatherMembersInfo
 	public class XMLConfig : Dictionary<string, string>
 	{
 		public XElement Root { get; set; }
-		public HashSet<string> authTokens = new HashSet<string>();
 
-		public void LoadAppConfig()
+		public XMLConfig LoadAppConfig()
 		{
 			LoadFile(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
+			return this;
 		}
 
-		public void LoadFile(string filePath)
+		public XMLConfig LoadFile(string filePath)
 		{
 			if (File.Exists(filePath) == false) throw new FileNotFoundException("'" + filePath + "' does not exist");
 			this.Root = XDocument.Load(filePath).Root;
@@ -40,9 +40,7 @@ namespace TawGatherMembersInfo
 				}
 			}
 
-			authTokens = new HashSet<string>(
-				Root.Descendants("authenticationTokens").First().Elements().Select(e => e.Value)
-			);
+			return this;
 		}
 	}
 }

@@ -37,11 +37,11 @@ namespace TawGatherMembersInfo.Models
 		[StringLength(10)]
 		public virtual string CountryCodeIso3166 { get; set; } = ""; // https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
 
-		public virtual ICollection<PersonToEvent> Attended { get; set; }
-		public virtual ICollection<PersonToUnit> Units { get; set; }
-
 		[Column(TypeName = "text")]
 		public virtual string BiographyContents { get; set; } = "";
+
+		public virtual ICollection<PersonToEvent> Attended { get; set; }
+		public virtual ICollection<PersonToUnit> Units { get; set; }
 
 		[NonSerialized]
 		BiographyData biography;
@@ -154,13 +154,13 @@ namespace TawGatherMembersInfo.Models
 		}
 
 		[NonSerialized]
-		Unit mostImportantIngameUnit_cache;
+		Unit mostImportantIngamecache;
 
 		public Unit MostImportantIngameUnit
 		{
 			get
 			{
-				if (mostImportantIngameUnit_cache == null)
+				if (mostImportantIngamecache == null)
 				{
 					var unitsSortedAccordingToInGameImportance = UnitToPositionNameShort
 						.OrderByDescending(unitToPositionNameShort =>
@@ -177,9 +177,9 @@ namespace TawGatherMembersInfo.Models
 							return priority;
 						});
 
-					mostImportantIngameUnit_cache = unitsSortedAccordingToInGameImportance.FirstOrDefault().Key;
+					mostImportantIngamecache = unitsSortedAccordingToInGameImportance.FirstOrDefault().Key;
 				}
-				return mostImportantIngameUnit_cache;
+				return mostImportantIngamecache;
 			}
 		}
 
@@ -202,7 +202,7 @@ namespace TawGatherMembersInfo.Models
 		}
 
 		[NonSerialized]
-		Unit teamSpeakUnit_cache;
+		Unit teamSpeakcache;
 
 		/// <summary>
 		/// Unit in which you hold position that you put next to your name in teamSpeak
@@ -211,7 +211,7 @@ namespace TawGatherMembersInfo.Models
 		{
 			get
 			{
-				if (teamSpeakUnit_cache == null)
+				if (teamSpeakcache == null)
 				{
 					Unit highestPositionUnit = null;
 					int highestPositionPriority = int.MinValue;
@@ -228,9 +228,9 @@ namespace TawGatherMembersInfo.Models
 							highestPositionUnit = unit;
 						}
 					}
-					teamSpeakUnit_cache = highestPositionUnit;
+					teamSpeakcache = highestPositionUnit;
 				}
-				return teamSpeakUnit_cache;
+				return teamSpeakcache;
 			}
 		}
 
@@ -380,9 +380,9 @@ namespace TawGatherMembersInfo.Models
 
 		public void ClearCache()
 		{
-			mostImportantIngameUnit_cache = null;
+			mostImportantIngamecache = null;
 			teamSpeakName_cache = null;
-			teamSpeakUnit_cache = null;
+			teamSpeakcache = null;
 		}
 
 		public override string ToString()

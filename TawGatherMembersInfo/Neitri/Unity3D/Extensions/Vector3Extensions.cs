@@ -28,17 +28,7 @@ namespace Neitri
 		}
 		public static Vector3 MoveTo(this Vector3 me, Vector3 towards, float byAmount)
 		{
-			me.x = me.x.MoveTo(towards.x, byAmount);
-			me.y = me.y.MoveTo(towards.y, byAmount);
-			me.z = me.z.MoveTo(towards.z, byAmount);
-			return me;
-		}
-		public static Vector3 MoveTo(this Vector3 me, Vector3 towards, Vector3 byAmount)
-		{
-			me.x = me.x.MoveTo(towards.x, byAmount.x);
-			me.y = me.y.MoveTo(towards.y, byAmount.y);
-			me.z = me.z.MoveTo(towards.z, byAmount.z);
-			return me;
+			return me + me.Towards(towards).Normalized() * byAmount;
 		}
 		public static Vector3 Reflect(this Vector3 me, Vector3 byNormal)
 		{

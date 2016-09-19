@@ -28,6 +28,7 @@ namespace TawGatherMembersInfo.Models
 		public virtual Unit ParentUnit { get; set; }
 		public virtual ICollection<Unit> ChildUnits { get; set; }
 		public virtual ICollection<PersonToUnit> Persons { get; set; }
+		public virtual ICollection<Event> Events { get; set; }
 
 		public Dictionary<Person, string> PersonToPositionNameShort => Persons.ToDictionary(p => p.Person, p => p.PositionNameShort);
 
@@ -110,7 +111,7 @@ namespace TawGatherMembersInfo.Models
 			return hs;
 		}
 
-		void FillWithAllPeople(HashSet<Person> people)
+		public void FillWithAllPeople(HashSet<Person> people)
 		{
 			var names = this.Persons.Select(p => p.Person);
 			people.UnionWith(names);

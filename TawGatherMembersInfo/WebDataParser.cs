@@ -259,16 +259,24 @@ namespace TawGatherMembersInfo
 		{
 			lock (this)
 			{
-				Log.Trace("parsing event data, taw event id: " + eventTawId + " start");
-				var url = Event.GetEventPage(eventTawId);
-				var response = session.GetUrl(url);
-				Log.Trace("parsing event data, taw event id: " + eventTawId + " got web response");
-				using (data = db.NewContext)
+				try
 				{
-					ParseEventData_1(response);
-					data.SaveChanges();
+					Log.Trace("parsing event data, taw id:" + eventTawId + " start");
+					var url = Event.GetEventPage(eventTawId);
+					var response = session.GetUrl(url);
+					Log.Trace("parsing event data, taw id:" + eventTawId + " got web response");
+					using (data = db.NewContext)
+					{
+						ParseEventData_1(response);
+						data.SaveChanges();
+					}
+					Log.Trace("parsing event data, taw id:" + eventTawId + " parsed and saved");
 				}
-				Log.Trace("parsing event data, taw event id: " + eventTawId + " parsed and saved");
+				catch (Exception e)
+				{
+					Log.Error("ecountered errorenous event, taw id:" + eventTawId);
+					Log.Error(e);
+				}
 			}
 		}
 
@@ -350,8 +358,8 @@ namespace TawGatherMembersInfo
 			foreach (var row in attendeesTable)
 			{
 				var name = row[0]?.InnerText?.Trim();
-				var nameHref = row[0].SelectSingleNode("a").GetAttributeValue("href", "");
-				if (nameHref.StartsWith("/member"))
+				var nameHref = row[0]?.SelectSingleNode("a")?.GetAttributeValue("href", ""); // http://taw.net/event/66327.aspx last row, unit name has no link
+				if (nameHref != null && nameHref.StartsWith("/member"))
 				{
 					var person = GetPersonFromName(name);
 
@@ -373,11 +381,16 @@ namespace TawGatherMembersInfo
 					//if (DateTime.TryParseExact(timestampStr, "MM-dd-yyyy hh:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out timestamp)) attended.timeStamp = timestamp;
 					if (DateTime.TryParse(timestampStr, out timestamp)) personToEvent.TimeStamp = timestamp;
 				}
-				else if (nameHref.StartsWith("/unit"))
+				else if (nameHref != null && nameHref.StartsWith("/unit"))
 				{
 					var unitTawIdStr = nameHref.Split('/', '\\').Last().RemoveFromEnd(".aspx".Length);
 					var unitTawId = int.Parse(unitTawIdStr);
-					evt.Unit = GetUnit(unitTawId, name);
+					var unit = GetUnit(unitTawId, name);
+					evt.Units.Add(unit);
+				}
+				else if (nameHref == null)
+				{
+					// event with no unit
 				}
 				else
 				{

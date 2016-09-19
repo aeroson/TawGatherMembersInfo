@@ -13,10 +13,12 @@ namespace TawGatherMembersInfo.Models
 		[Key, Column(Order = 1)]
 		public long UnitId { get; set; }
 
-		public virtual Person Person { get; set; }
-		public virtual Unit Unit { get; set; }
-
 		[StringLength(500)]
 		public virtual string PositionNameShort { get; set; }
+
+		public virtual DateTime From { get; set; }
+		public virtual DateTime To { get; set; }
+		public virtual Person Person { get; set; }
+		public virtual Unit Unit { get; set; }
 	}
 }

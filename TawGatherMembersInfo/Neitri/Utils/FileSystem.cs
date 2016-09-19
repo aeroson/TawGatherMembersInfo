@@ -131,6 +131,19 @@ namespace Neitri
 			return this;
 		}
 
+		public DirectoryPath Delete()
+		{
+			Directory.Delete(FullPath, true);
+			return this;
+		}
+
+		public DirectoryPath Empty()
+		{
+			Delete();
+			Create();
+			return this;
+		}
+
 		/// <summary>
 		/// If the directory doesnt exist, creates it.
 		/// </summary>

@@ -25,7 +25,15 @@ namespace TawGatherMembersInfo
 
 		public MyDbContext() :
 			base(
-				new MySql.Data.MySqlClient.MySqlConnection(Program.dependency.Resolve<Config>().MySqlConnectionString),
+				new MySql.Data.MySqlClient.MySqlConnection(
+					(
+						new Config()
+						.LoadFile(
+							new FileSystem()
+							.GetFile("data", "config.xml")
+						) as Config
+					).MySqlConnectionString
+				),
 				true
 			)
 		{

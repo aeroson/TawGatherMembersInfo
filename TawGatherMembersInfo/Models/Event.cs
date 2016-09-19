@@ -23,13 +23,18 @@ namespace TawGatherMembersInfo.Models
 		[StringLength(500)]
 		public virtual string Type { get; set; }
 
-		public virtual Unit Unit { get; set; }
 		public virtual bool Mandatory { get; set; }
 		public virtual bool Cancelled { get; set; }
+
+		[Index]
 		public virtual DateTime From { get; set; }
+
+		[Index]
 		public virtual DateTime To { get; set; }
+
 		public virtual Person TakenBy { get; set; } // attendance taken by
 		public virtual ICollection<PersonToEvent> Attended { get; set; }
+		public virtual ICollection<Unit> Units { get; set; } = new List<Unit>();
 
 		public static string GetEventPage(long eventTawId)
 		{

@@ -55,8 +55,6 @@ namespace TawGatherMembersInfo
 
 		void ThreadMain()
 		{
-			//var path = fileSystem.GetDirectory("data");
-
 			//GatherBasicInformationFromUnitId1Roaster();
 
 			long eventItStart;
@@ -64,8 +62,16 @@ namespace TawGatherMembersInfo
 			if (eventItStart == default(long)) eventItStart = 65000;
 			eventItStart++;
 
+			eventItStart = 70724;
 			for (long i = eventItStart; i < 72067; i++)
 			{
+				//[2016.09.18 21:15:11.971][E] ecountered errorenous event, taw id:66583
+				//[2016.09.18 21:49:46.818][E] ecountered errorenous event, taw id:67302
+				//[2016.09.18 21:58:54.031][E] ecountered errorenous event, taw id:67488
+				//[2016.09.18 22:17:49.893][E] ecountered errorenous event, taw id:67843
+				//[2016.09.18 22:46:02.415][E] ecountered errorenous event, taw id:68411
+				//[2016.09.18 22:47:43.379][E] ecountered errorenous event, taw id:68449
+
 				dataParser.ParseEventData(i);
 			}
 

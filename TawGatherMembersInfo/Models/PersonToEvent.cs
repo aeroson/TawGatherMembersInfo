@@ -21,10 +21,12 @@ namespace TawGatherMembersInfo.Models
 		[Key, Column(Order = 1)]
 		public long EventId { get; set; }
 
-		public virtual Person Person { get; set; }
-		public virtual Event Event { get; set; }
+		[Index]
 		public virtual AttendanceType AttendanceType { get; set; } = AttendanceType.Unknown;
+
 		public virtual DateTime TimeStamp { get; set; }
+		public virtual Event Event { get; set; }
+		public virtual Person Person { get; set; }
 
 		public override string ToString()
 		{
