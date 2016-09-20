@@ -255,7 +255,15 @@ namespace TawGatherMembersInfo
 			return DateTime.Parse(str);
 		}
 
-		public void ParseEventData(long eventTawId)
+		public enum ParseEventResult
+		{
+			ValidEvent,
+			ErrorenousEvent,
+			BaseEvent,
+			InvalidUriProbablyLastEvent,
+		}
+
+		public ParseEventResult ParseEventData(long eventTawId)
 		{
 			lock (this)
 			{
@@ -264,27 +272,31 @@ namespace TawGatherMembersInfo
 					Log.Trace("parsing event data, taw id:" + eventTawId + " start");
 					var url = Event.GetEventPage(eventTawId);
 					var response = session.GetUrl(url);
+					ParseEventResult result;
 					Log.Trace("parsing event data, taw id:" + eventTawId + " got web response");
 					using (data = db.NewContext)
 					{
-						ParseEventData_1(response);
+						result = ParseEventData_1(response);
 						data.SaveChanges();
 					}
 					Log.Trace("parsing event data, taw id:" + eventTawId + " parsed and saved");
+					return result;
 				}
 				catch (Exception e)
 				{
 					Log.Error("ecountered errorenous event, taw id:" + eventTawId);
 					Log.Error(e);
+					return ParseEventResult.ErrorenousEvent;
 				}
 			}
 		}
 
-		void ParseEventData_1(MyHttpWebResponse response)
+		ParseEventResult ParseEventData_1(MyHttpWebResponse response)
 		{
 			var uriPath = response.ResponseUri.AbsolutePath;
 			if (uriPath.Contains("event") == false)
 			{
+				return ParseEventResult.InvalidUriProbablyLastEvent;
 				Log.Error("the event you are trying to parse has invalid uri");
 			}
 
@@ -296,7 +308,7 @@ namespace TawGatherMembersInfo
 			if (htmlText.Contains("This is a Base Event and should never be seen"))
 			{
 				Log.Trace("event " + eventTawId + " is invalid 'base event', skipping");
-				return; // http://taw.net/event/65132.aspx
+				return ParseEventResult.BaseEvent; // http://taw.net/event/65132.aspx
 			}
 
 			var evt = data.Events.FirstOrDefault(e => e.TawId == eventTawId);
@@ -307,6 +319,7 @@ namespace TawGatherMembersInfo
 				evt = data.Events.Add(evt);
 			}
 			ParseEventData_2(evt, htmlText);
+			return ParseEventResult.ValidEvent;
 		}
 
 		void ParseEventData_2(Event evt, string htmlText)

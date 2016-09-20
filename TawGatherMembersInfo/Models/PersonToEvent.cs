@@ -21,7 +21,7 @@ namespace TawGatherMembersInfo.Models
 		[Key, Column(Order = 1)]
 		public long EventId { get; set; }
 
-		[Index]
+		//[Index]
 		public virtual AttendanceType AttendanceType { get; set; } = AttendanceType.Unknown;
 
 		public virtual DateTime TimeStamp { get; set; }

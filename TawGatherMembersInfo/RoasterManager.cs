@@ -55,26 +55,6 @@ namespace TawGatherMembersInfo
 
 		void ThreadMain()
 		{
-			//GatherBasicInformationFromUnitId1Roaster();
-
-			long eventItStart;
-			using (var data = db.NewContext) eventItStart = data.Events.OrderByDescending(e => e.TawId).Take(1).Select(e => e.TawId).FirstOrDefault();
-			if (eventItStart == default(long)) eventItStart = 65000;
-			eventItStart++;
-
-			eventItStart = 70724;
-			for (long i = eventItStart; i < 72067; i++)
-			{
-				//[2016.09.18 21:15:11.971][E] ecountered errorenous event, taw id:66583
-				//[2016.09.18 21:49:46.818][E] ecountered errorenous event, taw id:67302
-				//[2016.09.18 21:58:54.031][E] ecountered errorenous event, taw id:67488
-				//[2016.09.18 22:17:49.893][E] ecountered errorenous event, taw id:67843
-				//[2016.09.18 22:46:02.415][E] ecountered errorenous event, taw id:68411
-				//[2016.09.18 22:47:43.379][E] ecountered errorenous event, taw id:68449
-
-				dataParser.ParseEventData(i);
-			}
-
 			// if this is the startup then update profiles really fast
 			var isFirstRun = true;
 			var profileUpdateDelayMiliSeconds = 100;
@@ -83,26 +63,44 @@ namespace TawGatherMembersInfo
 			{
 				session.ClearCookies();
 
-				var personsUpdated = new HashSet<string>();
-				foreach (var tawUnitId in config.UnitIdsToGatherMemberProfileInfo)
 				{
-					IEnumerable<string> peopleNames;
-					using (var data = db.NewContext)
+					var personsUpdated = new HashSet<string>();
+					foreach (var tawUnitId in config.UnitIdsToGatherMemberProfileInfo)
 					{
-						var unit = data.Units.FirstOrDefault(u => u.TawId == tawUnitId);
-						peopleNames = unit.GetAllPeopleNames();
-					}
+						IEnumerable<string> peopleNames;
+						using (var data = db.NewContext)
+						{
+							var unit = data.Units.FirstOrDefault(u => u.TawId == tawUnitId);
+							peopleNames = unit.GetAllPeopleNames();
+						}
 
-					foreach (var personName in peopleNames)
-					{
-						if (personsUpdated.Contains(personName)) continue;
-						personsUpdated.Add(personName);
-						dataParser.UpdateInfoFromProfilePage(personName);
-						//Thread.Sleep(profileUpdateDelayMiliSeconds);
+						foreach (var personName in peopleNames)
+						{
+							if (personsUpdated.Contains(personName)) continue;
+							personsUpdated.Add(personName);
+							dataParser.UpdateInfoFromProfilePage(personName);
+							//Thread.Sleep(profileUpdateDelayMiliSeconds);
+						}
 					}
 				}
 
 				{
+					long eventItStart;
+					using (var data = db.NewContext) eventItStart = data.Events.OrderByDescending(e => e.TawId).Take(1).Select(e => e.TawId).FirstOrDefault();
+					if (eventItStart == default(long)) eventItStart = 65000;
+					eventItStart++;
+					for (long i = eventItStart; i < eventItStart + 200; i++)
+					{
+						//[2016.09.18 21:15:11.971][E] ecountered errorenous event, taw id:66583
+						//[2016.09.18 21:49:46.818][E] ecountered errorenous event, taw id:67302
+						//[2016.09.18 21:58:54.031][E] ecountered errorenous event, taw id:67488
+						//[2016.09.18 22:17:49.893][E] ecountered errorenous event, taw id:67843
+						//[2016.09.18 22:46:02.415][E] ecountered errorenous event, taw id:68411
+						//[2016.09.18 22:47:43.379][E] ecountered errorenous event, taw id:68449
+
+						var result = dataParser.ParseEventData(i);
+						if (result == WebDataParser.ParseEventResult.InvalidUriProbablyLastEvent) break;
+					}
 				}
 
 				GatherBasicInformationFromUnitId1Roaster();
