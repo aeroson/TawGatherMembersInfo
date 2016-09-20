@@ -3,8 +3,13 @@ drop procedure if exists AttendanceReport//
 create procedure AttendanceReport(in rootUnitId bigint(20), in daysBack int(10))
 begin
 	   
-    declare selected_PersonId bigint(20);    
+	       
+    declare selected_PersonId bigint(20); 
     declare cursor_end tinyint(1);
+    
+    declare totalMandatories bigint(20);
+    declare totalAnyEvent bigint(20);
+    
 	declare selected_people cursor for
 		select p.PersonId from People p
 		join PeopleToUnits p2u on p2u.PersonId = p.PersonId and p2u.UnitId in
@@ -27,7 +32,7 @@ begin
 		group by p.PersonId
 		order by name;
         
-	DECLARE CONTINUE HANDLER FOR NOT FOUND SET cursor_end = 1;
+	DECLARE CONTINUE HANDLER FOR NOT FOUND SET cursor_end = true;
     
 	CREATE TEMPORARY TABLE IF NOT EXISTS attendanceReportResult (
 		UnitName varchar(100),
@@ -45,11 +50,18 @@ begin
     TRUNCATE TABLE attendanceReportResult;
     
 	open selected_people;
-	REPEAT
+	read_loop: LOOP
 
 		FETCH selected_people INTO selected_PersonId;		
         		
+		IF cursor_end THEN
+			leave read_loop;
+		END IF;                
+                
         -- WHERE exec_datetime BETWEEN DATE_SUB(NOW(), INTERVAL daysBack DAY) AND NOW();        
+        
+        select count(*) from PeopleToEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.Mandatory and e.EventId = pe.EventId into totalMandatories;
+        select count(*) from PeopleToEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId into totalAnyEvent;
 		
         insert into attendanceReportResult values (
         
@@ -65,20 +77,24 @@ begin
             
             (select count(*) from People p join PeopleToEvents pe on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId and pe.AttendanceType = 3),
 		
-			(select count(*) from PeopleToEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId and pe.AttendanceType = 1 join Events e on e.Mandatory and e.EventId = pe.EventId) -- total mandatories attended
-			/ GREATEST(1, (select count(*) from PeopleToEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.Mandatory and e.EventId = pe.EventId) ), -- total mandatories			
+			IF(
+				totalMandatories > 0,
+				(select count(*) from PeopleToEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId and pe.AttendanceType = 1 join Events e on e.Mandatory and e.EventId = pe.EventId) / totalMandatories,
+				0
+			),
 			
-			(select count(*) from PeopleToEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId and pe.AttendanceType = 1) -- total any events attended
-			/ GREATEST(1, (select count(*) from PeopleToEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId) ), -- total any events
+            IF(
+				totalAnyEvent > 0,
+				(select count(*) from PeopleToEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId and pe.AttendanceType = 1) / totalAnyEvent,
+				0
+			),
 			
             0
 		);
-        
-		UNTIL cursor_end = 1
-	END REPEAT;
+	end loop;
     close selected_people;
     
-    select * from attendanceReportResult;
+    select * from attendanceReportResult order by UserName;
 
 
 end//
