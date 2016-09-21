@@ -37,11 +37,12 @@ namespace TawGatherMembersInfo.Models
 		[StringLength(10)]
 		public virtual string CountryCodeIso3166 { get; set; } = ""; // https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
 
-		[Column(TypeName = "text")]
+		[MaxLength]
 		public virtual string BiographyContents { get; set; } = "";
 
-		public virtual ICollection<PersonToEvent> Attended { get; set; }
-		public virtual ICollection<PersonToUnit> Units { get; set; }
+		public virtual ICollection<PersonEvent> Attended { get; set; }
+		public virtual ICollection<PersonUnit> Units { get; set; }
+		public virtual ICollection<PersonCommendation> Commendations { get; set; }
 
 		[NonSerialized]
 		BiographyData biography;

@@ -23,7 +23,10 @@ namespace TawGatherMembersInfo.Models
 		[StringLength(500)]
 		public virtual string Type { get; set; }
 
+		[Index]
 		public virtual bool Mandatory { get; set; }
+
+		[Index]
 		public virtual bool Cancelled { get; set; }
 
 		[Index]
@@ -33,7 +36,7 @@ namespace TawGatherMembersInfo.Models
 		public virtual DateTime To { get; set; }
 
 		public virtual Person TakenBy { get; set; } // attendance taken by
-		public virtual ICollection<PersonToEvent> Attended { get; set; }
+		public virtual ICollection<PersonEvent> Attended { get; set; }
 		public virtual ICollection<Unit> Units { get; set; } = new List<Unit>();
 
 		public static string GetEventPage(long eventTawId)

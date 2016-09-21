@@ -162,9 +162,10 @@ namespace TawGatherMembersInfo
 			var personToUnit = data.PeopleToUnits.FirstOrDefault(p => p.PersonId == person.PersonId && p.UnitId == unit.UnitId);
 			if (personToUnit == null)
 			{
-				personToUnit = new PersonToUnit();
+				personToUnit = new PersonUnit();
 				personToUnit.Person = person;
 				personToUnit.Unit = unit;
+				personToUnit.Joined = DateTime.UtcNow;
 				personToUnit = data.PeopleToUnits.Add(personToUnit);
 			}
 			personToUnit.PositionNameShort = positionNameShort;
@@ -379,7 +380,7 @@ namespace TawGatherMembersInfo
 					var personToEvent = data.PeopleToEvents.FirstOrDefault(p => p.EventId == evt.EventId && p.PersonId == person.PersonId);
 					if (personToEvent == null)
 					{
-						personToEvent = new PersonToEvent();
+						personToEvent = new PersonEvent();
 						personToEvent.Event = evt;
 						personToEvent.Person = person;
 						personToEvent = data.PeopleToEvents.Add(personToEvent);

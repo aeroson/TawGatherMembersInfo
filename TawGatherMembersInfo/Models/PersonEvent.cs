@@ -12,8 +12,7 @@ namespace TawGatherMembersInfo.Models
 		Missed = 3, // == AWOL
 	}
 
-	[Table("PeopleToEvents")]
-	public class PersonToEvent : IEquatable<PersonToEvent>
+	public class PersonEvent : IEquatable<PersonEvent>
 	{
 		[Key, Column(Order = 0)]
 		public long PersonId { get; set; }
@@ -21,7 +20,7 @@ namespace TawGatherMembersInfo.Models
 		[Key, Column(Order = 1)]
 		public long EventId { get; set; }
 
-		//[Index]
+		[Index]
 		public virtual AttendanceType AttendanceType { get; set; } = AttendanceType.Unknown;
 
 		public virtual DateTime TimeStamp { get; set; }
@@ -33,7 +32,7 @@ namespace TawGatherMembersInfo.Models
 			return Person.Name + "<->" + Event;
 		}
 
-		public bool Equals(PersonToEvent other)
+		public bool Equals(PersonEvent other)
 		{
 			if (other == null) return false;
 			return Person.PersonId == other.Person.PersonId && Event.TawId == other.Event.TawId;

@@ -27,7 +27,7 @@ namespace TawGatherMembersInfo.Models
 
 		public virtual Unit ParentUnit { get; set; }
 		public virtual ICollection<Unit> ChildUnits { get; set; }
-		public virtual ICollection<PersonToUnit> Persons { get; set; }
+		public virtual ICollection<PersonUnit> Persons { get; set; }
 		public virtual ICollection<Event> Events { get; set; }
 
 		public Dictionary<Person, string> PersonToPositionNameShort => Persons.ToDictionary(p => p.Person, p => p.PositionNameShort);

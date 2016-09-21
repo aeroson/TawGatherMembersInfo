@@ -115,11 +115,13 @@
       <DependentUpon>201609191913533_AddEventsToManyUnits.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\Commendation.cs" />
     <Compile Include="Models\Event.cs" />
     <Compile Include="HttpServerHandler.cs" />
     <Compile Include="Log.cs" />
-    <Compile Include="Models\PersonToEvent.cs" />
-    <Compile Include="Models\PersonToUnit.cs" />
+    <Compile Include="Models\PersonCommendation.cs" />
+    <Compile Include="Models\PersonEvent.cs" />
+    <Compile Include="Models\PersonUnit.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="Neitri\WebCrawling\MyHttpWebRequest.cs" />
     <Compile Include="Neitri\DependencyInjection\DependencyManager.cs" />
