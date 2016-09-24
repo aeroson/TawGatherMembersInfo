@@ -35,7 +35,7 @@ namespace TawGatherMembersInfo.Models
 		public bool Equals(PersonEvent other)
 		{
 			if (other == null) return false;
-			return Person.PersonId == other.Person.PersonId && Event.TawId == other.Event.TawId;
+			return Person.Id == other.Person.Id && Event.TawId == other.Event.TawId;
 		}
 
 		public override int GetHashCode()

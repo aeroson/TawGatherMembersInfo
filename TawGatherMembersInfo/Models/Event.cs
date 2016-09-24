@@ -9,7 +9,7 @@ namespace TawGatherMembersInfo.Models
 	public class Event : IEquatable<Event>
 	{
 		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public long EventId { get; set; }
+		public long Id { get; set; }
 
 		[Index(IsUnique = true)]
 		public virtual long TawId { get; set; }

@@ -190,7 +190,7 @@ namespace TawGatherMembersInfo
 					o.WriteLine("<td>" + p.DaysInTaw + "</td>");
 					o.WriteLine("<td>" + p.MostImportantIngameUnit.Name + "</td>");
 					o.WriteLine("<td>" + p.MostImportantIngameUnit.Type + "</td>");
-					o.WriteLine("<td>" + p.MostImportantIngameUnit.UnitId + "</td>");
+					o.WriteLine("<td>" + p.MostImportantIngameUnit.Id + "</td>");
 					o.WriteLine("<td>" + p.MostImportantIngameUnitPositionNameLong + "</td>");
 					o.WriteLine("<td>" + p.MostImportantIngameUnitPositionNameShort + "</td>");
 					o.WriteLine("<td>" + p.RankImageBigUrl + "</td>");
@@ -203,7 +203,7 @@ namespace TawGatherMembersInfo
 					o.WriteLine("<td>" + p.TeamSpeakUnitPositionNameShort + "</td>");
 					o.WriteLine("<td>" + p.TeamSpeakUnit.Name + "</td>");
 					o.WriteLine("<td>" + p.TeamSpeakUnit.Type + "</td>");
-					o.WriteLine("<td>" + p.TeamSpeakUnit.UnitId + "</td>");
+					o.WriteLine("<td>" + p.TeamSpeakUnit.Id + "</td>");
 
 					o.WriteLine("</tr>");
 				}
@@ -217,7 +217,7 @@ namespace TawGatherMembersInfo
 				var people = rootUnit.GetAllPeople();
 
 				IEnumerable<Person> persons = people;
-				if (orderBy == "id") persons = people.OrderBy(p => p.PersonId);
+				if (orderBy == "id") persons = people.OrderBy(p => p.Id);
 
 				o.WriteLine("<table>");
 
@@ -301,12 +301,12 @@ namespace TawGatherMembersInfo
 						o.WriteLine("<td>" + p.DateJoinedTaw.Day + "</td>");
 					}
 					if (daysInTaw) o.WriteLine("<td>" + p.DaysInTaw + "</td>");
-					if (id) o.WriteLine("<td>" + p.PersonId + "</td>");
+					if (id) o.WriteLine("<td>" + p.Id + "</td>");
 					if (mostImportantIngameUnit)
 					{
 						o.WriteLine("<td>" + p.MostImportantIngameUnit.Name + "</td>");
 						o.WriteLine("<td>" + p.MostImportantIngameUnit.Type + "</td>");
-						o.WriteLine("<td>" + p.MostImportantIngameUnit.UnitId + "</td>");
+						o.WriteLine("<td>" + p.MostImportantIngameUnit.Id + "</td>");
 						o.WriteLine("<td>" + p.MostImportantIngameUnitPositionNameLong + "</td>");
 						o.WriteLine("<td>" + p.MostImportantIngameUnitPositionNameShort + "</td>");
 					}
@@ -323,7 +323,7 @@ namespace TawGatherMembersInfo
 						o.WriteLine("<td>" + p.TeamSpeakName + "</td>");
 						o.WriteLine("<td>" + p.TeamSpeakUnit.Name + "</td>");
 						o.WriteLine("<td>" + p.TeamSpeakUnit.Type + "</td>");
-						o.WriteLine("<td>" + p.TeamSpeakUnit.UnitId + "</td>");
+						o.WriteLine("<td>" + p.TeamSpeakUnit.Id + "</td>");
 						o.WriteLine("<td>" + p.TeamSpeakUnitPositionNameLong + "</td>");
 						o.WriteLine("<td>" + p.TeamSpeakUnitPositionNameShort + "</td>");
 					}

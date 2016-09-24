@@ -11,7 +11,7 @@ namespace TawGatherMembersInfo.Models
 	public class Unit
 	{
 		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public virtual long UnitId { get; set; }
+		public virtual long Id { get; set; }
 
 		[Index(IsUnique = true)]
 		public virtual int TawId { get; set; }
@@ -130,7 +130,7 @@ namespace TawGatherMembersInfo.Models
 			var sb = new StringBuilder();
 			sb.AppendLine();
 			for (int i = 1; i < depth; i++) sb.Append("|");
-			sb.Append("|unit=" + Type + "=" + Name + " tawId:" + UnitId);
+			sb.Append("|unit=" + Type + "=" + Name + " tawId:" + Id);
 			foreach (var c in Persons)
 			{
 				sb.AppendLine();
@@ -158,12 +158,12 @@ namespace TawGatherMembersInfo.Models
 		public bool Equals(Unit other)
 		{
 			if (other == null) return false;
-			return UnitId == other.UnitId;
+			return Id == other.Id;
 		}
 
 		public override int GetHashCode()
 		{
-			return UnitId.GetHashCode();
+			return Id.GetHashCode();
 		}
 	}
 }

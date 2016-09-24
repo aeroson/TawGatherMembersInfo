@@ -10,10 +10,31 @@ using System.Runtime.Serialization;
 
 namespace TawGatherMembersInfo.Models
 {
+	public class Rank
+	{
+		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		public long Id { get; set; }
+
+		public virtual string NameShort { get; set; }
+		public virtual string NameLong { get; set; }
+	}
+
+	public class PersonRank
+	{
+		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		public long Id { get; set; }
+
+		public long PersonId { get; set; }
+		public long RankId { get; set; }
+		public virtual DateTime ValidFrom { get; set; }
+		public virtual Person Person { get; set; }
+		public virtual Rank Rank { get; set; }
+	}
+
 	public partial class Person : IEquatable<Person>
 	{
 		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public long PersonId { get; set; }
+		public long Id { get; set; }
 
 		//public Dictionary<Unit, string> UnitToPositionNameShort { get; set; } = new Dictionary<Unit, string>();
 

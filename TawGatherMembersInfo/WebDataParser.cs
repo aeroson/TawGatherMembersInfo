@@ -159,7 +159,7 @@ namespace TawGatherMembersInfo
 			person.RankNameShort = rank;
 			if (onLeave) person.Status = "on leave";
 
-			var personToUnit = data.PeopleToUnits.FirstOrDefault(p => p.PersonId == person.PersonId && p.UnitId == unit.UnitId);
+			var personToUnit = data.PeopleToUnits.FirstOrDefault(p => p.PersonId == person.Id && p.UnitId == unit.Id);
 			if (personToUnit == null)
 			{
 				personToUnit = new PersonUnit();
@@ -377,7 +377,7 @@ namespace TawGatherMembersInfo
 				{
 					var person = GetPersonFromName(name);
 
-					var personToEvent = data.PeopleToEvents.FirstOrDefault(p => p.EventId == evt.EventId && p.PersonId == person.PersonId);
+					var personToEvent = data.PeopleToEvents.FirstOrDefault(p => p.EventId == evt.Id && p.PersonId == person.Id);
 					if (personToEvent == null)
 					{
 						personToEvent = new PersonEvent();

@@ -100,7 +100,7 @@ namespace TawGatherMembersInfo
 
 				do
 				{
-					file = targetSquadXmlFolder.GetFile(unit.UnitId.ToString() + ".paa");
+					file = targetSquadXmlFolder.GetFile(unit.Id.ToString() + ".paa");
 					if (file.Exists)
 					{
 						var t = unit.Type.ToLower();
@@ -112,7 +112,7 @@ namespace TawGatherMembersInfo
 						else return file;
 					}
 
-					file = targetSquadXmlFolder.GetFile(unit.UnitId.ToString() + "-child.paa");
+					file = targetSquadXmlFolder.GetFile(unit.Id.ToString() + "-child.paa");
 					if (file.Exists) return file;
 
 					unit = unit.ParentUnit; // walk up the tree;

@@ -11,7 +11,7 @@ namespace TawGatherMembersInfo.Models
 	public class PersonCommendation
 	{
 		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public long PersonCommendationId { get; set; }
+		public long Id { get; set; }
 
 		public virtual DateTime Date { get; set; }
 		public virtual Person Person { get; set; }
@@ -22,7 +22,7 @@ namespace TawGatherMembersInfo.Models
 	public class PersonCommendationComment
 	{
 		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public long PersonCommendationCommentId { get; set; }
+		public long Id { get; set; }
 
 		public virtual DateTime Date { get; set; }
 
