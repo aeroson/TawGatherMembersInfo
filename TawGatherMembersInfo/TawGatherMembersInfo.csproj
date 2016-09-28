@@ -66,6 +66,10 @@
       <HintPath>..\packages\MySql.Data.Entity.6.9.9\lib\net45\MySql.Data.Entity.EF6.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="NodaTime, Version=2.0.0.0, Culture=neutral, PublicKeyToken=4226afe0d9b296d1, processorArchitecture=MSIL">
       <HintPath>..\packages\NodaTime.2.0.0-alpha20160729\lib\net45\NodaTime.dll</HintPath>
       <Private>True</Private>
@@ -102,9 +106,13 @@
     <Compile Include="EnterTawUserLoginInfo.Designer.cs">
       <DependentUpon>EnterTawUserLoginInfo.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201609281622532_InitialSchema.cs" />
-    <Compile Include="Migrations\201609281622532_InitialSchema.Designer.cs">
-      <DependentUpon>201609281622532_InitialSchema.cs</DependentUpon>
+    <Compile Include="Migrations\201609282032368_InitialSchema.cs" />
+    <Compile Include="Migrations\201609282032368_InitialSchema.Designer.cs">
+      <DependentUpon>201609282032368_InitialSchema.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201609282244264_AddedIndex.cs" />
+    <Compile Include="Migrations\201609282244264_AddedIndex.Designer.cs">
+      <DependentUpon>201609282244264_AddedIndex.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Commendation.cs" />
@@ -184,8 +192,11 @@
     <EmbeddedResource Include="EnterTawUserLoginINfo.resx">
       <DependentUpon>EnterTawUserLoginInfo.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201609281622532_InitialSchema.resx">
-      <DependentUpon>201609281622532_InitialSchema.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201609282032368_InitialSchema.resx">
+      <DependentUpon>201609282032368_InitialSchema.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201609282244264_AddedIndex.resx">
+      <DependentUpon>201609282244264_AddedIndex.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

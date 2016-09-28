@@ -6,10 +6,13 @@ namespace TawGatherMembersInfo.Models
 {
 	public class PersonUnit
 	{
-		[Key, Column(Order = 0)]
+		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		public long Id { get; set; }
+
+		[Index]
 		public long PersonId { get; set; }
 
-		[Key, Column(Order = 1)]
+		[Index]
 		public long UnitId { get; set; }
 
 		[StringLength(500)]

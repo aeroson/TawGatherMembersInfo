@@ -17,7 +17,9 @@ namespace TawGatherMembersInfo.Models
 		[MaxLength(10)]
 		public virtual string NameShort { get; set; }
 
+		[Index]
 		public virtual DateTime ValidFrom { get; set; }
+
 		public virtual Person Person { get; set; }
 
 		public virtual Person ByWho { get; set; }

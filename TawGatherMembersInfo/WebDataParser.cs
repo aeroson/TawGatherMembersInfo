@@ -1,9 +1,12 @@
 ﻿using HtmlAgilityPack;
 using Neitri;
 using Neitri.WebCrawling;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using TawGatherMembersInfo.Models;
@@ -108,7 +111,7 @@ namespace TawGatherMembersInfo
 				person.Name = name;
 				person = data.People.Add(person);
 			}
-			if (!rankNameShort.IsNullOrEmpty() && (person.Ranks == null || person.Rank.NameShort != rankNameShort))
+			if (!rankNameShort.IsNullOrEmpty() && (person.Ranks == null || person.Rank?.NameShort != rankNameShort))
 			{
 				var personRank = new PersonRank();
 				personRank.Person = person;
@@ -145,8 +148,10 @@ namespace TawGatherMembersInfo
 				Juvenis, COL
 			*/
 
+			Log.Trace(TraceUtil.ThisMethod(text, parentUnitId));
+
 			string name = "unnamed";
-			string rank = "unranked";
+			string rank = "";
 			string positionNameLong = "";
 			string positionNameShort = "";
 			bool onLeave = false;
@@ -197,20 +202,34 @@ namespace TawGatherMembersInfo
 				personToUnit = new PersonUnit();
 				personToUnit.Person = person;
 				personToUnit.Unit = data.Units.Find(parentUnitId);
+				personToUnit.PositionNameShort = positionNameShort;
+				personToUnit.Joined = DateTime.UtcNow;
 				personToUnit = data.PersonUnits.Add(personToUnit);
 			}
-			if (personToUnit.Joined == null) personToUnit.Joined = DateTime.UtcNow;
-			personToUnit.PositionNameShort = positionNameShort;
+
+			data.SaveChanges();
+		}
+
+		class DossierMovements
+		{
+			public List<DossierMovement> Movements;
+
+			public class DossierMovement
+			{
+				public string id;
+				public string timestamp;
+				public string description;
+			}
 		}
 
 		public async Task UpdateInfoFromProfilePage(SessionMannager sessionManager, string personName)
 		{
+			var session = await sessionManager.GetAsync();
+
 			Log.Trace("updating profile of " + personName + " start");
 
 			var url = Person.GetPersonProfilePageUrl(personName);
-			var session = await sessionManager.GetAsync();
 			var response = session.Value.GetUrl(url);
-			session.Dispose();
 			var html = response.HtmlDocument;
 
 			Log.Trace("updating profile of " + personName + " got web response");
@@ -277,83 +296,139 @@ namespace TawGatherMembersInfo
 				// rank in time
 				// position in unit in time
 				{
-					var dossierMovements = new HtmlTable(html.GetElementbyId("dossier_movementss").SelectSingleNode("table"));
-					foreach (var dossierMovementRow in dossierMovements)
-					{
-						var when = ParseMonthDayYear(dossierMovementRow[0].InnerText);
-						var tawId = dossierMovementRow[0].GetAttributeValue("id", 0);
-						var text = dossierMovementRow[1].InnerText;
+					var res = await session.Value.PostJsonAsync("http://taw.net/services/JSONFactory.asmx/GetMovement", new { callsign = person.Name });
+					session.Dispose();
+					var d = (string)JObject.Parse(res)["d"];
+					var dossierMovements = JsonConvert.DeserializeObject<DossierMovements>(d);
 
-						if (text.Contains("applied for TAW.")) person.AppliedForTaw = when;
-						else if (text.Contains("was admitted to TAW")) person.AdmittedToTaw = when;
-						else if (text.Contains("was promoted to"))
+					foreach (var dossierMovement in dossierMovements.Movements)
+					{
+						var timestamp = ParseMonthDayYear(dossierMovement.timestamp);
+						var tawId = long.Parse(dossierMovement.id);
+						var description = dossierMovement.description;
+
+						if (description.Contains("applied for TAW.")) person.AppliedForTaw = timestamp;
+						else if (description.Contains("was admitted to TAW")) person.AdmittedToTaw = timestamp;
+						else if (description.Contains("was promoted to"))
 						{
 							if (person.Ranks == null || (person.Ranks.Count == 1 && person.Ranks.First().ValidFrom < new DateTime(1000, 1, 1)))
 								person.Ranks = new List<PersonRank>();
 
 							if (!person.Ranks.Any(r => r.TawId == tawId))
 							{
-								// aeroson was promoted to Sergeant by Samblues.
-								// aeroson was promoted to Private First Class by MaverickSabre.
-								var rankByWho = text.TakeStringAfter("was promoted to").Trim();
-								var byWho = text.TakeStringAfter("by").Trim();
+								// aeroson was promoted to Sergeant by <a href="/member/Samblues.aspx">Samblues</a>.
+								// aeroson was promoted to Private First Class by <a href="/member/MaverickSabre.aspx">MaverickSabre</a>.
+								var rankByWho = description.TakeStringAfter("was promoted to").Trim();
+								var byWho = description.TakeStringAfter("by").TakeStringBefore("</a>").TakeStringAfterLast(">");
 								while (byWho.EndsWith(".")) byWho = byWho.RemoveFromEnd(1).Trim();
 								var rankNameLong = rankByWho.TakeStringBefore("by").Trim();
 
 								var personRank = new PersonRank();
 								personRank.NameLong = rankNameLong;
-								personRank.ValidFrom = when;
+								personRank.ValidFrom = timestamp;
 								personRank.Person = person;
 								personRank.ByWho = GetPersonFromName(data, byWho);
 								personRank.TawId = tawId;
 								person.Ranks.Add(personRank);
 							}
 						}
-						else if (text.Contains("was joined to units"))
+						else if (description.Contains("was joined to units"))
 						{
 							// aeroson was joined to units AM2 Charlie Squad by MaverickSabre.
 							// aeroson was joined to units AM2 Charlie FT by Samblues.
-							// <td class="history_description" style="width: 80%;"><a href="/member/aeroson.aspx">aeroson</a> was joined to units <a href="/unit/3617.aspx">AM2 Charlie FT</a> by <a href="/member/Samblues.aspx">Samblues</a>.</td>
+							// <a href="/member/aeroson.aspx">aeroson</a> was joined to units <a href="/unit/3617.aspx">AM2 Charlie FT</a> by <a href="/member/Samblues.aspx">Samblues</a>.
 						}
-						else if (text.Contains("was removed from units"))
+						else if (description.Contains("was removed from units"))
 						{
 							// aeroson was removed from units AM2 TI Office by MaverickSabre.
-							// <td class="history_description" style="width: 80%;"><a href="/member/aeroson.aspx">aeroson</a> was removed from units <a href="/unit/1549.aspx">AM2 TI Office</a> by <a href="/member/MaverickSabre.aspx">MaverickSabre</a>.</td>
+							// <a href="/member/aeroson.aspx">aeroson</a> was removed from units <a href="/unit/1549.aspx">AM2 TI Office</a> by <a href="/member/MaverickSabre.aspx">MaverickSabre</a>.
 						}
-						else if (text.Contains("was assigned to position"))
+						else if (description.Contains("was assigned to position"))
 						{
 							// aeroson was assigned to position Training Instructor in unit AM2 TI Office by MaverickSabre.
 							// aeroson was assigned to position Squad Leader in unit AM2 Charlie Squad by MaverickSabre.
-							// <td class="history_description" style="width: 80%;"><a href="/member/aeroson.aspx">aeroson</a> was assigned to position Squad Leader in unit <a href="/unit/1505.aspx">AM2 Charlie Squad</a> by <a href="/member/MaverickSabre.aspx">MaverickSabre</a>.</td>
+							// <a href="/member/aeroson.aspx">aeroson</a> was assigned to position Squad Leader in unit <a href="/unit/1505.aspx">AM2 Charlie Squad</a> by <a href="/member/MaverickSabre.aspx">MaverickSabre</a>.
 						}
-						else if (text.Contains("was removed from position"))
+						else if (description.Contains("was removed from position"))
 						{
 							// aeroson was removed from position Training Instructor in unit AM2 TI Office by MaverickSabre.
-							// <td class="history_description" style="width: 80%;"><a href="/member/aeroson.aspx">aeroson</a> was removed from position Training Instructor in unit <a href="/unit/1549.aspx">AM2 TI Office</a> by MaverickSabre.</td>
+							// <a href="/member/aeroson.aspx">aeroson</a> was removed from position Training Instructor in unit <a href="/unit/1549.aspx">AM2 TI Office</a> by MaverickSabre.
+						}
+						else if (description.Contains("was returned to active duty by"))
+						{
+							// <a href="/member/MaverickSabre.aspx">MaverickSabre</a> was returned to active duty by <a href="/member/Lucky.aspx">Lucky</a>.
+						}
+						else if (description.Contains("was put on leave by"))
+						{
+							// <a href="/member/MaverickSabre.aspx">MaverickSabre</a> was put on leave by <a href="/member/Juvenis.aspx">Juvenis</a>.
+						}
+						else if (description.Contains("was discharged by"))
+						{
+							// <a href="/member/MaverickSabre.aspx">MaverickSabre</a> was discharged by <a href="/member/Lucid.aspx">Lucid</a>.
+						}
+						else if (description.Contains("was reinstated by"))
+						{
+							// <a href="/member/Dackey.aspx">Dackey</a> was reinstated by <a href="/member/Phenom.aspx">Phenom</a>
+						}
+						else if (description.Contains("was discharged by"))
+						{
+							// <a href="/member/MaverickSabre.aspx">MaverickSabre</a> was discharged by <a href="/member/Lucid.aspx">Lucid</a>.
+						}
+						else if (description.Contains("was discharged honorable by"))
+						{
+							// <a href="/member/Xsage.aspx">Xsage</a> was discharged honorable by <a href="/member/TexasHillbilly.aspx">TexasHillbilly</a>.
+						}
+						else if (description.Contains("was discharged dishonorable by"))
+						{
+							// <a href="/member/Dackey.aspx">Dackey</a> was discharged dishonorable by <a href="/member/Juvenis.aspx">Juvenis</a>.
+						}
+						else if (description.Contains("Unknown was removed from unit Unknown by"))
+						{
+							// removed person from removes unit
 						}
 						else
 						{
-							Log.Warn("unexpected dossier row: " + text);
+							Log.Warn("unexpected dossier row: " + description);
 						}
 					}
 				}
-
 				data.SaveChangesAsync();
 			}
 
 			Log.Trace("done updating profile of " + personName + ", parsed and saved");
 		}
 
-		DateTime ParseMonthDayYear([NotNull] string str) // MM-DD-YYYY
+		/// <summary>
+		/// MM-dd-yyyy
+		/// </summary>
+		/// <param name="str"></param>
+		/// <returns></returns>
+		DateTime ParseMonthDayYear([NotNull] string str)
 		{
-			//return DateTime.ParseExact(str, "M/d/yyyy hh:mm:ss zzz", CultureInfo.InvariantCulture);
-			return DateTime.Parse(str);
+			try
+			{
+				return DateTime.ParseExact(str, "M-d-yyyy", CultureInfo.InvariantCulture);
+			}
+			catch
+			{
+				Log.Error($"failed to {nameof(ParseMonthDayYear)} DateTime:'{str}'");
+				throw;
+			}
 		}
 
 		DateTime ParseUsTime([NotNull] string str)
 		{
-			//return DateTime.ParseExact(str, "M/d/yyyy hh:mm:ss zzz", CultureInfo.InvariantCulture);
-			return DateTime.Parse(str);
+			str = str.Replace('/', '.');
+			try
+			{
+				return DateTime.ParseExact(str, "M.d.yyyy H:mm:ss zzz", CultureInfo.InvariantCulture);
+			}
+			catch
+			{
+				Log.Error($"failed to {nameof(ParseUsTime)} DateTime:'{str}'");
+				throw;
+			}
+			//return DateTime.Parse(str);
 		}
 
 		public enum ParseEventResult

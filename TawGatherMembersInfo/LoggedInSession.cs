@@ -1,8 +1,11 @@
 ﻿using Microsoft.Win32;
 using Neitri.WebCrawling;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -110,6 +113,23 @@ namespace TawGatherMembersInfo
 			return response;
 		}
 
+		public async Task<string> PostJsonAsync(string url, object payload)
+		{
+			var requestText = JsonConvert.SerializeObject(payload);
+			var requsstTextBytes = Encoding.UTF8.GetBytes(requestText);
+
+			var request = MyHttpWebRequest.Create(url);
+			request.CookieContainer = cookieContainer;
+			request.Method = "POST";
+			request.ContentType = "application/json";
+			request.GetRequestStream().Write(requsstTextBytes, 0, requsstTextBytes.Length);
+
+			var response = await request.GetResponseAsync();
+			var responseText = response.ResponseText;
+
+			return responseText;
+		}
+
 		public void ClearCookies()
 		{
 			cookieContainer = new CookieContainer();
@@ -160,7 +180,7 @@ namespace TawGatherMembersInfo
 
 	public class SessionMannager : TheadedVariableManager<LoggedInSession>
 	{
-		public SessionMannager() : base(5)
+		public SessionMannager() : base(10)
 		{
 		}
 	}

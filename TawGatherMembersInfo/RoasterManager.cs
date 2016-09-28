@@ -60,10 +60,10 @@ namespace TawGatherMembersInfo
 		{
 			// if this is the startup then update profiles really fast
 			var isFirstRun = true;
-			var profileUpdateDelayMiliSeconds = 100;
+			var profileUpdateDelayMiliSeconds = 1000;
 
-			Task.Run(() => GatherBasicInformationFromUnitId1Roaster());
 			Task gatherBasicInfoTask = null;
+			gatherBasicInfoTask = Task.Run(() => GatherBasicInformationFromUnitId1Roaster());
 
 			while (true)
 			{
@@ -99,28 +99,36 @@ namespace TawGatherMembersInfo
 				}
 
 				{
-					long eventItStart;
-					using (var data = db.NewContext) eventItStart = data.Events.OrderByDescending(e => e.TawId).Take(1).Select(e => e.TawId).FirstOrDefault();
-					if (eventItStart == default(long)) eventItStart = 65000;
-					eventItStart++;
+					long eventIdStart;
+					using (var data = db.NewContext) eventIdStart = data.Events.OrderByDescending(e => e.TawId).Take(1).Select(e => e.TawId).FirstOrDefault();
+					if (eventIdStart == default(long)) eventIdStart = 65000;
+					eventIdStart++;
 
 					var doBreak = new System.Threading.ManualResetEventSlim();
 
 					var tasks = new List<Task>();
 
-					for (long i = eventItStart; i < eventItStart + 1000; i++)
+					for (long i = 0; i < 20000; i++)
 					{
+						long eventId = eventIdStart + i;
 						if (doBreak.IsSet) break;
 						var task = Task.Run(async () =>
 						{
 							if (doBreak.IsSet) return;
-							var result = await dataParser.ParseEventData(sessionManager, i);
-							if (result == WebDataParser.ParseEventResult.InvalidUriProbablyLastEvent) doBreak.Set();
+							var result = await dataParser.ParseEventData(sessionManager, eventId);
+							if (result == WebDataParser.ParseEventResult.InvalidUriProbablyLastEvent)
+							{
+								Log.Info("found probably last event with taw id:" + eventId);
+								doBreak.Set();
+							}
 						});
 						tasks.Add(task);
+						if (i % 200 == 0)
+						{
+							Task.WaitAll(tasks.ToArray());
+							tasks.Clear();
+						}
 					}
-
-					Task.WaitAll(tasks.ToArray());
 				}
 
 				gatherBasicInfoTask = Task.Run(() => GatherBasicInformationFromUnitId1Roaster());
