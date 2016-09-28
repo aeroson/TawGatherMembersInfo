@@ -19,6 +19,7 @@ namespace TawGatherMembersInfo.Migrations
 
 			// http://karthicraghupathi.com/2013/01/31/using-mysql-connector-net-6-6-4-with-entity-framework-5/
 			SetSqlGenerator("MySql.Data.MySqlClient", new SqlGenerator());
+			//SetSqlGenerator("MySql.Data.MySqlClient", new MySqlMigrationSqlGenerator());
 		}
 
 		protected override void Seed(TawGatherMembersInfo.MyDbContext context)

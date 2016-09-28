@@ -1,0 +1,156 @@
+[2016.09.27 19:53:23.707][I] Starting ...
+[2016.09.27 19:53:26.306][I] Started
+[2016.09.27 19:53:26.431][T] parsing event data, taw id:72944 start
+[2016.09.27 19:53:27.536][I] Logging in...
+[2016.09.27 19:53:28.443][I] Successfully logged in...
+[2016.09.27 19:53:28.581][T] parsing event data, taw id:72944 got web response
+[2016.09.27 19:53:29.546][T] parsing event data, taw id:72944 parsed and saved
+[2016.09.27 19:53:29.547][T] parsing event data, taw id:72945 start
+[2016.09.27 19:53:29.774][T] parsing event data, taw id:72945 got web response
+[2016.09.27 19:53:31.481][T] parsing event data, taw id:72945 parsed and saved
+[2016.09.27 19:53:31.481][T] parsing event data, taw id:72946 start
+[2016.09.27 19:53:31.679][T] parsing event data, taw id:72946 got web response
+[2016.09.27 19:53:33.257][T] parsing event data, taw id:72946 parsed and saved
+[2016.09.27 19:53:33.258][T] parsing event data, taw id:72947 start
+[2016.09.27 19:53:33.498][T] parsing event data, taw id:72947 got web response
+[2016.09.27 19:53:36.540][T] parsing event data, taw id:72947 parsed and saved
+[2016.09.27 19:53:36.541][T] parsing event data, taw id:72948 start
+[2016.09.27 19:53:36.932][T] parsing event data, taw id:72948 got web response
+[2016.09.27 19:53:37.555][T] parsing event data, taw id:72948 parsed and saved
+[2016.09.27 19:53:37.556][T] parsing event data, taw id:72949 start
+[2016.09.27 19:53:37.695][T] parsing event data, taw id:72949 got web response
+[2016.09.27 19:53:38.508][T] parsing event data, taw id:72949 parsed and saved
+[2016.09.27 19:53:38.508][T] parsing event data, taw id:72950 start
+[2016.09.27 19:53:40.779][T] parsing event data, taw id:72950 got web response
+[2016.09.27 19:53:48.995][T] parsing event data, taw id:72950 parsed and saved
+[2016.09.27 19:53:48.996][T] parsing event data, taw id:72951 start
+[2016.09.27 19:53:49.154][T] parsing event data, taw id:72951 got web response
+[2016.09.27 19:53:50.766][T] parsing event data, taw id:72951 parsed and saved
+[2016.09.27 19:53:50.766][T] parsing event data, taw id:72952 start
+[2016.09.27 19:53:50.912][T] parsing event data, taw id:72952 got web response
+[2016.09.27 19:53:51.914][T] parsing event data, taw id:72952 parsed and saved
+[2016.09.27 19:53:51.916][T] parsing event data, taw id:72953 start
+[2016.09.27 19:53:52.060][T] parsing event data, taw id:72953 got web response
+[2016.09.27 19:53:53.074][T] parsing event data, taw id:72953 parsed and saved
+[2016.09.27 19:53:53.076][T] parsing event data, taw id:72954 start
+[2016.09.27 19:53:53.224][T] parsing event data, taw id:72954 got web response
+[2016.09.27 19:53:54.230][T] parsing event data, taw id:72954 parsed and saved
+[2016.09.27 19:53:54.231][T] parsing event data, taw id:72955 start
+[2016.09.27 19:53:54.379][T] parsing event data, taw id:72955 got web response
+[2016.09.27 19:53:55.414][T] parsing event data, taw id:72955 parsed and saved
+[2016.09.27 19:53:55.416][T] parsing event data, taw id:72956 start
+[2016.09.27 19:53:55.563][T] parsing event data, taw id:72956 got web response
+[2016.09.27 19:53:56.566][T] parsing event data, taw id:72956 parsed and saved
+[2016.09.27 19:53:56.567][T] parsing event data, taw id:72957 start
+[2016.09.27 19:53:56.713][T] parsing event data, taw id:72957 got web response
+[2016.09.27 19:53:57.746][T] parsing event data, taw id:72957 parsed and saved
+[2016.09.27 19:53:57.748][T] parsing event data, taw id:72958 start
+[2016.09.27 19:53:57.903][T] parsing event data, taw id:72958 got web response
+[2016.09.27 19:53:58.981][T] parsing event data, taw id:72958 parsed and saved
+[2016.09.27 19:53:58.983][T] parsing event data, taw id:72959 start
+[2016.09.27 19:53:59.130][T] parsing event data, taw id:72959 got web response
+[2016.09.27 19:54:00.137][T] parsing event data, taw id:72959 parsed and saved
+[2016.09.27 19:54:00.139][T] parsing event data, taw id:72960 start
+[2016.09.27 19:54:00.284][T] parsing event data, taw id:72960 got web response
+[2016.09.27 19:54:01.281][T] parsing event data, taw id:72960 parsed and saved
+[2016.09.27 19:54:01.284][T] parsing event data, taw id:72961 start
+[2016.09.27 19:54:01.430][T] parsing event data, taw id:72961 got web response
+[2016.09.27 19:54:02.468][T] parsing event data, taw id:72961 parsed and saved
+[2016.09.27 19:54:02.469][T] parsing event data, taw id:72962 start
+[2016.09.27 19:54:02.617][T] parsing event data, taw id:72962 got web response
+[2016.09.27 19:54:03.625][T] parsing event data, taw id:72962 parsed and saved
+[2016.09.27 19:54:03.627][T] parsing event data, taw id:72963 start
+[2016.09.27 19:54:03.773][T] parsing event data, taw id:72963 got web response
+[2016.09.27 19:54:04.774][T] parsing event data, taw id:72963 parsed and saved
+[2016.09.27 19:54:04.775][T] parsing event data, taw id:72964 start
+[2016.09.27 19:54:04.926][T] parsing event data, taw id:72964 got web response
+[2016.09.27 19:54:05.920][T] parsing event data, taw id:72964 parsed and saved
+[2016.09.27 19:54:05.922][T] parsing event data, taw id:72965 start
+[2016.09.27 19:54:06.413][T] parsing event data, taw id:72965 got web response
+[2016.09.27 19:54:07.438][T] parsing event data, taw id:72965 parsed and saved
+[2016.09.27 19:54:07.439][T] parsing event data, taw id:72966 start
+[2016.09.27 19:54:07.584][T] parsing event data, taw id:72966 got web response
+[2016.09.27 19:54:08.583][T] parsing event data, taw id:72966 parsed and saved
+[2016.09.27 19:54:08.585][T] parsing event data, taw id:72967 start
+[2016.09.27 19:54:08.741][T] parsing event data, taw id:72967 got web response
+[2016.09.27 19:54:10.216][T] parsing event data, taw id:72967 parsed and saved
+[2016.09.27 19:54:10.218][T] parsing event data, taw id:72968 start
+[2016.09.27 19:54:10.368][T] parsing event data, taw id:72968 got web response
+[2016.09.27 19:54:11.757][T] parsing event data, taw id:72968 parsed and saved
+[2016.09.27 19:54:11.758][T] parsing event data, taw id:72969 start
+[2016.09.27 19:54:11.912][T] parsing event data, taw id:72969 got web response
+[2016.09.27 19:54:13.359][T] parsing event data, taw id:72969 parsed and saved
+[2016.09.27 19:54:13.360][T] parsing event data, taw id:72970 start
+[2016.09.27 19:54:13.518][T] parsing event data, taw id:72970 got web response
+[2016.09.27 19:54:14.933][T] parsing event data, taw id:72970 parsed and saved
+[2016.09.27 19:54:14.934][T] parsing event data, taw id:72971 start
+[2016.09.27 19:54:15.073][T] parsing event data, taw id:72971 got web response
+[2016.09.27 19:54:16.052][T] parsing event data, taw id:72971 parsed and saved
+[2016.09.27 19:54:16.054][T] parsing event data, taw id:72972 start
+[2016.09.27 19:54:16.263][T] parsing event data, taw id:72972 got web response
+[2016.09.27 19:54:19.628][T] parsing event data, taw id:72972 parsed and saved
+[2016.09.27 19:54:19.630][T] parsing event data, taw id:72973 start
+[2016.09.27 19:54:19.790][T] parsing event data, taw id:72973 got web response
+[2016.09.27 19:54:21.364][T] parsing event data, taw id:72973 parsed and saved
+[2016.09.27 19:54:21.366][T] parsing event data, taw id:72974 start
+[2016.09.27 19:54:21.604][T] parsing event data, taw id:72974 got web response
+[2016.09.27 19:54:23.539][T] parsing event data, taw id:72974 parsed and saved
+[2016.09.27 19:54:23.545][T] parsing event data, taw id:72975 start
+[2016.09.27 19:54:23.696][T] parsing event data, taw id:72975 got web response
+[2016.09.27 19:54:24.709][T] parsing event data, taw id:72975 parsed and saved
+[2016.09.27 19:54:24.711][T] parsing event data, taw id:72976 start
+[2016.09.27 19:54:25.047][T] parsing event data, taw id:72976 got web response
+[2016.09.27 19:54:25.049][T] event 72976 is invalid 'base event', skipping
+[2016.09.27 19:54:25.049][T] parsing event data, taw id:72976 parsed and saved
+[2016.09.27 19:54:25.050][T] parsing event data, taw id:72977 start
+[2016.09.27 19:54:25.242][T] parsing event data, taw id:72977 got web response
+[2016.09.27 19:54:26.249][T] parsing event data, taw id:72977 parsed and saved
+[2016.09.27 19:54:26.250][T] parsing event data, taw id:72978 start
+[2016.09.27 19:54:26.394][T] parsing event data, taw id:72978 got web response
+[2016.09.27 19:54:27.413][T] parsing event data, taw id:72978 parsed and saved
+[2016.09.27 19:54:27.414][T] parsing event data, taw id:72979 start
+[2016.09.27 19:54:27.565][T] parsing event data, taw id:72979 got web response
+[2016.09.27 19:54:28.822][T] parsing event data, taw id:72979 parsed and saved
+[2016.09.27 19:54:28.824][T] parsing event data, taw id:72980 start
+[2016.09.27 19:54:28.963][T] parsing event data, taw id:72980 got web response
+[2016.09.27 19:54:29.769][T] parsing event data, taw id:72980 parsed and saved
+[2016.09.27 19:54:29.771][T] parsing event data, taw id:72981 start
+[2016.09.27 19:54:29.919][T] parsing event data, taw id:72981 got web response
+[2016.09.27 19:54:31.118][T] parsing event data, taw id:72981 parsed and saved
+[2016.09.27 19:54:31.120][T] parsing event data, taw id:72982 start
+[2016.09.27 19:54:31.268][T] parsing event data, taw id:72982 got web response
+[2016.09.27 19:54:32.449][T] parsing event data, taw id:72982 parsed and saved
+[2016.09.27 19:54:32.451][T] parsing event data, taw id:72983 start
+[2016.09.27 19:54:32.592][T] parsing event data, taw id:72983 got web response
+[2016.09.27 19:54:33.429][T] parsing event data, taw id:72983 parsed and saved
+[2016.09.27 19:54:33.431][T] parsing event data, taw id:72984 start
+[2016.09.27 19:54:33.578][T] parsing event data, taw id:72984 got web response
+[2016.09.27 19:54:34.762][T] parsing event data, taw id:72984 parsed and saved
+[2016.09.27 19:54:34.764][T] parsing event data, taw id:72985 start
+[2016.09.27 19:54:35.130][T] parsing event data, taw id:72985 got web response
+[2016.09.27 19:54:35.132][T] event 72985 is invalid 'base event', skipping
+[2016.09.27 19:54:35.133][T] parsing event data, taw id:72985 parsed and saved
+[2016.09.27 19:54:35.134][T] parsing event data, taw id:72986 start
+[2016.09.27 19:54:35.351][T] parsing event data, taw id:72986 got web response
+[2016.09.27 19:54:38.412][T] parsing event data, taw id:72986 parsed and saved
+[2016.09.27 19:54:38.413][T] parsing event data, taw id:72987 start
+[2016.09.27 19:54:38.552][T] parsing event data, taw id:72987 got web response
+[2016.09.27 19:54:38.553][T] event 72987 is invalid 'base event', skipping
+[2016.09.27 19:54:38.554][T] parsing event data, taw id:72987 parsed and saved
+[2016.09.27 19:54:38.555][T] parsing event data, taw id:72988 start
+[2016.09.27 19:54:38.688][T] parsing event data, taw id:72988 got web response
+[2016.09.27 19:54:38.690][T] event 72988 is invalid 'base event', skipping
+[2016.09.27 19:54:38.690][T] parsing event data, taw id:72988 parsed and saved
+[2016.09.27 19:54:38.691][T] parsing event data, taw id:72989 start
+[2016.09.27 19:54:38.844][T] parsing event data, taw id:72989 got web response
+[2016.09.27 19:54:40.399][T] parsing event data, taw id:72989 parsed and saved
+[2016.09.27 19:54:40.400][T] parsing event data, taw id:72990 start
+[2016.09.27 19:54:40.616][T] parsing event data, taw id:72990 got web response
+[2016.09.27 19:54:43.304][T] parsing event data, taw id:72990 parsed and saved
+[2016.09.27 19:54:43.306][T] parsing event data, taw id:72991 start
+[2016.09.27 19:54:43.449][T] parsing event data, taw id:72991 got web response
+[2016.09.27 19:54:44.451][T] parsing event data, taw id:72991 parsed and saved
+[2016.09.27 19:54:44.452][T] parsing event data, taw id:72992 start
+[2016.09.27 19:54:44.704][T] parsing event data, taw id:72992 got web response
+[2016.09.27 19:54:44.706][T] parsing event data, taw id:72992 parsed and saved
+[2016.09.27 19:54:44.707][I] found end of events, pausing event parsing

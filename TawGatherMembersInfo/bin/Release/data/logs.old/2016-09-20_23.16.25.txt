@@ -1,0 +1,582 @@
+[2016.09.20 23:16:25.726][I] Starting ...
+[2016.09.20 23:16:28.431][I] Started
+[2016.09.20 23:16:33.939][T] parsing event data, taw id:72426 start
+[2016.09.20 23:16:34.920][I] Logging in...
+[2016.09.20 23:16:36.056][I] Successfully logged in...
+[2016.09.20 23:16:36.212][T] parsing event data, taw id:72426 got web response
+[2016.09.20 23:16:37.843][T] parsing event data, taw id:72426 parsed and saved
+[2016.09.20 23:16:37.843][T] parsing event data, taw id:72427 start
+[2016.09.20 23:16:37.994][T] parsing event data, taw id:72427 got web response
+[2016.09.20 23:16:39.659][T] parsing event data, taw id:72427 parsed and saved
+[2016.09.20 23:16:39.659][T] parsing event data, taw id:72428 start
+[2016.09.20 23:16:39.809][T] parsing event data, taw id:72428 got web response
+[2016.09.20 23:16:41.480][T] parsing event data, taw id:72428 parsed and saved
+[2016.09.20 23:16:41.480][T] parsing event data, taw id:72429 start
+[2016.09.20 23:16:41.641][T] parsing event data, taw id:72429 got web response
+[2016.09.20 23:16:43.122][T] parsing event data, taw id:72429 parsed and saved
+[2016.09.20 23:16:43.122][T] parsing event data, taw id:72430 start
+[2016.09.20 23:16:43.834][T] parsing event data, taw id:72430 got web response
+[2016.09.20 23:16:47.814][T] parsing event data, taw id:72430 parsed and saved
+[2016.09.20 23:16:47.814][T] parsing event data, taw id:72431 start
+[2016.09.20 23:16:48.932][T] parsing event data, taw id:72431 got web response
+[2016.09.20 23:16:58.146][T] parsing event data, taw id:72431 parsed and saved
+[2016.09.20 23:16:58.146][T] parsing event data, taw id:72432 start
+[2016.09.20 23:16:58.931][T] parsing event data, taw id:72432 got web response
+[2016.09.20 23:17:05.605][T] parsing event data, taw id:72432 parsed and saved
+[2016.09.20 23:17:05.606][T] parsing event data, taw id:72433 start
+[2016.09.20 23:17:07.504][T] parsing event data, taw id:72433 got web response
+[2016.09.20 23:17:17.946][T] parsing event data, taw id:72433 parsed and saved
+[2016.09.20 23:17:17.947][T] parsing event data, taw id:72434 start
+[2016.09.20 23:17:18.768][T] parsing event data, taw id:72434 got web response
+[2016.09.20 23:17:20.029][T] parsing event data, taw id:72434 parsed and saved
+[2016.09.20 23:17:20.031][T] parsing event data, taw id:72435 start
+[2016.09.20 23:17:20.860][T] parsing event data, taw id:72435 got web response
+[2016.09.20 23:17:24.448][T] parsing event data, taw id:72435 parsed and saved
+[2016.09.20 23:17:24.449][T] parsing event data, taw id:72436 start
+[2016.09.20 23:17:25.301][T] parsing event data, taw id:72436 got web response
+[2016.09.20 23:17:29.624][T] parsing event data, taw id:72436 parsed and saved
+[2016.09.20 23:17:29.626][T] parsing event data, taw id:72437 start
+[2016.09.20 23:17:30.018][T] parsing event data, taw id:72437 got web response
+[2016.09.20 23:17:30.610][T] parsing event data, taw id:72437 parsed and saved
+[2016.09.20 23:17:30.611][T] parsing event data, taw id:72438 start
+[2016.09.20 23:17:32.833][T] parsing event data, taw id:72438 got web response
+[2016.09.20 23:17:48.132][T] parsing event data, taw id:72438 parsed and saved
+[2016.09.20 23:17:48.134][T] parsing event data, taw id:72439 start
+[2016.09.20 23:17:48.286][T] parsing event data, taw id:72439 got web response
+[2016.09.20 23:17:49.960][T] parsing event data, taw id:72439 parsed and saved
+[2016.09.20 23:17:49.962][T] parsing event data, taw id:72440 start
+[2016.09.20 23:17:50.257][T] parsing event data, taw id:72440 got web response
+[2016.09.20 23:17:56.465][T] parsing event data, taw id:72440 parsed and saved
+[2016.09.20 23:17:56.468][T] parsing event data, taw id:72441 start
+[2016.09.20 23:17:56.613][T] parsing event data, taw id:72441 got web response
+[2016.09.20 23:17:57.927][T] parsing event data, taw id:72441 parsed and saved
+[2016.09.20 23:17:57.929][T] parsing event data, taw id:72442 start
+[2016.09.20 23:17:58.228][T] parsing event data, taw id:72442 got web response
+[2016.09.20 23:18:02.370][T] parsing event data, taw id:72442 parsed and saved
+[2016.09.20 23:18:02.372][T] parsing event data, taw id:72443 start
+[2016.09.20 23:18:02.554][T] parsing event data, taw id:72443 got web response
+[2016.09.20 23:18:04.545][T] parsing event data, taw id:72443 parsed and saved
+[2016.09.20 23:18:04.547][T] parsing event data, taw id:72444 start
+[2016.09.20 23:18:05.474][T] parsing event data, taw id:72444 got web response
+[2016.09.20 23:18:12.460][T] parsing event data, taw id:72444 parsed and saved
+[2016.09.20 23:18:12.461][T] parsing event data, taw id:72445 start
+[2016.09.20 23:18:12.671][T] parsing event data, taw id:72445 got web response
+[2016.09.20 23:18:15.551][T] parsing event data, taw id:72445 parsed and saved
+[2016.09.20 23:18:15.553][T] parsing event data, taw id:72446 start
+[2016.09.20 23:18:15.973][T] parsing event data, taw id:72446 got web response
+[2016.09.20 23:18:23.276][T] parsing event data, taw id:72446 parsed and saved
+[2016.09.20 23:18:23.280][T] parsing event data, taw id:72447 start
+[2016.09.20 23:18:23.645][T] parsing event data, taw id:72447 got web response
+[2016.09.20 23:18:29.214][T] parsing event data, taw id:72447 parsed and saved
+[2016.09.20 23:18:29.216][T] parsing event data, taw id:72448 start
+[2016.09.20 23:18:30.323][T] parsing event data, taw id:72448 got web response
+[2016.09.20 23:18:44.602][T] parsing event data, taw id:72448 parsed and saved
+[2016.09.20 23:18:44.607][T] parsing event data, taw id:72449 start
+[2016.09.20 23:18:44.810][T] parsing event data, taw id:72449 got web response
+[2016.09.20 23:18:47.752][T] parsing event data, taw id:72449 parsed and saved
+[2016.09.20 23:18:47.754][T] parsing event data, taw id:72450 start
+[2016.09.20 23:18:48.244][T] parsing event data, taw id:72450 got web response
+[2016.09.20 23:18:54.743][T] parsing event data, taw id:72450 parsed and saved
+[2016.09.20 23:18:54.745][T] parsing event data, taw id:72451 start
+[2016.09.20 23:18:55.329][T] parsing event data, taw id:72451 got web response
+[2016.09.20 23:19:03.105][T] parsing event data, taw id:72451 parsed and saved
+[2016.09.20 23:19:03.107][T] parsing event data, taw id:72452 start
+[2016.09.20 23:19:03.557][T] parsing event data, taw id:72452 got web response
+[2016.09.20 23:19:09.125][T] parsing event data, taw id:72452 parsed and saved
+[2016.09.20 23:19:09.126][T] parsing event data, taw id:72453 start
+[2016.09.20 23:19:09.786][T] parsing event data, taw id:72453 got web response
+[2016.09.20 23:19:19.136][T] parsing event data, taw id:72453 parsed and saved
+[2016.09.20 23:19:19.139][T] parsing event data, taw id:72454 start
+[2016.09.20 23:19:19.273][T] parsing event data, taw id:72454 got web response
+[2016.09.20 23:19:20.048][T] parsing event data, taw id:72454 parsed and saved
+[2016.09.20 23:19:20.050][T] parsing event data, taw id:72455 start
+[2016.09.20 23:19:20.207][T] parsing event data, taw id:72455 got web response
+[2016.09.20 23:19:21.358][T] parsing event data, taw id:72455 parsed and saved
+[2016.09.20 23:19:21.359][T] parsing event data, taw id:72456 start
+[2016.09.20 23:19:21.558][T] parsing event data, taw id:72456 got web response
+[2016.09.20 23:19:23.532][T] parsing event data, taw id:72456 parsed and saved
+[2016.09.20 23:19:23.534][T] parsing event data, taw id:72457 start
+[2016.09.20 23:19:23.839][T] parsing event data, taw id:72457 got web response
+[2016.09.20 23:19:27.966][T] parsing event data, taw id:72457 parsed and saved
+[2016.09.20 23:19:27.967][T] parsing event data, taw id:72458 start
+[2016.09.20 23:19:28.094][T] parsing event data, taw id:72458 got web response
+[2016.09.20 23:19:28.691][T] parsing event data, taw id:72458 parsed and saved
+[2016.09.20 23:19:28.693][T] parsing event data, taw id:72459 start
+[2016.09.20 23:19:28.951][T] parsing event data, taw id:72459 got web response
+[2016.09.20 23:19:31.213][T] parsing event data, taw id:72459 parsed and saved
+[2016.09.20 23:19:31.217][T] parsing event data, taw id:72460 start
+[2016.09.20 23:19:31.356][T] parsing event data, taw id:72460 got web response
+[2016.09.20 23:19:32.493][T] parsing event data, taw id:72460 parsed and saved
+[2016.09.20 23:19:32.494][T] parsing event data, taw id:72461 start
+[2016.09.20 23:19:32.857][T] parsing event data, taw id:72461 got web response
+[2016.09.20 23:19:33.996][T] parsing event data, taw id:72461 parsed and saved
+[2016.09.20 23:19:34.000][T] parsing event data, taw id:72462 start
+[2016.09.20 23:19:35.672][T] parsing event data, taw id:72462 got web response
+[2016.09.20 23:19:37.343][T] parsing event data, taw id:72462 parsed and saved
+[2016.09.20 23:19:37.345][T] parsing event data, taw id:72463 start
+[2016.09.20 23:19:37.479][T] parsing event data, taw id:72463 got web response
+[2016.09.20 23:19:38.608][T] parsing event data, taw id:72463 parsed and saved
+[2016.09.20 23:19:38.610][T] parsing event data, taw id:72464 start
+[2016.09.20 23:19:38.762][T] parsing event data, taw id:72464 got web response
+[2016.09.20 23:19:40.429][T] parsing event data, taw id:72464 parsed and saved
+[2016.09.20 23:19:40.430][T] parsing event data, taw id:72465 start
+[2016.09.20 23:19:40.595][T] parsing event data, taw id:72465 got web response
+[2016.09.20 23:19:42.977][T] parsing event data, taw id:72465 parsed and saved
+[2016.09.20 23:19:42.979][T] parsing event data, taw id:72466 start
+[2016.09.20 23:19:43.362][T] parsing event data, taw id:72466 got web response
+[2016.09.20 23:19:48.792][T] parsing event data, taw id:72466 parsed and saved
+[2016.09.20 23:19:48.794][T] parsing event data, taw id:72467 start
+[2016.09.20 23:19:48.927][T] parsing event data, taw id:72467 got web response
+[2016.09.20 23:19:49.884][T] parsing event data, taw id:72467 parsed and saved
+[2016.09.20 23:19:49.886][T] parsing event data, taw id:72468 start
+[2016.09.20 23:19:50.021][T] parsing event data, taw id:72468 got web response
+[2016.09.20 23:19:51.182][T] parsing event data, taw id:72468 parsed and saved
+[2016.09.20 23:19:51.183][T] parsing event data, taw id:72469 start
+[2016.09.20 23:19:51.303][T] parsing event data, taw id:72469 got web response
+[2016.09.20 23:19:51.305][T] event 72469 is invalid 'base event', skipping
+[2016.09.20 23:19:51.305][T] parsing event data, taw id:72469 parsed and saved
+[2016.09.20 23:19:51.306][T] parsing event data, taw id:72470 start
+[2016.09.20 23:19:51.426][T] parsing event data, taw id:72470 got web response
+[2016.09.20 23:19:51.429][T] event 72470 is invalid 'base event', skipping
+[2016.09.20 23:19:51.429][T] parsing event data, taw id:72470 parsed and saved
+[2016.09.20 23:19:51.430][T] parsing event data, taw id:72471 start
+[2016.09.20 23:19:51.550][T] parsing event data, taw id:72471 got web response
+[2016.09.20 23:19:51.551][T] event 72471 is invalid 'base event', skipping
+[2016.09.20 23:19:51.552][T] parsing event data, taw id:72471 parsed and saved
+[2016.09.20 23:19:51.552][T] parsing event data, taw id:72472 start
+[2016.09.20 23:19:51.679][T] parsing event data, taw id:72472 got web response
+[2016.09.20 23:19:52.456][T] parsing event data, taw id:72472 parsed and saved
+[2016.09.20 23:19:52.458][T] parsing event data, taw id:72473 start
+[2016.09.20 23:19:52.592][T] parsing event data, taw id:72473 got web response
+[2016.09.20 23:19:53.540][T] parsing event data, taw id:72473 parsed and saved
+[2016.09.20 23:19:53.542][T] parsing event data, taw id:72474 start
+[2016.09.20 23:19:53.662][T] parsing event data, taw id:72474 got web response
+[2016.09.20 23:19:53.664][T] event 72474 is invalid 'base event', skipping
+[2016.09.20 23:19:53.665][T] parsing event data, taw id:72474 parsed and saved
+[2016.09.20 23:19:53.666][T] parsing event data, taw id:72475 start
+[2016.09.20 23:19:53.864][T] parsing event data, taw id:72475 got web response
+[2016.09.20 23:19:57.153][T] parsing event data, taw id:72475 parsed and saved
+[2016.09.20 23:19:57.154][T] parsing event data, taw id:72476 start
+[2016.09.20 23:19:57.294][T] parsing event data, taw id:72476 got web response
+[2016.09.20 23:19:58.605][T] parsing event data, taw id:72476 parsed and saved
+[2016.09.20 23:19:58.606][T] parsing event data, taw id:72477 start
+[2016.09.20 23:19:58.755][T] parsing event data, taw id:72477 got web response
+[2016.09.20 23:20:00.436][T] parsing event data, taw id:72477 parsed and saved
+[2016.09.20 23:20:00.438][T] parsing event data, taw id:72478 start
+[2016.09.20 23:20:00.569][T] parsing event data, taw id:72478 got web response
+[2016.09.20 23:20:01.348][T] parsing event data, taw id:72478 parsed and saved
+[2016.09.20 23:20:01.349][T] parsing event data, taw id:72479 start
+[2016.09.20 23:20:01.478][T] parsing event data, taw id:72479 got web response
+[2016.09.20 23:20:02.249][T] parsing event data, taw id:72479 parsed and saved
+[2016.09.20 23:20:02.250][T] parsing event data, taw id:72480 start
+[2016.09.20 23:20:02.394][T] parsing event data, taw id:72480 got web response
+[2016.09.20 23:20:03.915][T] parsing event data, taw id:72480 parsed and saved
+[2016.09.20 23:20:03.917][T] parsing event data, taw id:72481 start
+[2016.09.20 23:20:04.105][T] parsing event data, taw id:72481 got web response
+[2016.09.20 23:20:05.775][T] parsing event data, taw id:72481 parsed and saved
+[2016.09.20 23:20:05.776][T] parsing event data, taw id:72482 start
+[2016.09.20 23:20:06.109][T] parsing event data, taw id:72482 got web response
+[2016.09.20 23:20:12.996][T] parsing event data, taw id:72482 parsed and saved
+[2016.09.20 23:20:12.998][T] parsing event data, taw id:72483 start
+[2016.09.20 23:20:13.132][T] parsing event data, taw id:72483 got web response
+[2016.09.20 23:20:14.267][T] parsing event data, taw id:72483 parsed and saved
+[2016.09.20 23:20:14.269][T] parsing event data, taw id:72484 start
+[2016.09.20 23:20:14.418][T] parsing event data, taw id:72484 got web response
+[2016.09.20 23:20:16.264][T] parsing event data, taw id:72484 parsed and saved
+[2016.09.20 23:20:16.266][T] parsing event data, taw id:72485 start
+[2016.09.20 23:20:16.418][T] parsing event data, taw id:72485 got web response
+[2016.09.20 23:20:18.262][T] parsing event data, taw id:72485 parsed and saved
+[2016.09.20 23:20:18.265][T] parsing event data, taw id:72486 start
+[2016.09.20 23:20:18.457][T] parsing event data, taw id:72486 got web response
+[2016.09.20 23:20:20.515][T] parsing event data, taw id:72486 parsed and saved
+[2016.09.20 23:20:20.516][T] parsing event data, taw id:72487 start
+[2016.09.20 23:20:20.852][T] parsing event data, taw id:72487 got web response
+[2016.09.20 23:20:25.900][T] parsing event data, taw id:72487 parsed and saved
+[2016.09.20 23:20:25.902][T] parsing event data, taw id:72488 start
+[2016.09.20 23:20:26.035][T] parsing event data, taw id:72488 got web response
+[2016.09.20 23:20:26.987][T] parsing event data, taw id:72488 parsed and saved
+[2016.09.20 23:20:26.989][T] parsing event data, taw id:72489 start
+[2016.09.20 23:20:27.114][T] parsing event data, taw id:72489 got web response
+[2016.09.20 23:20:27.705][T] parsing event data, taw id:72489 parsed and saved
+[2016.09.20 23:20:27.707][T] parsing event data, taw id:72490 start
+[2016.09.20 23:20:27.908][T] parsing event data, taw id:72490 got web response
+[2016.09.20 23:20:31.368][T] parsing event data, taw id:72490 parsed and saved
+[2016.09.20 23:20:31.369][T] parsing event data, taw id:72491 start
+[2016.09.20 23:20:31.569][T] parsing event data, taw id:72491 got web response
+[2016.09.20 23:20:34.862][T] parsing event data, taw id:72491 parsed and saved
+[2016.09.20 23:20:34.864][T] parsing event data, taw id:72492 start
+[2016.09.20 23:20:35.327][T] parsing event data, taw id:72492 got web response
+[2016.09.20 23:20:43.150][T] parsing event data, taw id:72492 parsed and saved
+[2016.09.20 23:20:43.152][T] parsing event data, taw id:72493 start
+[2016.09.20 23:20:43.266][T] parsing event data, taw id:72493 got web response
+[2016.09.20 23:20:43.268][T] event 72493 is invalid 'base event', skipping
+[2016.09.20 23:20:43.269][T] parsing event data, taw id:72493 parsed and saved
+[2016.09.20 23:20:43.269][T] parsing event data, taw id:72494 start
+[2016.09.20 23:20:43.383][T] parsing event data, taw id:72494 got web response
+[2016.09.20 23:20:43.385][T] event 72494 is invalid 'base event', skipping
+[2016.09.20 23:20:43.386][T] parsing event data, taw id:72494 parsed and saved
+[2016.09.20 23:20:43.386][T] parsing event data, taw id:72495 start
+[2016.09.20 23:20:43.544][T] parsing event data, taw id:72495 got web response
+[2016.09.20 23:20:45.219][T] parsing event data, taw id:72495 parsed and saved
+[2016.09.20 23:20:45.221][T] parsing event data, taw id:72496 start
+[2016.09.20 23:20:45.348][T] parsing event data, taw id:72496 got web response
+[2016.09.20 23:20:45.943][T] parsing event data, taw id:72496 parsed and saved
+[2016.09.20 23:20:45.944][T] parsing event data, taw id:72497 start
+[2016.09.20 23:20:46.102][T] parsing event data, taw id:72497 got web response
+[2016.09.20 23:20:47.591][T] parsing event data, taw id:72497 parsed and saved
+[2016.09.20 23:20:47.592][T] parsing event data, taw id:72498 start
+[2016.09.20 23:20:47.740][T] parsing event data, taw id:72498 got web response
+[2016.09.20 23:20:49.223][T] parsing event data, taw id:72498 parsed and saved
+[2016.09.20 23:20:49.225][T] parsing event data, taw id:72499 start
+[2016.09.20 23:20:49.364][T] parsing event data, taw id:72499 got web response
+[2016.09.20 23:20:50.322][T] parsing event data, taw id:72499 parsed and saved
+[2016.09.20 23:20:50.324][T] parsing event data, taw id:72500 start
+[2016.09.20 23:20:50.491][T] parsing event data, taw id:72500 got web response
+[2016.09.20 23:20:52.101][T] parsing event data, taw id:72500 parsed and saved
+[2016.09.20 23:20:52.102][T] parsing event data, taw id:72501 start
+[2016.09.20 23:20:52.241][T] parsing event data, taw id:72501 got web response
+[2016.09.20 23:20:53.375][T] parsing event data, taw id:72501 parsed and saved
+[2016.09.20 23:20:53.377][T] parsing event data, taw id:72502 start
+[2016.09.20 23:20:53.502][T] parsing event data, taw id:72502 got web response
+[2016.09.20 23:20:54.274][T] parsing event data, taw id:72502 parsed and saved
+[2016.09.20 23:20:54.275][T] parsing event data, taw id:72503 start
+[2016.09.20 23:20:54.478][T] parsing event data, taw id:72503 got web response
+[2016.09.20 23:20:57.044][T] parsing event data, taw id:72503 parsed and saved
+[2016.09.20 23:20:57.047][T] parsing event data, taw id:72504 start
+[2016.09.20 23:20:57.557][T] parsing event data, taw id:72504 got web response
+[2016.09.20 23:21:04.741][T] parsing event data, taw id:72504 parsed and saved
+[2016.09.20 23:21:04.743][T] parsing event data, taw id:72505 start
+[2016.09.20 23:21:04.902][T] parsing event data, taw id:72505 got web response
+[2016.09.20 23:21:06.919][T] parsing event data, taw id:72505 parsed and saved
+[2016.09.20 23:21:06.920][T] parsing event data, taw id:72506 start
+[2016.09.20 23:21:07.074][T] parsing event data, taw id:72506 got web response
+[2016.09.20 23:21:08.588][T] parsing event data, taw id:72506 parsed and saved
+[2016.09.20 23:21:08.589][T] parsing event data, taw id:72507 start
+[2016.09.20 23:21:08.735][T] parsing event data, taw id:72507 got web response
+[2016.09.20 23:21:10.041][T] parsing event data, taw id:72507 parsed and saved
+[2016.09.20 23:21:10.042][T] parsing event data, taw id:72508 start
+[2016.09.20 23:21:10.175][T] parsing event data, taw id:72508 got web response
+[2016.09.20 23:21:11.119][T] parsing event data, taw id:72508 parsed and saved
+[2016.09.20 23:21:11.120][T] parsing event data, taw id:72509 start
+[2016.09.20 23:21:11.247][T] parsing event data, taw id:72509 got web response
+[2016.09.20 23:21:12.016][T] parsing event data, taw id:72509 parsed and saved
+[2016.09.20 23:21:12.016][T] parsing event data, taw id:72510 start
+[2016.09.20 23:21:12.142][T] parsing event data, taw id:72510 got web response
+[2016.09.20 23:21:12.503][T] parsing event data, taw id:72510 parsed and saved
+[2016.09.20 23:21:12.503][T] parsing event data, taw id:72511 start
+[2016.09.20 23:21:12.646][T] parsing event data, taw id:72511 got web response
+[2016.09.20 23:21:13.960][T] parsing event data, taw id:72511 parsed and saved
+[2016.09.20 23:21:13.960][T] parsing event data, taw id:72512 start
+[2016.09.20 23:21:14.100][T] parsing event data, taw id:72512 got web response
+[2016.09.20 23:21:15.050][T] parsing event data, taw id:72512 parsed and saved
+[2016.09.20 23:21:15.051][T] parsing event data, taw id:72513 start
+[2016.09.20 23:21:15.179][T] parsing event data, taw id:72513 got web response
+[2016.09.20 23:21:15.947][T] parsing event data, taw id:72513 parsed and saved
+[2016.09.20 23:21:15.949][T] parsing event data, taw id:72514 start
+[2016.09.20 23:21:16.071][T] parsing event data, taw id:72514 got web response
+[2016.09.20 23:21:16.483][T] parsing event data, taw id:72514 parsed and saved
+[2016.09.20 23:21:16.483][T] parsing event data, taw id:72515 start
+[2016.09.20 23:21:16.623][T] parsing event data, taw id:72515 got web response
+[2016.09.20 23:21:17.571][T] parsing event data, taw id:72515 parsed and saved
+[2016.09.20 23:21:17.572][T] parsing event data, taw id:72516 start
+[2016.09.20 23:21:17.731][T] parsing event data, taw id:72516 got web response
+[2016.09.20 23:21:19.418][T] parsing event data, taw id:72516 parsed and saved
+[2016.09.20 23:21:19.419][T] parsing event data, taw id:72517 start
+[2016.09.20 23:21:19.549][T] parsing event data, taw id:72517 got web response
+[2016.09.20 23:21:20.321][T] parsing event data, taw id:72517 parsed and saved
+[2016.09.20 23:21:20.321][T] parsing event data, taw id:72518 start
+[2016.09.20 23:21:20.527][T] parsing event data, taw id:72518 got web response
+[2016.09.20 23:21:23.276][T] parsing event data, taw id:72518 parsed and saved
+[2016.09.20 23:21:23.277][T] parsing event data, taw id:72519 start
+[2016.09.20 23:21:23.423][T] parsing event data, taw id:72519 got web response
+[2016.09.20 23:21:24.725][T] parsing event data, taw id:72519 parsed and saved
+[2016.09.20 23:21:24.726][T] parsing event data, taw id:72520 start
+[2016.09.20 23:21:24.864][T] parsing event data, taw id:72520 got web response
+[2016.09.20 23:21:26.170][T] parsing event data, taw id:72520 parsed and saved
+[2016.09.20 23:21:26.170][T] parsing event data, taw id:72521 start
+[2016.09.20 23:21:26.316][T] parsing event data, taw id:72521 got web response
+[2016.09.20 23:21:27.615][T] parsing event data, taw id:72521 parsed and saved
+[2016.09.20 23:21:27.616][T] parsing event data, taw id:72522 start
+[2016.09.20 23:21:27.763][T] parsing event data, taw id:72522 got web response
+[2016.09.20 23:21:29.423][T] parsing event data, taw id:72522 parsed and saved
+[2016.09.20 23:21:29.423][T] parsing event data, taw id:72523 start
+[2016.09.20 23:21:29.579][T] parsing event data, taw id:72523 got web response
+[2016.09.20 23:21:31.409][T] parsing event data, taw id:72523 parsed and saved
+[2016.09.20 23:21:31.410][T] parsing event data, taw id:72524 start
+[2016.09.20 23:21:31.545][T] parsing event data, taw id:72524 got web response
+[2016.09.20 23:21:32.667][T] parsing event data, taw id:72524 parsed and saved
+[2016.09.20 23:21:32.667][T] parsing event data, taw id:72525 start
+[2016.09.20 23:21:32.804][T] parsing event data, taw id:72525 got web response
+[2016.09.20 23:21:33.928][T] parsing event data, taw id:72525 parsed and saved
+[2016.09.20 23:21:33.928][T] parsing event data, taw id:72526 start
+[2016.09.20 23:21:34.075][T] parsing event data, taw id:72526 got web response
+[2016.09.20 23:21:34.075][T] event 72526 is invalid 'base event', skipping
+[2016.09.20 23:21:34.076][T] parsing event data, taw id:72526 parsed and saved
+[2016.09.20 23:21:34.076][T] parsing event data, taw id:72527 start
+[2016.09.20 23:21:34.214][T] parsing event data, taw id:72527 got web response
+[2016.09.20 23:21:35.334][T] parsing event data, taw id:72527 parsed and saved
+[2016.09.20 23:21:35.335][T] parsing event data, taw id:72528 start
+[2016.09.20 23:21:35.471][T] parsing event data, taw id:72528 got web response
+[2016.09.20 23:21:36.689][T] parsing event data, taw id:72528 parsed and saved
+[2016.09.20 23:21:36.689][T] parsing event data, taw id:72529 start
+[2016.09.20 23:21:37.132][T] parsing event data, taw id:72529 got web response
+[2016.09.20 23:21:44.437][T] parsing event data, taw id:72529 parsed and saved
+[2016.09.20 23:21:44.439][T] parsing event data, taw id:72530 start
+[2016.09.20 23:21:44.560][T] parsing event data, taw id:72530 got web response
+[2016.09.20 23:21:44.562][T] event 72530 is invalid 'base event', skipping
+[2016.09.20 23:21:44.563][T] parsing event data, taw id:72530 parsed and saved
+[2016.09.20 23:21:44.564][T] parsing event data, taw id:72531 start
+[2016.09.20 23:21:44.717][T] parsing event data, taw id:72531 got web response
+[2016.09.20 23:21:46.552][T] parsing event data, taw id:72531 parsed and saved
+[2016.09.20 23:21:46.554][T] parsing event data, taw id:72532 start
+[2016.09.20 23:21:46.696][T] parsing event data, taw id:72532 got web response
+[2016.09.20 23:21:48.173][T] parsing event data, taw id:72532 parsed and saved
+[2016.09.20 23:21:48.174][T] parsing event data, taw id:72533 start
+[2016.09.20 23:21:48.309][T] parsing event data, taw id:72533 got web response
+[2016.09.20 23:21:49.075][T] parsing event data, taw id:72533 parsed and saved
+[2016.09.20 23:21:49.077][T] parsing event data, taw id:72534 start
+[2016.09.20 23:21:49.402][T] parsing event data, taw id:72534 got web response
+[2016.09.20 23:21:53.692][T] parsing event data, taw id:72534 parsed and saved
+[2016.09.20 23:21:53.693][T] parsing event data, taw id:72535 start
+[2016.09.20 23:21:55.032][T] parsing event data, taw id:72535 got web response
+[2016.09.20 23:22:05.240][T] parsing event data, taw id:72535 parsed and saved
+[2016.09.20 23:22:05.242][T] parsing event data, taw id:72536 start
+[2016.09.20 23:22:05.889][T] parsing event data, taw id:72536 got web response
+[2016.09.20 23:22:11.581][T] parsing event data, taw id:72536 parsed and saved
+[2016.09.20 23:22:11.583][T] parsing event data, taw id:72537 start
+[2016.09.20 23:22:12.024][T] parsing event data, taw id:72537 got web response
+[2016.09.20 23:22:17.228][T] parsing event data, taw id:72537 parsed and saved
+[2016.09.20 23:22:17.229][T] parsing event data, taw id:72538 start
+[2016.09.20 23:22:17.481][T] parsing event data, taw id:72538 got web response
+[2016.09.20 23:22:20.336][T] parsing event data, taw id:72538 parsed and saved
+[2016.09.20 23:22:20.338][T] parsing event data, taw id:72539 start
+[2016.09.20 23:22:20.476][T] parsing event data, taw id:72539 got web response
+[2016.09.20 23:22:21.419][T] parsing event data, taw id:72539 parsed and saved
+[2016.09.20 23:22:21.420][T] parsing event data, taw id:72540 start
+[2016.09.20 23:22:21.562][T] parsing event data, taw id:72540 got web response
+[2016.09.20 23:22:22.682][T] parsing event data, taw id:72540 parsed and saved
+[2016.09.20 23:22:22.684][T] parsing event data, taw id:72541 start
+[2016.09.20 23:22:22.813][T] parsing event data, taw id:72541 got web response
+[2016.09.20 23:22:23.403][T] parsing event data, taw id:72541 parsed and saved
+[2016.09.20 23:22:23.405][T] parsing event data, taw id:72542 start
+[2016.09.20 23:22:24.109][T] parsing event data, taw id:72542 got web response
+[2016.09.20 23:22:34.117][T] parsing event data, taw id:72542 parsed and saved
+[2016.09.20 23:22:34.119][T] parsing event data, taw id:72543 start
+[2016.09.20 23:22:34.371][T] parsing event data, taw id:72543 got web response
+[2016.09.20 23:22:34.373][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:34.389][E] ecountered errorenous event, taw id:72543
+[2016.09.20 23:22:34.398][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:34.399][T] parsing event data, taw id:72544 start
+[2016.09.20 23:22:34.618][T] parsing event data, taw id:72544 got web response
+[2016.09.20 23:22:34.619][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:34.636][E] ecountered errorenous event, taw id:72544
+[2016.09.20 23:22:34.637][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:34.639][T] parsing event data, taw id:72545 start
+[2016.09.20 23:22:34.857][T] parsing event data, taw id:72545 got web response
+[2016.09.20 23:22:34.859][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:34.869][E] ecountered errorenous event, taw id:72545
+[2016.09.20 23:22:34.871][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:34.871][T] parsing event data, taw id:72546 start
+[2016.09.20 23:22:35.090][T] parsing event data, taw id:72546 got web response
+[2016.09.20 23:22:35.091][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:35.104][E] ecountered errorenous event, taw id:72546
+[2016.09.20 23:22:35.105][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:35.106][T] parsing event data, taw id:72547 start
+[2016.09.20 23:22:35.330][T] parsing event data, taw id:72547 got web response
+[2016.09.20 23:22:35.332][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:35.348][E] ecountered errorenous event, taw id:72547
+[2016.09.20 23:22:35.352][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:35.352][T] parsing event data, taw id:72548 start
+[2016.09.20 23:22:35.571][T] parsing event data, taw id:72548 got web response
+[2016.09.20 23:22:35.572][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:35.582][E] ecountered errorenous event, taw id:72548
+[2016.09.20 23:22:35.585][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:35.585][T] parsing event data, taw id:72549 start
+[2016.09.20 23:22:35.805][T] parsing event data, taw id:72549 got web response
+[2016.09.20 23:22:35.806][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:35.816][E] ecountered errorenous event, taw id:72549
+[2016.09.20 23:22:35.818][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:35.818][T] parsing event data, taw id:72550 start
+[2016.09.20 23:22:36.036][T] parsing event data, taw id:72550 got web response
+[2016.09.20 23:22:36.038][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:36.050][E] ecountered errorenous event, taw id:72550
+[2016.09.20 23:22:36.052][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:36.053][T] parsing event data, taw id:72551 start
+[2016.09.20 23:22:36.271][T] parsing event data, taw id:72551 got web response
+[2016.09.20 23:22:36.273][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:36.283][E] ecountered errorenous event, taw id:72551
+[2016.09.20 23:22:36.285][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:36.285][T] parsing event data, taw id:72552 start
+[2016.09.20 23:22:36.503][T] parsing event data, taw id:72552 got web response
+[2016.09.20 23:22:36.505][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:36.516][E] ecountered errorenous event, taw id:72552
+[2016.09.20 23:22:36.517][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:36.518][T] parsing event data, taw id:72553 start
+[2016.09.20 23:22:36.736][T] parsing event data, taw id:72553 got web response
+[2016.09.20 23:22:36.739][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:36.749][E] ecountered errorenous event, taw id:72553
+[2016.09.20 23:22:36.751][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:36.751][T] parsing event data, taw id:72554 start
+[2016.09.20 23:22:36.970][T] parsing event data, taw id:72554 got web response
+[2016.09.20 23:22:36.972][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:36.989][E] ecountered errorenous event, taw id:72554
+[2016.09.20 23:22:36.992][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:36.994][T] parsing event data, taw id:72555 start
+[2016.09.20 23:22:37.442][T] parsing event data, taw id:72555 got web response
+[2016.09.20 23:22:37.444][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:37.455][E] ecountered errorenous event, taw id:72555
+[2016.09.20 23:22:37.457][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:37.457][T] parsing event data, taw id:72556 start
+[2016.09.20 23:22:37.981][T] parsing event data, taw id:72556 got web response
+[2016.09.20 23:22:37.982][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:37.995][E] ecountered errorenous event, taw id:72556
+[2016.09.20 23:22:37.997][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:37.998][T] parsing event data, taw id:72557 start
+[2016.09.20 23:22:38.398][T] parsing event data, taw id:72557 got web response
+[2016.09.20 23:22:38.399][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:38.410][E] ecountered errorenous event, taw id:72557
+[2016.09.20 23:22:38.412][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:38.412][T] parsing event data, taw id:72558 start
+[2016.09.20 23:22:38.701][T] parsing event data, taw id:72558 got web response
+[2016.09.20 23:22:38.703][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:38.713][E] ecountered errorenous event, taw id:72558
+[2016.09.20 23:22:38.714][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:38.715][T] parsing event data, taw id:72559 start
+[2016.09.20 23:22:39.022][T] parsing event data, taw id:72559 got web response
+[2016.09.20 23:22:39.023][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:39.033][E] ecountered errorenous event, taw id:72559
+[2016.09.20 23:22:39.035][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:39.036][T] parsing event data, taw id:72560 start
+[2016.09.20 23:22:39.534][T] parsing event data, taw id:72560 got web response
+[2016.09.20 23:22:39.535][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:39.546][E] ecountered errorenous event, taw id:72560
+[2016.09.20 23:22:39.548][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:39.548][T] parsing event data, taw id:72561 start
+[2016.09.20 23:22:39.766][T] parsing event data, taw id:72561 got web response
+[2016.09.20 23:22:39.767][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:39.786][E] ecountered errorenous event, taw id:72561
+[2016.09.20 23:22:39.792][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:39.794][T] parsing event data, taw id:72562 start
+[2016.09.20 23:22:40.013][T] parsing event data, taw id:72562 got web response
+[2016.09.20 23:22:40.014][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:40.027][E] ecountered errorenous event, taw id:72562
+[2016.09.20 23:22:40.030][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:40.031][T] parsing event data, taw id:72563 start
+[2016.09.20 23:22:40.249][T] parsing event data, taw id:72563 got web response
+[2016.09.20 23:22:40.251][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:40.262][E] ecountered errorenous event, taw id:72563
+[2016.09.20 23:22:40.263][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:40.264][T] parsing event data, taw id:72564 start
+[2016.09.20 23:22:40.482][T] parsing event data, taw id:72564 got web response
+[2016.09.20 23:22:40.484][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:40.496][E] ecountered errorenous event, taw id:72564
+[2016.09.20 23:22:40.498][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:40.498][T] parsing event data, taw id:72565 start
+[2016.09.20 23:22:40.717][T] parsing event data, taw id:72565 got web response
+[2016.09.20 23:22:40.719][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:40.729][E] ecountered errorenous event, taw id:72565
+[2016.09.20 23:22:40.732][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:40.733][T] parsing event data, taw id:72566 start
+[2016.09.20 23:22:40.951][T] parsing event data, taw id:72566 got web response
+[2016.09.20 23:22:40.953][E] the event you are trying to parse has invalid uri
+[2016.09.20 23:22:40.964][E] ecountered errorenous event, taw id:72566
+[2016.09.20 23:22:40.966][E] System.FormatException: Input string was not in a correct format.
+   at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at TawGatherMembersInfo.WebDataParser.ParseEventData_1(MyHttpWebResponse response) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 0
+   at TawGatherMembersInfo.WebDataParser.ParseEventData(Int64 eventTawId) in D:\Dropbox\DEV C#\TawGatherMembersInfo\TawGatherMembersInfo\WebDataParser.cs:line 270
+[2016.09.20 23:22:40.966][T] parsing event data, taw id:72567 start
+[2016.09.20 23:22:41.187][T] parsing event data, taw id:72567 got web response
+[2016.09.20 23:22:41.189][E] the event you are trying to parse has invalid uri

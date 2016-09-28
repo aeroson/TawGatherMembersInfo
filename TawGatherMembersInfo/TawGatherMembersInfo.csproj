@@ -102,17 +102,9 @@
     <Compile Include="EnterTawUserLoginInfo.Designer.cs">
       <DependentUpon>EnterTawUserLoginInfo.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201609181504585_InitialCreate.cs" />
-    <Compile Include="Migrations\201609181504585_InitialCreate.Designer.cs">
-      <DependentUpon>201609181504585_InitialCreate.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201609191519050_AddIndexesToEvent.cs" />
-    <Compile Include="Migrations\201609191519050_AddIndexesToEvent.Designer.cs">
-      <DependentUpon>201609191519050_AddIndexesToEvent.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201609191913533_AddEventsToManyUnits.cs" />
-    <Compile Include="Migrations\201609191913533_AddEventsToManyUnits.Designer.cs">
-      <DependentUpon>201609191913533_AddEventsToManyUnits.cs</DependentUpon>
+    <Compile Include="Migrations\201609281622532_InitialSchema.cs" />
+    <Compile Include="Migrations\201609281622532_InitialSchema.Designer.cs">
+      <DependentUpon>201609281622532_InitialSchema.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Commendation.cs" />
@@ -121,6 +113,7 @@
     <Compile Include="Log.cs" />
     <Compile Include="Models\PersonCommendation.cs" />
     <Compile Include="Models\PersonEvent.cs" />
+    <Compile Include="Models\PersonRank.cs" />
     <Compile Include="Models\PersonUnit.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="Neitri\WebCrawling\MyHttpWebRequest.cs" />
@@ -165,7 +158,6 @@
     <Compile Include="Neitri\Utils\ReadOnlyDictionary.cs" />
     <Compile Include="Neitri\Utils\Require.cs" />
     <Compile Include="Neitri\Utils\TraceUtil.cs" />
-    <Compile Include="Neitri\Utils\Tuple.cs" />
     <Compile Include="Neitri\Utils\TwoKeyDictionary.cs" />
     <Compile Include="Neitri\Utils\ValueChanged.cs" />
     <Compile Include="Neitri\WebCrawling\Extensions.cs" />
@@ -192,14 +184,8 @@
     <EmbeddedResource Include="EnterTawUserLoginINfo.resx">
       <DependentUpon>EnterTawUserLoginInfo.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201609181504585_InitialCreate.resx">
-      <DependentUpon>201609181504585_InitialCreate.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201609191519050_AddIndexesToEvent.resx">
-      <DependentUpon>201609191519050_AddIndexesToEvent.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201609191913533_AddEventsToManyUnits.resx">
-      <DependentUpon>201609191913533_AddEventsToManyUnits.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201609281622532_InitialSchema.resx">
+      <DependentUpon>201609281622532_InitialSchema.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

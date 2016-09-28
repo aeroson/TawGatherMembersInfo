@@ -50,16 +50,6 @@ namespace TawGatherMembersInfo
 							}
 							else
 							{
-								if (format == "table" && version == "1")
-								{
-									Format_Table_Version_1(o, rootUnit);
-									goodApiCall = true;
-								}
-								if (format == "table" && version == "2")
-								{
-									Format_Table_Version_2(o, rootUnit);
-									goodApiCall = true;
-								}
 								if (format == "table" && version == "3")
 								{
 									Format_Table_Version_3(o, rootUnit, fields, orderBy);
@@ -84,132 +74,6 @@ namespace TawGatherMembersInfo
 
 					return true;
 				}
-			}
-
-			void Format_Table_Version_1(StreamWriter o, Unit rootUnit)
-			{
-				var people = rootUnit.GetAllPeople();
-
-				o.WriteLine("<table>");
-
-				o.WriteLine("<thead>");
-				o.WriteLine("<tr>");
-
-				o.WriteLine("<td>name</td>");
-				o.WriteLine("<td>avatar</td>");
-				o.WriteLine("<td>country</td>");
-				o.WriteLine("<td>dateJoinedTaw.year</td>");
-				o.WriteLine("<td>dateJoinedTaw.month</td>");
-				o.WriteLine("<td>dateJoinedTaw.day</td>");
-				o.WriteLine("<td>daysInTaw</td>");
-				o.WriteLine("<td>rankImageBig</td>");
-				o.WriteLine("<td>rankImageSmall</td>");
-				o.WriteLine("<td>rankNameLong</td>");
-				o.WriteLine("<td>rankNameShort</td>");
-				o.WriteLine("<td>status</td>");
-
-				o.WriteLine("</tr>");
-				o.WriteLine("</thead>");
-
-				o.WriteLine("<tbody>");
-				foreach (var p in people)
-				{
-					o.WriteLine("<tr>");
-
-					o.WriteLine("<td>" + p.Name + "</td>");
-					o.WriteLine("<td>" + p.AvatarImageUrl + "</td>");
-					o.WriteLine("<td>" + p.CountryName + "</td>");
-					o.WriteLine("<td>" + p.DateJoinedTaw.Year + "</td>");
-					o.WriteLine("<td>" + p.DateJoinedTaw.Month + "</td>");
-					o.WriteLine("<td>" + p.DateJoinedTaw.Day + "</td>");
-					o.WriteLine("<td>" + p.DaysInTaw + "</td>");
-					o.WriteLine("<td>" + p.RankImageBigUrl + "</td>");
-					o.WriteLine("<td>" + p.RankImageSmallUrl + "</td>");
-					o.WriteLine("<td>" + p.RankNameLong + "</td>");
-					o.WriteLine("<td>" + p.RankNameShort + "</td>");
-					o.WriteLine("<td>" + p.Status + "</td>");
-
-					o.WriteLine("</tr>");
-				}
-				o.WriteLine("</tbody>");
-
-				o.WriteLine("</table>");
-			}
-
-			void Format_Table_Version_2(StreamWriter o, Unit rootUnit)
-			{
-				var people = rootUnit.GetAllPeople();
-
-				o.WriteLine("<table>");
-
-				o.WriteLine("<thead>");
-				o.WriteLine("<tr>");
-
-				o.WriteLine("<td>name</td>");
-				o.WriteLine("<td>avatarImageUrl</td>");
-				o.WriteLine("<td>countryCodeIso3166</td>");
-				o.WriteLine("<td>countryFlagImageUrl</td>");
-				o.WriteLine("<td>countryName</td>");
-				o.WriteLine("<td>dateJoinedTaw.Year</td>");
-				o.WriteLine("<td>dateJoinedTaw.Month</td>");
-				o.WriteLine("<td>dateJoinedTaw.Day</td>");
-				o.WriteLine("<td>daysInTaw</td>");
-				o.WriteLine("<td>mostImportantIngameUnit.name</td>");
-				o.WriteLine("<td>mostImportantIngameUnit.type</td>");
-				o.WriteLine("<td>mostImportantIngameUnit.tawId</td>");
-				o.WriteLine("<td>mostImportantIngameUnitPositionNameLong</td>");
-				o.WriteLine("<td>mostImportantIngameUnitPositionNameShort</td>");
-				o.WriteLine("<td>rankImageBigUrl</td>");
-				o.WriteLine("<td>rankImageSmallUrl</td>");
-				o.WriteLine("<td>rankNameLong</td>");
-				o.WriteLine("<td>rankNameShort</td>");
-				o.WriteLine("<td>status</td>");
-				o.WriteLine("<td>teamSpeakName</td>");
-				o.WriteLine("<td>teamSpeakPositionNameLong</td>");
-				o.WriteLine("<td>teamSpeakPositionNameShort</td>");
-				o.WriteLine("<td>teamSpeakUnit.name</td>");
-				o.WriteLine("<td>teamSpeakUnit.type</td>");
-				o.WriteLine("<td>teamSpeakUnit.tawId</td>");
-
-				o.WriteLine("</tr>");
-				o.WriteLine("</thead>");
-
-				o.WriteLine("<tbody>");
-				foreach (var p in people)
-				{
-					o.WriteLine("<tr>");
-
-					o.WriteLine("<td>" + p.Name + "</td>");
-					o.WriteLine("<td>" + p.AvatarImageUrl + "</td>");
-					o.WriteLine("<td>" + p.CountryCodeIso3166 + "</td>");
-					o.WriteLine("<td>" + p.CountryFlagImageUrl + "</td>");
-					o.WriteLine("<td>" + p.CountryName + "</td>");
-					o.WriteLine("<td>" + p.DateJoinedTaw.Year + "</td>");
-					o.WriteLine("<td>" + p.DateJoinedTaw.Month + "</td>");
-					o.WriteLine("<td>" + p.DateJoinedTaw.Day + "</td>");
-					o.WriteLine("<td>" + p.DaysInTaw + "</td>");
-					o.WriteLine("<td>" + p.MostImportantIngameUnit.Name + "</td>");
-					o.WriteLine("<td>" + p.MostImportantIngameUnit.Type + "</td>");
-					o.WriteLine("<td>" + p.MostImportantIngameUnit.Id + "</td>");
-					o.WriteLine("<td>" + p.MostImportantIngameUnitPositionNameLong + "</td>");
-					o.WriteLine("<td>" + p.MostImportantIngameUnitPositionNameShort + "</td>");
-					o.WriteLine("<td>" + p.RankImageBigUrl + "</td>");
-					o.WriteLine("<td>" + p.RankImageSmallUrl + "</td>");
-					o.WriteLine("<td>" + p.RankNameLong + "</td>");
-					o.WriteLine("<td>" + p.RankNameShort + "</td>");
-					o.WriteLine("<td>" + p.Status + "</td>");
-					o.WriteLine("<td>" + p.TeamSpeakName + "</td>");
-					o.WriteLine("<td>" + p.TeamSpeakUnitPositionNameLong + "</td>");
-					o.WriteLine("<td>" + p.TeamSpeakUnitPositionNameShort + "</td>");
-					o.WriteLine("<td>" + p.TeamSpeakUnit.Name + "</td>");
-					o.WriteLine("<td>" + p.TeamSpeakUnit.Type + "</td>");
-					o.WriteLine("<td>" + p.TeamSpeakUnit.Id + "</td>");
-
-					o.WriteLine("</tr>");
-				}
-				o.WriteLine("</tbody>");
-
-				o.WriteLine("</table>");
 			}
 
 			void Format_Table_Version_3(StreamWriter o, Unit rootUnit, HashSet<string> fields, string orderBy)
@@ -312,10 +176,10 @@ namespace TawGatherMembersInfo
 					}
 					if (rank)
 					{
-						o.WriteLine("<td>" + p.RankImageBigUrl + "</td>");
-						o.WriteLine("<td>" + p.RankImageSmallUrl + "</td>");
-						o.WriteLine("<td>" + p.RankNameLong + "</td>");
-						o.WriteLine("<td>" + p.RankNameShort + "</td>");
+						o.WriteLine("<td>" + p.Rank.ImageBigUrl + "</td>");
+						o.WriteLine("<td>" + p.Rank.ImageSmallUrl + "</td>");
+						o.WriteLine("<td>" + p.Rank.NameLong + "</td>");
+						o.WriteLine("<td>" + p.Rank.NameShort + "</td>");
 					}
 					if (status) o.WriteLine("<td>" + p.Status + "</td>");
 					if (teamSpeak)

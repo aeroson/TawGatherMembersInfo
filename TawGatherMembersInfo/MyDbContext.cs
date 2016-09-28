@@ -14,8 +14,8 @@ namespace TawGatherMembersInfo
 		public virtual IDbSet<Event> Events { get; set; }
 		public virtual IDbSet<Person> People { get; set; }
 		public virtual IDbSet<Unit> Units { get; set; }
-		public virtual IDbSet<PersonEvent> PeopleToEvents { get; set; }
-		public virtual IDbSet<PersonUnit> PeopleToUnits { get; set; }
+		public virtual IDbSet<PersonEvent> PersonEvents { get; set; }
+		public virtual IDbSet<PersonUnit> PersonUnits { get; set; }
 
 		static MyDbContext()
 		{

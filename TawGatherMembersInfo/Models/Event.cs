@@ -36,8 +36,9 @@ namespace TawGatherMembersInfo.Models
 		public virtual DateTime To { get; set; }
 
 		public virtual Person TakenBy { get; set; } // attendance taken by
+
 		public virtual ICollection<PersonEvent> Attended { get; set; }
-		public virtual ICollection<Unit> Units { get; set; } = new List<Unit>();
+		public virtual ICollection<Unit> Units { get; set; }
 
 		public static string GetEventPage(long eventTawId)
 		{

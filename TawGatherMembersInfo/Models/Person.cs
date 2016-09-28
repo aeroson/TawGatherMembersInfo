@@ -10,27 +10,6 @@ using System.Runtime.Serialization;
 
 namespace TawGatherMembersInfo.Models
 {
-	public class Rank
-	{
-		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public long Id { get; set; }
-
-		public virtual string NameShort { get; set; }
-		public virtual string NameLong { get; set; }
-	}
-
-	public class PersonRank
-	{
-		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public long Id { get; set; }
-
-		public long PersonId { get; set; }
-		public long RankId { get; set; }
-		public virtual DateTime ValidFrom { get; set; }
-		public virtual Person Person { get; set; }
-		public virtual Rank Rank { get; set; }
-	}
-
 	public partial class Person : IEquatable<Person>
 	{
 		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -41,8 +20,11 @@ namespace TawGatherMembersInfo.Models
 		[Index(IsUnique = true), StringLength(500)]
 		public virtual string Name { get; set; } = "unnamed";
 
-		[StringLength(100)]
-		public virtual string RankNameShort { get; set; } = "";
+		[NotMapped]
+		public virtual string RankNameShort => Rank?.NameShort;
+
+		[NotMapped]
+		public virtual PersonRank Rank => Ranks.OrderByDescending(r => r.ValidFrom).FirstOrDefault();
 
 		public virtual long SteamId { get; set; }
 
@@ -61,6 +43,10 @@ namespace TawGatherMembersInfo.Models
 		[MaxLength]
 		public virtual string BiographyContents { get; set; } = "";
 
+		public virtual DateTime AppliedForTaw { get; set; }
+		public virtual DateTime AdmittedToTaw { get; set; }
+
+		public virtual ICollection<PersonRank> Ranks { get; set; }
 		public virtual ICollection<PersonEvent> Attended { get; set; }
 		public virtual ICollection<PersonUnit> Units { get; set; }
 		public virtual ICollection<PersonCommendation> Commendations { get; set; }
@@ -148,30 +134,6 @@ namespace TawGatherMembersInfo.Models
 			get
 			{
 				return Period.Between(DateJoinedTaw.ToLocalDateTime(), DateTime.UtcNow.ToLocalDateTime(), PeriodUnits.Days).Days;
-			}
-		}
-
-		public string RankNameLong
-		{
-			get
-			{
-				return rankNameShortToRankNameLong.GetValue(RankNameShort, "Unknown rank");
-			}
-		}
-
-		public string RankImageSmallUrl
-		{
-			get
-			{
-				return rankNameShortToRankImageSmall.GetValue(RankNameShort, "http://i.imgur.com/jcHvcul.png"); // default is recruit image
-			}
-		}
-
-		public string RankImageBigUrl
-		{
-			get
-			{
-				return GetRankImageBigFromRankNameShort(RankNameShort);
 			}
 		}
 

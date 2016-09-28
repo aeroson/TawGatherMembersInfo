@@ -7,13 +7,13 @@ namespace TawGatherMembersInfo.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class AddIndexesToEvent : IMigrationMetadata
+    public sealed partial class InitialSchema : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(AddIndexesToEvent));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(InitialSchema));
         
         string IMigrationMetadata.Id
         {
-            get { return "201609191519050_AddIndexesToEvent"; }
+            get { return "201609281622532_InitialSchema"; }
         }
         
         string IMigrationMetadata.Source

@@ -1,7 +1,10 @@
 ﻿using Microsoft.Win32;
 using Neitri.WebCrawling;
 using System;
+using System.Collections.Concurrent;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace TawGatherMembersInfo
 {
@@ -110,6 +113,55 @@ namespace TawGatherMembersInfo
 		public void ClearCookies()
 		{
 			cookieContainer = new CookieContainer();
+		}
+	}
+
+	public class TheadedVariableManager<T> where T : class, new()
+	{
+		SemaphoreSlim s;
+		ConcurrentDictionary<Thread, T> threadToVar = new ConcurrentDictionary<Thread, T>();
+
+		public class DisposableWrapper<T> : IDisposable where T : class, new()
+		{
+			T var;
+			TheadedVariableManager<T> manager;
+			public T Value => var;
+
+			public DisposableWrapper(TheadedVariableManager<T> manager, T var)
+			{
+				this.var = var;
+				this.manager = manager;
+			}
+
+			public void Dispose()
+			{
+				manager.s.Release();
+			}
+
+			public static implicit operator T(DisposableWrapper<T> me)
+			{
+				return me.var;
+			}
+		}
+
+		public TheadedVariableManager(int maxInstances)
+		{
+			s = new SemaphoreSlim(maxInstances);
+		}
+
+		public async Task<DisposableWrapper<T>> GetAsync()
+		{
+			await s.WaitAsync();
+			T var;
+			if (!threadToVar.TryGetValue(Thread.CurrentThread, out var)) var = threadToVar[Thread.CurrentThread] = new T();
+			return new DisposableWrapper<T>(this, var);
+		}
+	}
+
+	public class SessionMannager : TheadedVariableManager<LoggedInSession>
+	{
+		public SessionMannager() : base(5)
+		{
 		}
 	}
 }

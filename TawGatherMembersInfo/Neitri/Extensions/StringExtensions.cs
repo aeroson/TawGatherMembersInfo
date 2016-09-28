@@ -73,6 +73,20 @@ namespace Neitri
 			return str.RemoveFromBegin(startIndex);
 		}
 
+		public static string TakeStringBefore(this string str, string end, StringComparison comparison = StringComparison.InvariantCulture)
+		{
+			var endIndex = str.IndexOf(end, comparison);
+			if (endIndex == -1) throw new Exception("end string:'" + end + "' was not found in:'" + str + "'");
+			return str.Substring(0, endIndex);
+		}
+
+		public static string TakeStringBeforeLast(this string str, string end, StringComparison comparison = StringComparison.InvariantCulture)
+		{
+			var endIndex = str.LastIndexOf(end, comparison);
+			if (endIndex == -1) throw new Exception("end string:'" + end + "' was not found in:'" + str + "'");
+			return str.Substring(0, endIndex);
+		}
+
 		// from http://stackoverflow.com/questions/623104/byte-to-hex-string
 		/// <summary>
 		/// Returns byte array from string hex representation, 010204081020 would return {1, 2, 4, 8, 16, 32}.
