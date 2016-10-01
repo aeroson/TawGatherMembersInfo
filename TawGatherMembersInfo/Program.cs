@@ -88,7 +88,7 @@ namespace TawGatherMembersInfo
 				Console.WriteLine("UnitName	UserName	Rank	Trainings	Attended	Excused	AWOL	Unknown	Mandatory AVG	Total AVG	Days In Rank");
 				foreach (var person in people)
 				{
-					var allEvents = person.Attended.Where(a => a.Event.Cancelled == false);
+					var allEvents = person.Events.Where(a => a.Event.Cancelled == false);
 					var trainings = allEvents.Count();
 					var attended = allEvents.Count(a => a.AttendanceType == Models.AttendanceType.Attended);
 					var excused = allEvents.Count(a => a.AttendanceType == Models.AttendanceType.Excused);

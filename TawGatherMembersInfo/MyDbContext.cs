@@ -16,6 +16,7 @@ namespace TawGatherMembersInfo
 		public virtual IDbSet<Unit> Units { get; set; }
 		public virtual IDbSet<PersonEvent> PersonEvents { get; set; }
 		public virtual IDbSet<PersonUnit> PersonUnits { get; set; }
+		public virtual IDbSet<PersonRank> PersonRanks { get; set; }
 
 		static MyDbContext()
 		{

@@ -9,7 +9,15 @@ namespace TawGatherMembersInfo.Models
 	public class PersonRank
 	{
 		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public long Id { get; set; }
+		public long PersonRankId { get; set; }
+
+		/*
+		[Index]
+		public long Person_PersonId { get; set; }
+
+		[Index]
+		public long ByWho_PersonId { get; set; }
+		*/
 
 		[Index]
 		public long TawId { get; set; }
@@ -20,10 +28,11 @@ namespace TawGatherMembersInfo.Models
 		[Index]
 		public virtual DateTime ValidFrom { get; set; }
 
-		public virtual Person Person { get; set; }
+		public virtual Person ForPerson { get; set; }
 
 		public virtual Person ByWho { get; set; }
 
+		[NotMapped]
 		public string NameLong
 		{
 			get
@@ -36,6 +45,7 @@ namespace TawGatherMembersInfo.Models
 			}
 		}
 
+		[NotMapped]
 		public string ImageSmallUrl
 		{
 			get
@@ -44,6 +54,7 @@ namespace TawGatherMembersInfo.Models
 			}
 		}
 
+		[NotMapped]
 		public string ImageBigUrl
 		{
 			get
@@ -55,33 +66,33 @@ namespace TawGatherMembersInfo.Models
 		#region Ranks short name, long name, small image, big image
 
 		/*
-        public enum RankNameShort
-        {
-            Unknown,
-            GEN5,
-            GEN,
-            MGN,
-            BGN,
-            MAJ,
-            CPT,
-            2LT,
-            1LT,
-            LCP,
-            SGT,
-            REC,
-            GSG,
-            SSG,
-            1SG,
-            LTC,
-            CPL,
-            SGM,
-            PFC,
-            COL,
-            MSG,
-            MGS,
-            LGN,
-        }
-        */
+		public enum RankNameShort
+		{
+			Unknown,
+			GEN5,
+			GEN,
+			MGN,
+			BGN,
+			MAJ,
+			CPT,
+			2LT,
+			1LT,
+			LCP,
+			SGT,
+			REC,
+			GSG,
+			SSG,
+			1SG,
+			LTC,
+			CPL,
+			SGM,
+			PFC,
+			COL,
+			MSG,
+			MGS,
+			LGN,
+		}
+		*/
 
 		/// <summary>
 		/// Smaller index is smaller rank

@@ -14,11 +14,16 @@ namespace TawGatherMembersInfo.Models
 
 	public class PersonEvent : IEquatable<PersonEvent>
 	{
+		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		public long PersonEventId { get; set; }
+
+		/*
 		[Key, Column(Order = 0)]
-		public long PersonId { get; set; }
+		public long Person_PersonId { get; set; }
 
 		[Key, Column(Order = 1)]
-		public long EventId { get; set; }
+		public long Event_EventId { get; set; }
+		*/
 
 		[Index]
 		public virtual AttendanceType AttendanceType { get; set; } = AttendanceType.Unknown;
@@ -35,7 +40,7 @@ namespace TawGatherMembersInfo.Models
 		public bool Equals(PersonEvent other)
 		{
 			if (other == null) return false;
-			return Person.Id == other.Person.Id && Event.TawId == other.Event.TawId;
+			return Person.PersonId == other.Person.PersonId && Event.TawId == other.Event.TawId;
 		}
 
 		public override int GetHashCode()

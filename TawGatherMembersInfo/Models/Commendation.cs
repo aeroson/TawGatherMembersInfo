@@ -19,7 +19,7 @@ namespace TawGatherMembersInfo.Models
 	public class Commendation
 	{
 		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public virtual long Id { get; set; }
+		public virtual long CommendationId { get; set; }
 
 		public virtual string Name { get; set; }
 		public virtual CommendationType Type { get; set; }

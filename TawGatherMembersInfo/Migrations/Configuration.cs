@@ -15,10 +15,10 @@ namespace TawGatherMembersInfo.Migrations
 		{
 			AutomaticMigrationsEnabled = false;
 
-			ContextKey = "TawGatherMembersInfo.MyDbContext";
+			//ContextKey = "TawGatherMembersInfo.MyDbContext";
 
 			// http://karthicraghupathi.com/2013/01/31/using-mysql-connector-net-6-6-4-with-entity-framework-5/
-			SetSqlGenerator("MySql.Data.MySqlClient", new SqlGenerator());
+			SetSqlGenerator("MySql.Data.MySqlClient", new MyMySqlGenerator());
 			//SetSqlGenerator("MySql.Data.MySqlClient", new MySqlMigrationSqlGenerator());
 		}
 
@@ -40,7 +40,7 @@ namespace TawGatherMembersInfo.Migrations
 	}
 
 	// taken from: http://stackoverflow.com/a/12060958/782022
-	class SqlGenerator : MySql.Data.Entity.MySqlMigrationSqlGenerator
+	class MyMySqlGenerator : MySql.Data.Entity.MySqlMigrationSqlGenerator
 	{
 		public override IEnumerable<MigrationStatement> Generate(IEnumerable<MigrationOperation> migrationOperations, string providerManifestToken)
 		{

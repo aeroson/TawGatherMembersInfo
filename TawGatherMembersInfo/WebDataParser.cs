@@ -20,89 +20,217 @@ namespace TawGatherMembersInfo
 
 		public async Task UpdateUnitContents(SessionMannager sessionManager, int tawUnitId)
 		{
-			Log.Trace($"getting unit taw id:{tawUnitId} roaster");
-			var url = Unit.GetUnitRoasterPage(tawUnitId);
-			var session = await sessionManager.GetAsync();
-			var response = session.Value.GetUrl(url);
-			session.Dispose();
-			var html = response.HtmlDocument;
-			Log.Trace($"got unit taw id:{tawUnitId} roaster");
+			await new UpdateUnitContentsHandler(db).Run(sessionManager, tawUnitId);
+		}
 
-			var roasterDiv = html.GetElementbyId("ctl00_bcr_UpdatePanel1").SelectSingleNode("./div/ul");
+		class UpdateUnitContentsHandler
+		{
+			DbContextProvider db;
+			Dictionary<string, List<UnitRoasterPersonLine>> personNameToPersonLines = new Dictionary<string, List<UnitRoasterPersonLine>>();
 
-			var personLines = new ConcurrentBag<UnitRoasterPersonLine>();
-
-			Log.Trace("parsing unit roaster");
-			await ParseUnitContents(roasterDiv, personLines, null);
-			Log.Trace("finished parsing unit roaster");
-
-			Log.Trace("parsing roaster people");
-			using (var data = db.NewContext)
+			public UpdateUnitContentsHandler(DbContextProvider db)
 			{
-				foreach (var p in personLines)
-				{
-					ParsePersonFromUnitRoaster(p.text, p.unitId, data);
-				};
+				this.db = db;
 			}
-			Log.Trace("finished parsing roaster people");
-		}
 
-		struct UnitRoasterPersonLine
-		{
-			public string text;
-			public long unitId;
-		}
-
-		async Task ParseUnitContents(HtmlNode unitNamePlusUl, ConcurrentBag<UnitRoasterPersonLine> personLines, long? parentUnitId)
-		{
-			List<Task> tasks;
-			using (var data = db.NewContext)
+			public async Task Run(SessionMannager sessionManager, int tawUnitId)
 			{
-				var unitTypeNameElement = unitNamePlusUl.SelectSingleNode("li | span");
-				var unitTypeA = unitTypeNameElement.SelectSingleNode("*/a[1] | a[1]");
-				var unitNameA = unitTypeNameElement.SelectSingleNode("*/a[2] | a[2]");
+				var newVersion = new Random().Next(); // all person to unit relations without this unit version will be deleted
 
-				var type = unitTypeA.InnerText;
-				var tawId = int.Parse(unitNameA.GetAttributeValue("href", "/unit/-1.aspx").TakeStringBetweenLast("/", ".aspx"));
-				var name = unitNameA.InnerText;
+				Log.Trace($"getting unit taw id:{tawUnitId} roaster");
+				var url = Unit.GetUnitRoasterPage(tawUnitId);
+				var session = await sessionManager.GetAsync();
+				var response = session.Value.GetUrl(url);
+				session.Dispose();
+				var html = response.HtmlDocument;
+				Log.Trace($"got unit taw id:{tawUnitId} roaster");
 
-				Log.Trace("parsing unit roaster, taw unit id: " + tawId);
+				var roasterDiv = html.GetElementbyId("ctl00_bcr_UpdatePanel1").SelectSingleNode("./div/ul");
 
-				var unit = GetUnit(data, tawId, name);
-				unit.Type = type;
-				if (parentUnitId.HasValue) unit.ParentUnit = data.Units.Find(parentUnitId.Value);
+				Log.Trace("parsing unit roaster");
+				await ParseUnitContents(roasterDiv, null);
+				Log.Trace("finished parsing unit roaster");
 
-				data.SaveChanges();
+				Log.Trace("parsing roaster people");
+				var tasks = new List<Task>(personNameToPersonLines.Count);
 
-				var children = unitNamePlusUl.SelectSingleNode("ul");
-
-				tasks = new List<Task>(children.ChildNodes.Count);
-
-				foreach (var child in children.ChildNodes)
+				foreach (var kvp in personNameToPersonLines)
 				{
-					var personA = child.SelectSingleNode("a");
-					if (personA != null)
+					var personName = kvp.Key;
+					var personLines = kvp.Value;
+					var task = Task.Run(() =>
 					{
-						// person
-						var text = child.InnerText;
-						//tasks.Add(Task.Run(() => ParsePersonFromUnitRoaster(text, unit.Id)));
-						personLines.Add(new UnitRoasterPersonLine()
+						using (var data = db.NewContext)
 						{
-							text = text,
-							unitId = unit.Id,
-						});
+							Log.Trace("parsing & saving roaster person:" + personName);
+							foreach (var personLine in personLines)
+							{
+								personLine.FinishParsing(data);
+							}
+							var personUnitIds = personLines.Select(p => p.PersonToUnitId).ToArray();
+							// if some person to unit is still valid, and not one of those we just updated, mark it as not valid anymore
+							data
+								.People
+								.First(p => p.Name == personName)
+								.Units
+								.Where(u => u.Removed == DateTime.MinValue) // still valid, not removed
+								.Where(u => !personUnitIds.Contains(u.PersonUnitId)) // except those we found & updated
+								.ForEach(u => u.Removed = DateTime.UtcNow); // remove it
+
+							data.SaveChanges();
+							Log.Trace("done parsing & saving roaster person:" + personName);
+						}
+					});
+					tasks.Add(task);
+				};
+				await Task.WhenAll(tasks.ToArray());
+
+				Log.Trace("finished parsing roaster people");
+			}
+
+			class UnitRoasterPersonLine
+			{
+				public string PersonName => name;
+
+				public long PersonToUnitId { get; private set; }
+
+				string name = "unnamed";
+				string rank = "";
+				string positionNameLong = "";
+				string positionNameShort = "";
+				bool onLeave = false;
+				long unitId;
+
+				public UnitRoasterPersonLine(string text, long unitId)
+				{
+					this.unitId = unitId;
+					var dashIndex = text.LastIndexOf("-");
+
+					if (dashIndex != -1)
+					{
+						var part1 = text.Substring(0, dashIndex - 1).Trim();
+						var part2 = text.Substring(dashIndex + 1).Trim();
+
+						if (part2.ToLower().Contains("on leave"))
+						{
+							onLeave = true;
+							var parts = part1.Split(',');
+							name = parts[0].Trim();
+							rank = parts[1].Trim();
+						}
+						else
+						{
+							positionNameLong = part1;
+							var parts = part2.Split(',');
+							name = parts[0].Trim();
+							rank = parts[1].Trim();
+						}
 					}
 					else
 					{
-						// unit
-						tasks.Add(Task.Run(() => ParseUnitContents(child, personLines, unit.Id)));
+						var parts = text.Split(',');
+						name = parts[0].Trim();
+						rank = parts[1].Trim();
+					}
+
+					if (positionNameLong != "")
+					{
+						positionNameShort = Person.positionNameShortToPositionNameLong.Reverse.GetValue(positionNameLong, null);
+						if (positionNameShort == null) Log.Error("cannot find positionNameShortToPositionNameLong.Reverse[" + positionNameLong + "]");
 					}
 				}
+
+				public void FinishParsing(MyDbContext data)
+				{
+					/*
+						text use cases:
+						Commander-in-Chief - DOC, GEN5
+						Commanding Officer - Constance, CPT
+						Executive Officer - Deceded, LTC
+						BetaHook, PFC - On Leave
+						Guthrie, PFC - On Leave
+						Constance, CPT
+						Juvenis, COL
+					*/
+
+					var person = GetPersonFromName(data, name, rank);
+					if (onLeave) person.Status = "on leave";
+
+					var personToUnit = data.PersonUnits.FirstOrDefault(p => p.ForPerson.PersonId == person.PersonId && p.ForUnit.UnitId == unitId);
+					if (personToUnit == null)
+					{
+						personToUnit = new PersonUnit();
+						personToUnit.ForPerson = person;
+						personToUnit.ForUnit = data.Units.Find(unitId);
+						personToUnit = data.PersonUnits.Add(personToUnit);
+					}
+					personToUnit.PositionNameShort = positionNameShort;
+					personToUnit.Joined = DateTime.UtcNow;
+					personToUnit.Removed = DateTime.MinValue;
+
+					PersonToUnitId = personToUnit.PersonUnitId;
+
+					data.SaveChanges();
+				}
 			}
-			await Task.WhenAll(tasks.ToArray());
+
+			async Task ParseUnitContents(HtmlNode unitNamePlusUl, long? parentUnitId)
+			{
+				List<Task> tasks;
+				using (var data = db.NewContext)
+				{
+					var unitTypeNameElement = unitNamePlusUl.SelectSingleNode("li | span");
+					var unitTypeA = unitTypeNameElement.SelectSingleNode("*/a[1] | a[1]");
+					var unitNameA = unitTypeNameElement.SelectSingleNode("*/a[2] | a[2]");
+
+					var type = unitTypeA.InnerText;
+					var tawId = int.Parse(unitNameA.GetAttributeValue("href", "/unit/-1.aspx").TakeStringBetweenLast("/", ".aspx"));
+					var name = unitNameA.InnerText;
+
+					Log.Trace("parsing unit roaster, taw unit id: " + tawId);
+
+					var unit = GetUnit(data, tawId, name);
+					unit.Type = type;
+					if (parentUnitId.HasValue) unit.ParentUnit = data.Units.Find(parentUnitId.Value);
+
+					data.SaveChanges();
+
+					var children = unitNamePlusUl.SelectSingleNode("ul");
+
+					tasks = new List<Task>(children.ChildNodes.Count);
+
+					foreach (var child in children.ChildNodes)
+					{
+						var personA = child.SelectSingleNode("a");
+						if (personA != null)
+						{
+							// person
+							var text = child.InnerText;
+							//tasks.Add(Task.Run(() => ParsePersonFromUnitRoaster(text, unit.Id)));
+							var personLine = new UnitRoasterPersonLine(text, unit.UnitId);
+
+							lock (personNameToPersonLines)
+							{
+								List<UnitRoasterPersonLine> personLines;
+								if (!personNameToPersonLines.TryGetValue(personLine.PersonName, out personLines))
+								{
+									personNameToPersonLines[personLine.PersonName] = personLines = new List<UnitRoasterPersonLine>();
+								}
+								personLines.Add(personLine);
+							}
+						}
+						else
+						{
+							// unit
+							tasks.Add(Task.Run(() => ParseUnitContents(child, unit.UnitId)));
+						}
+					}
+				}
+				await Task.WhenAll(tasks.ToArray());
+			}
 		}
 
-		Person GetPersonFromName(MyDbContext data, string name, string rankNameShort = null)
+		static Person GetPersonFromName(MyDbContext data, string name, string rankNameShort = null)
 		{
 			var person = data.People.FirstOrDefault(p => p.Name == name);
 			if (person == null)
@@ -114,15 +242,15 @@ namespace TawGatherMembersInfo
 			if (!rankNameShort.IsNullOrEmpty() && (person.Ranks == null || person.Rank?.NameShort != rankNameShort))
 			{
 				var personRank = new PersonRank();
-				personRank.Person = person;
+				personRank.ForPerson = person;
 				personRank.NameShort = rankNameShort;
-				personRank.ValidFrom = new DateTime(1, 1, 1);
+				personRank.ValidFrom = DateTime.MinValue;
 				person.Ranks = new List<PersonRank>() { personRank };
 			}
 			return person;
 		}
 
-		Unit GetUnit(MyDbContext data, int unitTawId, string name)
+		static Unit GetUnit(MyDbContext data, int unitTawId, string name)
 		{
 			var unit = data.Units.FirstOrDefault(u => u.TawId == unitTawId);
 			if (unit == null)
@@ -133,81 +261,6 @@ namespace TawGatherMembersInfo
 			}
 			unit.Name = name;
 			return unit;
-		}
-
-		void ParsePersonFromUnitRoaster(string text, long parentUnitId, MyDbContext data)
-		{
-			/*
-				text use cases:
-				Commander-in-Chief - DOC, GEN5
-				Commanding Officer - Constance, CPT
-				Executive Officer - Deceded, LTC
-				BetaHook, PFC - On Leave
-				Guthrie, PFC - On Leave
-				Constance, CPT
-				Juvenis, COL
-			*/
-
-			Log.Trace(TraceUtil.ThisMethod(text, parentUnitId));
-
-			string name = "unnamed";
-			string rank = "";
-			string positionNameLong = "";
-			string positionNameShort = "";
-			bool onLeave = false;
-
-			{
-				var dashIndex = text.LastIndexOf("-");
-
-				if (dashIndex != -1)
-				{
-					var part1 = text.Substring(0, dashIndex - 1).Trim();
-					var part2 = text.Substring(dashIndex + 1).Trim();
-
-					if (part2.ToLower().Contains("on leave"))
-					{
-						onLeave = true;
-						var parts = part1.Split(',');
-						name = parts[0].Trim();
-						rank = parts[1].Trim();
-					}
-					else
-					{
-						positionNameLong = part1;
-						var parts = part2.Split(',');
-						name = parts[0].Trim();
-						rank = parts[1].Trim();
-					}
-				}
-				else
-				{
-					var parts = text.Split(',');
-					name = parts[0].Trim();
-					rank = parts[1].Trim();
-				}
-
-				if (positionNameLong != "")
-				{
-					positionNameShort = Person.positionNameShortToPositionNameLong.Reverse.GetValue(positionNameLong, null);
-					if (positionNameShort == null) Log.Error("cannot find positionNameShortToPositionNameLong.Reverse[" + positionNameLong + "]");
-				}
-			}
-
-			var person = GetPersonFromName(data, name, rank);
-			if (onLeave) person.Status = "on leave";
-
-			var personToUnit = data.PersonUnits.FirstOrDefault(p => p.PersonId == person.Id && p.UnitId == parentUnitId);
-			if (personToUnit == null)
-			{
-				personToUnit = new PersonUnit();
-				personToUnit.Person = person;
-				personToUnit.Unit = data.Units.Find(parentUnitId);
-				personToUnit.PositionNameShort = positionNameShort;
-				personToUnit.Joined = DateTime.UtcNow;
-				personToUnit = data.PersonUnits.Add(personToUnit);
-			}
-
-			data.SaveChanges();
 		}
 
 		class DossierMovements
@@ -311,7 +364,7 @@ namespace TawGatherMembersInfo
 						else if (description.Contains("was admitted to TAW")) person.AdmittedToTaw = timestamp;
 						else if (description.Contains("was promoted to"))
 						{
-							if (person.Ranks == null || (person.Ranks.Count == 1 && person.Ranks.First().ValidFrom < new DateTime(1000, 1, 1)))
+							if (person.Ranks == null || (person.Ranks.Count == 1 && person.Ranks.First().ValidFrom == DateTime.MinValue))
 								person.Ranks = new List<PersonRank>();
 
 							if (!person.Ranks.Any(r => r.TawId == tawId))
@@ -326,7 +379,7 @@ namespace TawGatherMembersInfo
 								var personRank = new PersonRank();
 								personRank.NameLong = rankNameLong;
 								personRank.ValidFrom = timestamp;
-								personRank.Person = person;
+								personRank.ForPerson = person;
 								personRank.ByWho = GetPersonFromName(data, byWho);
 								personRank.TawId = tawId;
 								person.Ranks.Add(personRank);
@@ -403,7 +456,7 @@ namespace TawGatherMembersInfo
 		/// </summary>
 		/// <param name="str"></param>
 		/// <returns></returns>
-		DateTime ParseMonthDayYear([NotNull] string str)
+		static DateTime ParseMonthDayYear([NotNull] string str)
 		{
 			try
 			{
@@ -416,7 +469,7 @@ namespace TawGatherMembersInfo
 			}
 		}
 
-		DateTime ParseUsTime([NotNull] string str)
+		static DateTime ParseUsTime([NotNull] string str)
 		{
 			str = str.Replace('/', '.');
 			try
@@ -453,7 +506,7 @@ namespace TawGatherMembersInfo
 				using (var data = db.NewContext)
 				{
 					result = ParseEventData_1(data, response);
-					data.SaveChangesAsync();
+					data.SaveChanges();
 				}
 				Log.Trace("parsing event data, taw id:" + eventTawId + " parsed and saved");
 				return result;
@@ -535,14 +588,6 @@ namespace TawGatherMembersInfo
 			attendessDoc.LoadHtml(attendeesText);
 			var attendeesTable = new HtmlTable(attendessDoc.DocumentNode);
 
-			/*
-			if (evt.Attended?.Count > 0)
-			{
-				foreach (var attended in evt.Attended) attended.Person.Attended.Remove(attended);
-				evt.Attended.Clear();
-			}
-			*/
-
 			foreach (var row in attendeesTable)
 			{
 				var name = row[0]?.InnerText?.Trim();
@@ -551,7 +596,7 @@ namespace TawGatherMembersInfo
 				{
 					var person = GetPersonFromName(data, name);
 
-					var personToEvent = data.PersonEvents.FirstOrDefault(p => p.EventId == evt.Id && p.PersonId == person.Id);
+					var personToEvent = data.PersonEvents.FirstOrDefault(p => p.Event.EventId == evt.EventId && p.Person.PersonId == person.PersonId);
 					if (personToEvent == null)
 					{
 						personToEvent = new PersonEvent();
@@ -565,9 +610,17 @@ namespace TawGatherMembersInfo
 					if (attendanceStr != null && Enum.TryParse(attendanceStr.ToLowerInvariant(), true, out attendanceType)) personToEvent.AttendanceType = attendanceType;
 
 					var timestampStr = row[2]?.InnerText?.Trim();
-					DateTime timestamp;
-					//if (DateTime.TryParseExact(timestampStr, "MM-dd-yyyy hh:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out timestamp)) attended.timeStamp = timestamp;
-					if (DateTime.TryParse(timestampStr, out timestamp)) personToEvent.TimeStamp = timestamp;
+					if (!timestampStr.Contains("--"))
+					{
+						try
+						{
+							personToEvent.TimeStamp = DateTime.ParseExact(timestampStr, "M-d-yyyy hh:mm", CultureInfo.InvariantCulture, DateTimeStyles.None);
+						}
+						catch (Exception e)
+						{
+							Log.Fatal($"failed to parse time:{timestampStr} exception:{e}");
+						}
+					}
 				}
 				else if (nameHref != null && nameHref.StartsWith("/unit"))
 				{

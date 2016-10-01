@@ -11,7 +11,7 @@ namespace TawGatherMembersInfo.Models
 	public class Unit
 	{
 		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public virtual long Id { get; set; }
+		public virtual long UnitId { get; set; }
 
 		[Index(IsUnique = true)]
 		public virtual int TawId { get; set; }
@@ -27,11 +27,12 @@ namespace TawGatherMembersInfo.Models
 
 		public virtual Unit ParentUnit { get; set; }
 		public virtual ICollection<Unit> ChildUnits { get; set; }
-		public virtual ICollection<PersonUnit> Persons { get; set; }
+		public virtual ICollection<PersonUnit> People { get; set; }
 		public virtual ICollection<Event> Events { get; set; }
 
-		public Dictionary<Person, string> PersonToPositionNameShort => Persons.ToDictionary(p => p.Person, p => p.PositionNameShort);
+		public Dictionary<Person, string> PersonToPositionNameShort => People.ToDictionary(p => p.ForPerson, p => p.PositionNameShort);
 
+		[NotMapped]
 		public Person HighestRankingPerson
 		{
 			get
@@ -39,10 +40,10 @@ namespace TawGatherMembersInfo.Models
 				Person highestPerson = null;
 				int highestPriority = int.MinValue;
 
-				foreach (var kvp in Persons)
+				foreach (var kvp in People)
 				{
 					var positionNameShort = kvp.PositionNameShort;
-					var person = kvp.Person;
+					var person = kvp.ForPerson;
 
 					var positionPriority = Person.positionNameShortTeamSpeakNamePriorityOrder.IndexOf(positionNameShort);
 					if (positionPriority > highestPriority)
@@ -62,6 +63,7 @@ namespace TawGatherMembersInfo.Models
 		/// AM2 2nd Battalion European == AM 2
 		/// SOCOP = SOCOP
 		/// </summary>
+		[NotMapped]
 		public string TeamSpeakNamePrefix
 		{
 			get
@@ -99,7 +101,7 @@ namespace TawGatherMembersInfo.Models
 
 		void FillWithAllPeopleNames(HashSet<string> people)
 		{
-			var names = this.Persons.Select(p => p.Person.Name);
+			var names = this.People.Select(p => p.ForPerson.Name);
 			people.UnionWith(names);
 			foreach (var unit in ChildUnits) unit.FillWithAllPeopleNames(people);
 		}
@@ -113,7 +115,7 @@ namespace TawGatherMembersInfo.Models
 
 		public void FillWithAllPeople(HashSet<Person> people)
 		{
-			var names = this.Persons.Select(p => p.Person);
+			var names = this.People.Select(p => p.ForPerson);
 			people.UnionWith(names);
 			foreach (var unit in ChildUnits) unit.FillWithAllPeople(people);
 		}
@@ -130,13 +132,13 @@ namespace TawGatherMembersInfo.Models
 			var sb = new StringBuilder();
 			sb.AppendLine();
 			for (int i = 1; i < depth; i++) sb.Append("|");
-			sb.Append("|unit=" + Type + "=" + Name + " tawId:" + Id);
-			foreach (var c in Persons)
+			sb.Append("|unit=" + Type + "=" + Name + " tawId:" + UnitId);
+			foreach (var c in People)
 			{
 				sb.AppendLine();
 				for (int i = 0; i < depth; i++) sb.Append("|");
 				sb.Append("|");
-				sb.Append("person=" + c.Person + "=" + c.PositionNameShort);
+				sb.Append("person=" + c.ForPerson + "=" + c.PositionNameShort);
 			}
 			foreach (var c in ChildUnits)
 			{
@@ -158,12 +160,12 @@ namespace TawGatherMembersInfo.Models
 		public bool Equals(Unit other)
 		{
 			if (other == null) return false;
-			return Id == other.Id;
+			return UnitId == other.UnitId;
 		}
 
 		public override int GetHashCode()
 		{
-			return Id.GetHashCode();
+			return UnitId.GetHashCode();
 		}
 	}
 }

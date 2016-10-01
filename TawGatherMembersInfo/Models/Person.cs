@@ -13,7 +13,7 @@ namespace TawGatherMembersInfo.Models
 	public partial class Person : IEquatable<Person>
 	{
 		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public long Id { get; set; }
+		public long PersonId { get; set; }
 
 		//public Dictionary<Unit, string> UnitToPositionNameShort { get; set; } = new Dictionary<Unit, string>();
 
@@ -22,9 +22,6 @@ namespace TawGatherMembersInfo.Models
 
 		[NotMapped]
 		public virtual string RankNameShort => Rank?.NameShort;
-
-		[NotMapped]
-		public virtual PersonRank Rank => Ranks.OrderByDescending(r => r.ValidFrom).FirstOrDefault();
 
 		public virtual long SteamId { get; set; }
 
@@ -47,16 +44,21 @@ namespace TawGatherMembersInfo.Models
 		public virtual DateTime AdmittedToTaw { get; set; }
 
 		public virtual ICollection<PersonRank> Ranks { get; set; }
-		public virtual ICollection<PersonEvent> Attended { get; set; }
+		public virtual ICollection<PersonEvent> Events { get; set; }
 		public virtual ICollection<PersonUnit> Units { get; set; }
 		public virtual ICollection<PersonCommendation> Commendations { get; set; }
+
+		[NotMapped]
+		public virtual PersonRank Rank => Ranks.OrderByDescending(r => r.ValidFrom).FirstOrDefault();
 
 		[NonSerialized]
 		BiographyData biography;
 
+		[NotMapped]
 		public BiographyData Biography => biography;
 
-		public Dictionary<Unit, string> UnitToPositionNameShort => Units.ToDictionary(i => i.Unit, i => i.PositionNameShort);
+		[NotMapped]
+		public Dictionary<Unit, string> UnitToPositionNameShort => Units.ToDictionary(i => i.ForUnit, i => i.PositionNameShort);
 
 		public class BiographyData
 		{
@@ -121,6 +123,7 @@ namespace TawGatherMembersInfo.Models
 			}
 		}
 
+		[NotMapped]
 		public string CountryFlagImageUrl
 		{
 			get
@@ -129,6 +132,7 @@ namespace TawGatherMembersInfo.Models
 			}
 		}
 
+		[NotMapped]
 		public int DaysInTaw
 		{
 			get
@@ -137,9 +141,10 @@ namespace TawGatherMembersInfo.Models
 			}
 		}
 
-		[NonSerialized]
+		[NonSerialized, NotMapped]
 		Unit mostImportantIngamecache;
 
+		[NotMapped]
 		public Unit MostImportantIngameUnit
 		{
 			get
@@ -167,6 +172,7 @@ namespace TawGatherMembersInfo.Models
 			}
 		}
 
+		[NotMapped]
 		public string MostImportantIngameUnitPositionNameShort
 		{
 			get
@@ -176,6 +182,7 @@ namespace TawGatherMembersInfo.Models
 			}
 		}
 
+		[NotMapped]
 		public string MostImportantIngameUnitPositionNameLong
 		{
 			get
@@ -185,12 +192,13 @@ namespace TawGatherMembersInfo.Models
 			}
 		}
 
-		[NonSerialized]
+		[NotMapped, NonSerialized]
 		Unit teamSpeakcache;
 
 		/// <summary>
 		/// Unit in which you hold position that you put next to your name in teamSpeak
 		/// </summary>
+		[NotMapped]
 		public Unit TeamSpeakUnit
 		{
 			get
@@ -221,6 +229,7 @@ namespace TawGatherMembersInfo.Models
 		/// <summary>
 		/// Short name (abbrevation) of position of unit in which you hold position that you put next to your name in teamSpeak
 		/// </summary>
+		[NotMapped]
 		public string TeamSpeakUnitPositionNameShort
 		{
 			get
@@ -235,6 +244,7 @@ namespace TawGatherMembersInfo.Models
 		/// <summary>
 		/// Long name of position of unit in which you hold position that you put next to your name in teamSpeak
 		/// </summary>
+		[NotMapped]
 		public string TeamSpeakUnitPositionNameLong
 		{
 			get
@@ -243,6 +253,7 @@ namespace TawGatherMembersInfo.Models
 			}
 		}
 
+		[NotMapped]
 		public bool IsTeamSpeakNameGuaranteedToBeCorrect
 		{
 			get
@@ -267,11 +278,12 @@ namespace TawGatherMembersInfo.Models
 			}
 		}
 
-		[NonSerialized]
+		[NotMapped, NonSerialized]
 		string teamSpeakName_cache;
 
 		// during one day: this took me 4 hours, trying to find logic/algorithm in something that was made to look good, TODO: needs improving
 		// spend many more hours on it afterwards as well
+		[NotMapped]
 		public string TeamSpeakName
 		{
 			get

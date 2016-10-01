@@ -141,7 +141,7 @@ namespace TawGatherMembersInfo
 		SemaphoreSlim s;
 		ConcurrentDictionary<Thread, T> threadToVar = new ConcurrentDictionary<Thread, T>();
 
-		public class DisposableWrapper<T> : IDisposable where T : class, new()
+		public class DisposableWrapper : IDisposable
 		{
 			T var;
 			TheadedVariableManager<T> manager;
@@ -158,7 +158,7 @@ namespace TawGatherMembersInfo
 				manager.s.Release();
 			}
 
-			public static implicit operator T(DisposableWrapper<T> me)
+			public static implicit operator T(DisposableWrapper me)
 			{
 				return me.var;
 			}
@@ -169,12 +169,12 @@ namespace TawGatherMembersInfo
 			s = new SemaphoreSlim(maxInstances);
 		}
 
-		public async Task<DisposableWrapper<T>> GetAsync()
+		public async Task<DisposableWrapper> GetAsync()
 		{
 			await s.WaitAsync();
 			T var;
 			if (!threadToVar.TryGetValue(Thread.CurrentThread, out var)) var = threadToVar[Thread.CurrentThread] = new T();
-			return new DisposableWrapper<T>(this, var);
+			return new DisposableWrapper(this, var);
 		}
 	}
 
