@@ -72,13 +72,17 @@ namespace TawGatherMembersInfo
 					var personsUpdated = new HashSet<string>();
 					foreach (var tawUnitId in config.UnitIdsToGatherMemberProfileInfo)
 					{
-						IEnumerable<string> peopleNames;
+						Log.Trace($"parsing people from unit taw id:{tawUnitId}");
+
+						HashSet<string> peopleNames;
 						using (var data = db.NewContext)
 						{
 							var unit = data.Units.FirstOrDefault(u => u.TawId == tawUnitId);
 							if (unit == null) break;
 							peopleNames = unit.GetAllPeopleNames();
 						}
+
+						Log.Trace($"parsing people from unit taw id:{tawUnitId}, got {peopleNames.Count} people");
 
 						var tasks = new List<Task>();
 
@@ -94,7 +98,11 @@ namespace TawGatherMembersInfo
 							tasks.Add(task);
 						}
 
+						Log.Trace($"parsing people from unit taw id:{tawUnitId}, all tasks started");
+
 						Task.WaitAll(tasks.ToArray());
+
+						Log.Trace($"parsing people from unit taw id:{tawUnitId}, done");
 					}
 				}
 

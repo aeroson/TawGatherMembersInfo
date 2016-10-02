@@ -8,6 +8,10 @@ using TawGatherMembersInfo.Models;
 
 namespace TawGatherMembersInfo
 {
+	public class ManuallyMapped : System.Attribute // System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute
+	{
+	}
+
 	public class MyDbContext : DbContext
 	{
 		public Unit RootUnit => Units.OrderBy(u => u.TawId).FirstOrDefault();
@@ -45,8 +49,20 @@ namespace TawGatherMembersInfo
 		{
 		}
 
-		protected override void OnModelCreating(DbModelBuilder modelBuilder)
+		protected override void OnModelCreating(DbModelBuilder b)
 		{
+			b.Entity<Person>().HasMany(t => t.Ranks).WithRequired(t => t.Person);
+			b.Entity<Person>().HasMany(t => t.Units).WithRequired(t => t.Person);
+			b.Entity<Person>().HasMany(t => t.Events).WithRequired(t => t.Person);
+			b.Entity<Person>().HasMany(t => t.Commendations).WithRequired(t => t.Person);
+
+			b.Entity<Unit>().HasMany(t => t.People).WithRequired(t => t.Unit);
+
+			b.Entity<PersonCommendation>().HasRequired(t => t.Commendation);
+			b.Entity<PersonCommendation>().HasMany(t => t.Comments).WithRequired(t => t.PersonCommendation);
+
+			b.Entity<PersonCommendationComment>().HasRequired(t => t.Person);
+
 			//modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
 		}
 	}

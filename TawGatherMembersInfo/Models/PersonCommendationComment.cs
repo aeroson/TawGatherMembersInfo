@@ -19,7 +19,6 @@ namespace TawGatherMembersInfo.Models
 		public virtual string Comment { get; set; }
 
 		public virtual Person Person { get; set; }
-
 		public virtual PersonCommendation PersonCommendation { get; set; }
 	}
 }

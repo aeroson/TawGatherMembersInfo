@@ -108,6 +108,10 @@
     <Compile Include="EnterTawUserLoginInfo.Designer.cs">
       <DependentUpon>EnterTawUserLoginInfo.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201610021746013_InitialSchema.cs" />
+    <Compile Include="Migrations\201610021746013_InitialSchema.Designer.cs">
+      <DependentUpon>201610021746013_InitialSchema.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Commendation.cs" />
     <Compile Include="Models\Event.cs" />
@@ -117,6 +121,7 @@
     <Compile Include="Models\PersonCommendationComment.cs" />
     <Compile Include="Models\PersonEvent.cs" />
     <Compile Include="Models\PersonRank.cs" />
+    <Compile Include="Models\PersonStatus.cs" />
     <Compile Include="Models\PersonUnit.cs" />
     <Compile Include="Models\Person_StaticData.cs" />
     <Compile Include="MyDbContext.cs" />
@@ -186,6 +191,9 @@
   <ItemGroup>
     <EmbeddedResource Include="EnterTawUserLoginINfo.resx">
       <DependentUpon>EnterTawUserLoginInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201610021746013_InitialSchema.resx">
+      <DependentUpon>201610021746013_InitialSchema.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

@@ -17,7 +17,7 @@ namespace TawGatherMembersInfo.Models
 
 		//public Dictionary<Unit, string> UnitToPositionNameShort { get; set; } = new Dictionary<Unit, string>();
 
-		[Index(IsUnique = true), StringLength(500)]
+		[Index(IsUnique = true), StringLength(500), Required]
 		public virtual string Name { get; set; } = "unnamed";
 
 		[NotMapped]
@@ -43,10 +43,15 @@ namespace TawGatherMembersInfo.Models
 		public virtual DateTime AppliedForTaw { get; set; }
 		public virtual DateTime AdmittedToTaw { get; set; }
 
-		public virtual ICollection<PersonRank> Ranks { get; set; }
-		public virtual ICollection<PersonEvent> Events { get; set; }
+		public virtual ICollection<PersonRank> Ranks { get; set; } = new List<PersonRank>();
+
+		public virtual ICollection<PersonEvent> Events { get; set; } = new List<PersonEvent>();
+
 		public virtual ICollection<PersonUnit> Units { get; set; }
+
 		public virtual ICollection<PersonCommendation> Commendations { get; set; }
+
+		public virtual ICollection<PersonStatus> Statuses { get; set; }
 
 		[NotMapped]
 		public virtual PersonRank Rank => Ranks.OrderByDescending(r => r.ValidFrom).FirstOrDefault();
@@ -58,7 +63,7 @@ namespace TawGatherMembersInfo.Models
 		public BiographyData Biography => biography;
 
 		[NotMapped]
-		public Dictionary<Unit, string> UnitToPositionNameShort => Units.ToDictionary(i => i.ForUnit, i => i.PositionNameShort);
+		public Dictionary<Unit, string> UnitToPositionNameShort => Units.ToDictionary(i => i.Unit, i => i.PositionNameShort);
 
 		public class BiographyData
 		{

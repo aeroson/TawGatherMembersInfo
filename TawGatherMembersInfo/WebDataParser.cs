@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -77,7 +78,13 @@ namespace TawGatherMembersInfo
 								.Where(u => !personUnitIds.Contains(u.PersonUnitId)) // except those we found & updated
 								.ForEach(u => u.Removed = DateTime.UtcNow); // remove it
 
-							data.SaveChanges();
+							try
+							{
+								data.SaveChanges();
+							}
+							catch (Exception e)
+							{
+							}
 							Log.Trace("done parsing & saving roaster person:" + personName);
 						}
 					});
@@ -156,20 +163,19 @@ namespace TawGatherMembersInfo
 					var person = GetPersonFromName(data, name, rank);
 					if (onLeave) person.Status = "on leave";
 
-					var personToUnit = data.PersonUnits.FirstOrDefault(p => p.ForPerson.PersonId == person.PersonId && p.ForUnit.UnitId == unitId);
+					var personToUnit = data.PersonUnits.FirstOrDefault(p => p.Person.PersonId == person.PersonId && p.Unit.UnitId == unitId);
 					if (personToUnit == null)
 					{
 						personToUnit = new PersonUnit();
-						personToUnit.ForPerson = person;
-						personToUnit.ForUnit = data.Units.Find(unitId);
+						personToUnit.Person = person;
+						personToUnit.Unit = data.Units.Find(unitId);
+						personToUnit.Joined = DateTime.UtcNow;
 						personToUnit = data.PersonUnits.Add(personToUnit);
 					}
 					personToUnit.PositionNameShort = positionNameShort;
-					personToUnit.Joined = DateTime.UtcNow;
 					personToUnit.Removed = DateTime.MinValue;
 
 					PersonToUnitId = personToUnit.PersonUnitId;
-
 					data.SaveChanges();
 				}
 			}
@@ -239,13 +245,16 @@ namespace TawGatherMembersInfo
 				person.Name = name;
 				person = data.People.Add(person);
 			}
-			if (!rankNameShort.IsNullOrEmpty() && (person.Ranks == null || person.Rank?.NameShort != rankNameShort))
+			if (!rankNameShort.IsNullOrEmpty())
 			{
-				var personRank = new PersonRank();
-				personRank.Person = person;
-				personRank.NameShort = rankNameShort;
-				personRank.ValidFrom = DateTime.MinValue;
-				person.Ranks = new List<PersonRank>() { personRank };
+				if (person.Ranks.Count == 0 || person.Rank?.NameShort != rankNameShort)
+				{
+					var personRank = new PersonRank();
+					personRank.Person = person;
+					personRank.NameShort = rankNameShort;
+					personRank.ValidFrom = DateTime.UtcNow;
+					person.Ranks.Add(personRank);
+				}
 			}
 			return person;
 		}
@@ -278,21 +287,21 @@ namespace TawGatherMembersInfo
 		public async Task UpdateInfoFromProfilePage(SessionMannager sessionManager, string personName)
 		{
 			var session = await sessionManager.GetAsync();
-
-			Log.Trace("updating profile of " + personName + " start");
+			var logPrefix = "updating profile of " + personName + ", ";
+			Log.Trace(logPrefix + "start");
 
 			var url = Person.GetPersonProfilePageUrl(personName);
 			var response = session.Value.GetUrl(url);
 			var html = response.HtmlDocument;
 
-			Log.Trace("updating profile of " + personName + " got web response");
+			Log.Trace(logPrefix + "got web response");
 
 			using (var data = db.NewContext)
 			{
 				var person = data.People.FirstOrDefault(p => p.Name == personName);
 				if (person == null)
 				{
-					Log.Error("person with name " + personName + " was not found in database");
+					Log.Error(logPrefix + "person with name " + personName + " was not found in database");
 					return;
 				}
 
@@ -415,10 +424,6 @@ namespace TawGatherMembersInfo
 						{
 							// <a href="/member/MaverickSabre.aspx">MaverickSabre</a> was put on leave by <a href="/member/Juvenis.aspx">Juvenis</a>.
 						}
-						else if (description.Contains("was discharged by"))
-						{
-							// <a href="/member/MaverickSabre.aspx">MaverickSabre</a> was discharged by <a href="/member/Lucid.aspx">Lucid</a>.
-						}
 						else if (description.Contains("was reinstated by"))
 						{
 							// <a href="/member/Dackey.aspx">Dackey</a> was reinstated by <a href="/member/Phenom.aspx">Phenom</a>
@@ -448,7 +453,7 @@ namespace TawGatherMembersInfo
 				data.SaveChangesAsync();
 			}
 
-			Log.Trace("done updating profile of " + personName + ", parsed and saved");
+			Log.Trace(logPrefix + "done, parsed and saved");
 		}
 
 		/// <summary>
@@ -627,7 +632,7 @@ namespace TawGatherMembersInfo
 					var unitTawIdStr = nameHref.Split('/', '\\').Last().RemoveFromEnd(".aspx".Length);
 					var unitTawId = int.Parse(unitTawIdStr);
 					var unit = GetUnit(data, unitTawId, name);
-					(evt.Units ?? (evt.Units = new List<Unit>())).Add(unit);
+					evt.Units.Add(unit);
 				}
 				else if (nameHref == null)
 				{

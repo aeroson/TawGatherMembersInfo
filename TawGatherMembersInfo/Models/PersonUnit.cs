@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 
 namespace TawGatherMembersInfo.Models
 {
@@ -10,11 +11,11 @@ namespace TawGatherMembersInfo.Models
 		public long PersonUnitId { get; set; }
 
 		/*
-		[Index]
+		[ForeignKey(nameof(Person))]
 		public long Person_PersonId { get; set; }
 
-		[Index]
 		public long Unit_UnitId { get; set; }
+
 		*/
 
 		[StringLength(500)]
@@ -30,7 +31,7 @@ namespace TawGatherMembersInfo.Models
 		[Index]
 		public virtual DateTime Removed { get; set; }
 
-		public virtual Person ForPerson { get; set; }
-		public virtual Unit ForUnit { get; set; }
+		public virtual Person Person { get; set; }
+		public virtual Unit Unit { get; set; }
 	}
 }

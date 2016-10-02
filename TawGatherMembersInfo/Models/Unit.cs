@@ -27,10 +27,12 @@ namespace TawGatherMembersInfo.Models
 
 		public virtual Unit ParentUnit { get; set; }
 		public virtual ICollection<Unit> ChildUnits { get; set; }
+
 		public virtual ICollection<PersonUnit> People { get; set; }
+
 		public virtual ICollection<Event> Events { get; set; }
 
-		public Dictionary<Person, string> PersonToPositionNameShort => People.ToDictionary(p => p.ForPerson, p => p.PositionNameShort);
+		public Dictionary<Person, string> PersonToPositionNameShort => People.ToDictionary(p => p.Person, p => p.PositionNameShort);
 
 		[NotMapped]
 		public Person HighestRankingPerson
@@ -43,7 +45,7 @@ namespace TawGatherMembersInfo.Models
 				foreach (var kvp in People)
 				{
 					var positionNameShort = kvp.PositionNameShort;
-					var person = kvp.ForPerson;
+					var person = kvp.Person;
 
 					var positionPriority = Person.positionNameShortTeamSpeakNamePriorityOrder.IndexOf(positionNameShort);
 					if (positionPriority > highestPriority)
@@ -101,7 +103,7 @@ namespace TawGatherMembersInfo.Models
 
 		void FillWithAllPeopleNames(HashSet<string> people)
 		{
-			var names = this.People.Select(p => p.ForPerson.Name);
+			var names = this.People.Select(p => p.Person.Name);
 			people.UnionWith(names);
 			foreach (var unit in ChildUnits) unit.FillWithAllPeopleNames(people);
 		}
@@ -115,7 +117,7 @@ namespace TawGatherMembersInfo.Models
 
 		public void FillWithAllPeople(HashSet<Person> people)
 		{
-			var names = this.People.Select(p => p.ForPerson);
+			var names = this.People.Select(p => p.Person);
 			people.UnionWith(names);
 			foreach (var unit in ChildUnits) unit.FillWithAllPeople(people);
 		}
@@ -138,7 +140,7 @@ namespace TawGatherMembersInfo.Models
 				sb.AppendLine();
 				for (int i = 0; i < depth; i++) sb.Append("|");
 				sb.Append("|");
-				sb.Append("person=" + c.ForPerson + "=" + c.PositionNameShort);
+				sb.Append("person=" + c.Person + "=" + c.PositionNameShort);
 			}
 			foreach (var c in ChildUnits)
 			{

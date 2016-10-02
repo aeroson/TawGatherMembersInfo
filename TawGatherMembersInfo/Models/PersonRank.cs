@@ -11,14 +11,6 @@ namespace TawGatherMembersInfo.Models
 		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 		public long PersonRankId { get; set; }
 
-		/*
-		[Index]
-		public long PersonId { get; set; }
-
-		[Index]
-		public long ByWhoId { get; set; }
-		*/
-
 		[Index]
 		public long TawId { get; set; }
 
