@@ -242,7 +242,7 @@ namespace TawGatherMembersInfo
 			if (!rankNameShort.IsNullOrEmpty() && (person.Ranks == null || person.Rank?.NameShort != rankNameShort))
 			{
 				var personRank = new PersonRank();
-				personRank.ForPerson = person;
+				personRank.Person = person;
 				personRank.NameShort = rankNameShort;
 				personRank.ValidFrom = DateTime.MinValue;
 				person.Ranks = new List<PersonRank>() { personRank };
@@ -379,7 +379,7 @@ namespace TawGatherMembersInfo
 								var personRank = new PersonRank();
 								personRank.NameLong = rankNameLong;
 								personRank.ValidFrom = timestamp;
-								personRank.ForPerson = person;
+								personRank.Person = person;
 								personRank.ByWho = GetPersonFromName(data, byWho);
 								personRank.TawId = tawId;
 								person.Ranks.Add(personRank);

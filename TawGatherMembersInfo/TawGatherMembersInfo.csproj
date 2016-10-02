@@ -39,11 +39,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.1.3-beta1\lib\net45\EntityFramework.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.1.3-beta1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Google.Protobuf, Version=3.0.0.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
@@ -87,6 +87,8 @@
       <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.0.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Transactions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
@@ -116,6 +118,7 @@
     <Compile Include="Models\PersonEvent.cs" />
     <Compile Include="Models\PersonRank.cs" />
     <Compile Include="Models\PersonUnit.cs" />
+    <Compile Include="Models\Person_StaticData.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="Neitri\WebCrawling\MyHttpWebRequest.cs" />
     <Compile Include="Neitri\DependencyInjection\DependencyManager.cs" />
@@ -179,7 +182,6 @@
     <Compile Include="HttpServerHandler.PerRequestHandler.cs" />
     <None Include="packages.config" />
     <Compile Include="Models\Unit.cs" />
-    <Compile Include="Models\Person_StaticData.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="EnterTawUserLoginINfo.resx">

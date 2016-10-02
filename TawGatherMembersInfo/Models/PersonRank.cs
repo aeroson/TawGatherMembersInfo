@@ -13,10 +13,10 @@ namespace TawGatherMembersInfo.Models
 
 		/*
 		[Index]
-		public long Person_PersonId { get; set; }
+		public long PersonId { get; set; }
 
 		[Index]
-		public long ByWho_PersonId { get; set; }
+		public long ByWhoId { get; set; }
 		*/
 
 		[Index]
@@ -28,7 +28,7 @@ namespace TawGatherMembersInfo.Models
 		[Index]
 		public virtual DateTime ValidFrom { get; set; }
 
-		public virtual Person ForPerson { get; set; }
+		public virtual Person Person { get; set; }
 
 		public virtual Person ByWho { get; set; }
 

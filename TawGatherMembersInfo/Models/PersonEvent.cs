@@ -14,16 +14,11 @@ namespace TawGatherMembersInfo.Models
 
 	public class PersonEvent : IEquatable<PersonEvent>
 	{
-		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public long PersonEventId { get; set; }
-
-		/*
 		[Key, Column(Order = 0)]
-		public long Person_PersonId { get; set; }
+		public long PersonId { get; set; }
 
 		[Key, Column(Order = 1)]
-		public long Event_EventId { get; set; }
-		*/
+		public long EventId { get; set; }
 
 		[Index]
 		public virtual AttendanceType AttendanceType { get; set; } = AttendanceType.Unknown;

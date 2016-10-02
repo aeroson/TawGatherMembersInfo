@@ -8,14 +8,14 @@ namespace TawGatherMembersInfo.Models
 		/// If unit name contains this string it has higher priority.
 		/// Higher index means higher priority.
 		/// </summary>
-		static List<string> inGameUnitNamePriority = new List<string>() { "division", "battalion", "squad" };
+		public readonly static List<string> inGameUnitNamePriority = new List<string>() { "division", "battalion", "squad" };
 
 		#region Position name short rank name long, priority order of rank name short
 
 		/// <summary>
 		/// Smaller index is smaller priority
 		/// </summary>
-		public static List<string> positionNameShortTeamSpeakNamePriorityOrder = new List<string>()
+		public readonly static List<string> positionNameShortTeamSpeakNamePriorityOrder = new List<string>()
 			{
 				"FL",
 				"ST",
@@ -38,7 +38,7 @@ namespace TawGatherMembersInfo.Models
 		/// <summary>
 		/// Smaller index is smaller priority
 		/// </summary>
-		public static List<string> positionNameShortIngamePriority = new List<string>()
+		public readonly static List<string> positionNameShortIngamePriority = new List<string>()
 			{
 				"FL",
 				"SL",
@@ -58,7 +58,7 @@ namespace TawGatherMembersInfo.Models
 [23:42:29.784][E] cannot find positionNameShortToPositionNameLong.Reverse[Operations Member]
 		*/
 
-		public static BiDictionary<string, string> positionNameShortToPositionNameLong = new BiDictionary<string, string>
+		public readonly static BiDictionary<string, string> positionNameShortToPositionNameLong = new BiDictionary<string, string>
 			{
                 // Support staff doesnt use these, they just have one and the same behind their names
 
@@ -109,7 +109,7 @@ namespace TawGatherMembersInfo.Models
 		/// <summary>
 		/// Positions that do not have division number behind them in teamSpeakName
 		/// </summary>
-		public static HashSet<string> positionNameShortOwnedByDivision = new HashSet<string>
+		public readonly static HashSet<string> positionNameShortOwnedByDivision = new HashSet<string>
 			{
 				"DC",
 				"SUL",
@@ -121,7 +121,7 @@ namespace TawGatherMembersInfo.Models
 
 		#region Country codeTwoLetter codeThreeLetter countryFlagImageUrl
 
-		static string GetCountryFlagImageUrl(string countryCodeTwoLetter)
+		public static string GetCountryFlagImageUrl(string countryCodeTwoLetter)
 		{
 			if (countryCodeTwoLetter.Length > 2) countryCodeTwoLetter = countryCodeTwoLetter.Substring(0, 2);
 			if (countryCodeTwoLetter.Length == 2) return @"http://i1028.photobucket.com/albums/y345/judgernaut/TS_flags/" + countryCodeTwoLetter + ".png";
@@ -385,7 +385,7 @@ namespace TawGatherMembersInfo.Models
         };
         */
 
-		static BiDictionary<string, string> countryCodeIso3166ToCountryName = new BiDictionary<string, string>()
+		public readonly static BiDictionary<string, string> countryCodeIso3166ToCountryName = new BiDictionary<string, string>()
 			{
 				{"af", "Afghanistan"},
 				{"al", "Albania"},
