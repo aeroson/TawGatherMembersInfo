@@ -13,7 +13,7 @@ namespace TawGatherMembersInfo.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201610021746013_InitialSchema"; }
+            get { return "201610031721326_InitialSchema"; }
         }
         
         string IMigrationMetadata.Source

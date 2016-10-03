@@ -15,7 +15,7 @@ begin
 	
 	declare selected_people cursor for
 		select p.PersonId from People p
-		join PeopleToUnits p2u on p2u.PersonId = p.PersonId and p2u.UnitId in
+		join PersonUnits pu on pu.Person_PersonId = p.PersonId and pu.Unit_UnitId in
 		(
 			select * from
 				(select battalion.UnitId from Units battalion where battalion.TawId = rootUnitId) a
@@ -62,46 +62,46 @@ begin
 			leave read_loop;
 		end if;     
 					   
-		select count(*) from PeopleToEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > startDate
+		select count(*) from PersonEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > startDate
 		and e.Mandatory         
 		into totalMandatories;
 		
-		select count(*) from PeopleToEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > startDate
+		select count(*) from PersonEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > startDate
 		into totalAnyEvent;
 		
 		insert into attendanceReportResult values (
 		
 			(select u.Name from Units u where u.TawId = rootUnitId),
 			(select p.Name from People p where p.PersonId = selected_PersonId),
-			(select p.RankNameShort from People p where p.PersonId = selected_PersonId),                      
+			(select pr.NameShort from People p join PersonRanks pr on p.PersonId = pr.Person_PersonId order by pr.ValidFrom limit 1),
 			
-			(select count(*) from PeopleToEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > startDate
+			(select count(*) from PersonEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > startDate
 			),
 			
-			(select count(*) from PeopleToEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > startDate
+			(select count(*) from PersonEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > startDate
 			and pe.AttendanceType = 1),
 			
-			(select count(*) from PeopleToEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > startDate
+			(select count(*) from PersonEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > startDate
 			and pe.AttendanceType = 2),
 			
-			(select count(*) from PeopleToEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > startDate
+			(select count(*) from PersonEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > startDate
 			and pe.AttendanceType = 3),
 		
 			IF(
 				totalMandatories > 0,
-				(select count(*) from PeopleToEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > startDate
+				(select count(*) from PersonEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > startDate
 				and pe.AttendanceType = 1 and e.Mandatory) / totalMandatories,
 				0
 			),
 			
 			IF(
 				totalAnyEvent > 0,
-				(select count(*) from PeopleToEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > startDate
+				(select count(*) from PersonEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > startDate
 				and pe.AttendanceType = 1) / totalAnyEvent,
 				0
 			),
 			
-			0
+			(select datediff(CURRENT_DATE, pr.ValidFrom) from People p join PersonRanks pr on p.PersonId = pr.Person_PersonId order by pr.ValidFrom limit 1)
 		);
 
 	end loop;

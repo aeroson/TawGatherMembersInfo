@@ -22,7 +22,7 @@ namespace TawGatherMembersInfo.Models
 
 		public virtual Person Person { get; set; }
 
-		public virtual Person ByWho { get; set; }
+		public virtual Person PromotedBy { get; set; }
 
 		[NotMapped]
 		public string NameLong

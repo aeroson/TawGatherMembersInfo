@@ -116,14 +116,31 @@ namespace TawGatherMembersInfo.Migrations
                         TawId = c.Long(nullable: false),
                         NameShort = c.String(maxLength: 10, storeType: "nvarchar"),
                         ValidFrom = c.DateTime(nullable: false, precision: 0),
-                        ByWho_PersonId = c.Long(),
+                        PromotedBy_PersonId = c.Long(),
                         Person_PersonId = c.Long(nullable: false),
                     })
                 .PrimaryKey(t => t.PersonRankId)
-                .ForeignKey("dbo.People", t => t.ByWho_PersonId)
+                .ForeignKey("dbo.People", t => t.PromotedBy_PersonId)
                 .ForeignKey("dbo.People", t => t.Person_PersonId, cascadeDelete: true)
                 .Index(t => t.TawId)
                 .Index(t => t.ValidFrom)
+                .Index(t => t.PromotedBy_PersonId)
+                .Index(t => t.Person_PersonId);
+            
+            CreateTable(
+                "dbo.PersonStatus",
+                c => new
+                    {
+                        PersonStatusId = c.Long(nullable: false, identity: true),
+                        Other = c.String(unicode: false),
+                        Type = c.Int(nullable: false),
+                        Date = c.DateTime(nullable: false, precision: 0),
+                        ByWho_PersonId = c.Long(),
+                        Person_PersonId = c.Long(nullable: false),
+                    })
+                .PrimaryKey(t => t.PersonStatusId)
+                .ForeignKey("dbo.People", t => t.ByWho_PersonId)
+                .ForeignKey("dbo.People", t => t.Person_PersonId, cascadeDelete: true)
                 .Index(t => t.ByWho_PersonId)
                 .Index(t => t.Person_PersonId);
             
@@ -192,8 +209,10 @@ namespace TawGatherMembersInfo.Migrations
             DropForeignKey("dbo.UnitEvents", "Unit_UnitId", "dbo.Units");
             DropForeignKey("dbo.PersonUnits", "RemovedBy_PersonId", "dbo.People");
             DropForeignKey("dbo.PersonUnits", "JoinedBy_PersonId", "dbo.People");
+            DropForeignKey("dbo.PersonStatus", "Person_PersonId", "dbo.People");
+            DropForeignKey("dbo.PersonStatus", "ByWho_PersonId", "dbo.People");
             DropForeignKey("dbo.PersonRanks", "Person_PersonId", "dbo.People");
-            DropForeignKey("dbo.PersonRanks", "ByWho_PersonId", "dbo.People");
+            DropForeignKey("dbo.PersonRanks", "PromotedBy_PersonId", "dbo.People");
             DropForeignKey("dbo.PersonEvents", "PersonId", "dbo.People");
             DropForeignKey("dbo.PersonCommendations", "Person_PersonId", "dbo.People");
             DropForeignKey("dbo.PersonCommendationComments", "PersonCommendation_PersonCommendationId", "dbo.PersonCommendations");
@@ -210,8 +229,10 @@ namespace TawGatherMembersInfo.Migrations
             DropIndex("dbo.PersonUnits", new[] { "JoinedBy_PersonId" });
             DropIndex("dbo.PersonUnits", new[] { "Removed" });
             DropIndex("dbo.PersonUnits", new[] { "Joined" });
+            DropIndex("dbo.PersonStatus", new[] { "Person_PersonId" });
+            DropIndex("dbo.PersonStatus", new[] { "ByWho_PersonId" });
             DropIndex("dbo.PersonRanks", new[] { "Person_PersonId" });
-            DropIndex("dbo.PersonRanks", new[] { "ByWho_PersonId" });
+            DropIndex("dbo.PersonRanks", new[] { "PromotedBy_PersonId" });
             DropIndex("dbo.PersonRanks", new[] { "ValidFrom" });
             DropIndex("dbo.PersonRanks", new[] { "TawId" });
             DropIndex("dbo.PersonCommendationComments", new[] { "PersonCommendation_PersonCommendationId" });
@@ -231,6 +252,7 @@ namespace TawGatherMembersInfo.Migrations
             DropTable("dbo.UnitEvents");
             DropTable("dbo.Units");
             DropTable("dbo.PersonUnits");
+            DropTable("dbo.PersonStatus");
             DropTable("dbo.PersonRanks");
             DropTable("dbo.PersonCommendationComments");
             DropTable("dbo.Commendations");

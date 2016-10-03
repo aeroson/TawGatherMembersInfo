@@ -247,7 +247,7 @@ namespace TawGatherMembersInfo
 			}
 			if (!rankNameShort.IsNullOrEmpty())
 			{
-				if (person.Ranks.Count == 0 || person.Rank?.NameShort != rankNameShort)
+				if (person.Ranks.Count == 0)
 				{
 					var personRank = new PersonRank();
 					personRank.Person = person;
@@ -373,8 +373,11 @@ namespace TawGatherMembersInfo
 						else if (description.Contains("was admitted to TAW")) person.AdmittedToTaw = timestamp;
 						else if (description.Contains("was promoted to"))
 						{
-							if (person.Ranks == null || (person.Ranks.Count == 1 && person.Ranks.First().ValidFrom == DateTime.MinValue))
+							if (person.Ranks == null || person.Ranks.Any(r => r.PromotedBy == null))
+							{
+								person.Ranks?.ForEach(r => data.PersonRanks.Remove(r));
 								person.Ranks = new List<PersonRank>();
+							}
 
 							if (!person.Ranks.Any(r => r.TawId == tawId))
 							{
@@ -389,7 +392,7 @@ namespace TawGatherMembersInfo
 								personRank.NameLong = rankNameLong;
 								personRank.ValidFrom = timestamp;
 								personRank.Person = person;
-								personRank.ByWho = GetPersonFromName(data, byWho);
+								personRank.PromotedBy = GetPersonFromName(data, byWho);
 								personRank.TawId = tawId;
 								person.Ranks.Add(personRank);
 							}
