@@ -1,16 +1,24 @@
 ﻿using Neitri;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace TawGatherMembersInfo
 {
 	public class Config : XMLConfig
 	{
-		public string MySqlConnectionString => this.Root.Descendants("mySqlConnectionString").First().Value;
+		public string MySqlConnectionString => GetOne("Server=[ip];Database=taw-db;Uid=root;Pwd=[password]");
 
-		public IEnumerable<string> AuthTokens => this.Root.Descendants("authenticationTokens").First().Elements().Select(e => e.Value).ToList();
-		public short HttpServerPort => short.Parse(this.GetValue("httpServerPort", "8000"));
+		public IEnumerable<string> AuthenticationTokens => GetMany(new string[] { "example_KMzZA8Jm5E2AhF9MN5NY9t6eqYr5MWSp" });
 
-		public IEnumerable<int> UnitIdsToGatherMemberProfileInfo => this.Root.Descendants("unitsToGatherMemberInfo").First().Elements().Select(e => int.Parse(e.Value));
+		public short HttpServerPort => GetOne<short>(8000);
+
+		public IEnumerable<int> UnitsToGatherMemberInfo => GetMany(new int[] { 2776 });
+
+		public int MaxConcurrentDatabaseConnections => GetOne(10);
+		public int MaxConcurrentWebSessions => GetOne(10);
+		public int WebCrawlerLoopPauseSeconds => GetOne(10 * 60);
+
+		public int MaxWebRequestsPerMinutePerSession => GetOne(60);
 	}
 }

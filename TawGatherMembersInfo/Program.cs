@@ -1,6 +1,7 @@
 ﻿using Neitri;
 using System;
 using System.Data.Entity;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -13,11 +14,9 @@ namespace TawGatherMembersInfo
 
 		HttpServerHandler httpServer;
 
-		[Dependency(Register = true)]
 		Config config;
-
-		[Dependency(Register = true)]
 		FileSystem fileSystem;
+		ILogging log;
 
 		[Dependency(Register = true)]
 		DbContextProvider db;
@@ -32,23 +31,27 @@ namespace TawGatherMembersInfo
 
 		Program(string[] args)
 		{
-			dependency.BuildUp(this);
+			fileSystem = new FileSystem();
+
+			config = new Config();
 			config.LoadFile(fileSystem.GetFile("data", "config.xml"));
 
 			{
-				var log = new Neitri.Logging.LogAgregator();
-				dependency.Register(log);
+				var a = new Neitri.Logging.LogAgregator();
+				this.log = a;
+				TawGatherMembersInfo.Log.log = a;
 
-				log.AddLogger(new Neitri.Logging.LogConsole());
+				a.AddLogger(new Neitri.Logging.LogConsole());
 
 				var logFile = fileSystem.BaseDirectory.GetDirectory("data", "logs").CreateIfNotExists().GetFile(DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss") + ".txt");
 				var sw = new StreamWriter(logFile);
 				sw.AutoFlush = true;
-				log.AddLogger(new Neitri.Logging.LogFile(sw));
-
-				TawGatherMembersInfo.Log.log = log;
-				dependency.Register(log);
+				a.AddLogger(new Neitri.Logging.LogFile(sw));
 			}
+
+			dependency.Register(fileSystem, config, log);
+
+			dependency.BuildUp(this);
 
 			Log.Info("Starting ...");
 			Start(args);
@@ -68,13 +71,18 @@ namespace TawGatherMembersInfo
 		void Start(string[] args)
 		{
 			// DB TEST
-			var u = db.NewContext.RootUnit;
+			using (var data = db.NewContext)
+			{
+				var u = data.RootUnit;
+			}
 
 			//TestPrintAttendanceReport();
 
 			httpServer = dependency.Create<HttpServerHandler>();
 
+			roaster.OnDataGatheringCycleCompleted += UpdateSquadXml;
 			roaster.Run();
+
 			httpServer.Run();
 		}
 

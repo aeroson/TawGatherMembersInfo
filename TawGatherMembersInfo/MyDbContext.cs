@@ -16,8 +16,6 @@ namespace TawGatherMembersInfo
 
 	public class MyDbContext : DbContext, IDisposable
 	{
-		public static SemaphoreSlim simultaneousConnectionsSemaphore = new SemaphoreSlim(10);
-
 		public Unit RootUnit => Units.OrderBy(u => u.TawId).FirstOrDefault();
 		public virtual IDbSet<Event> Events { get; set; }
 		public virtual IDbSet<Person> People { get; set; }
@@ -25,6 +23,8 @@ namespace TawGatherMembersInfo
 		public virtual IDbSet<PersonEvent> PersonEvents { get; set; }
 		public virtual IDbSet<PersonUnit> PersonUnits { get; set; }
 		public virtual IDbSet<PersonRank> PersonRanks { get; set; }
+
+		public DbContextProvider dbContextProvider;
 
 		static MyDbContext()
 		{
@@ -51,12 +51,11 @@ namespace TawGatherMembersInfo
 
 		public MyDbContext(DbConnection existingConnection, bool contextOwnsConnection) : base(existingConnection, contextOwnsConnection)
 		{
-			simultaneousConnectionsSemaphore.Wait();
 		}
 
 		public new void Dispose()
 		{
-			simultaneousConnectionsSemaphore.Release();
+			dbContextProvider?.OnDispose(this);
 			base.Dispose();
 		}
 
@@ -79,22 +78,39 @@ namespace TawGatherMembersInfo
 		}
 	}
 
-	public class DbContextProvider
+	public class DbContextProvider : IOnDependenciesResolved
 	{
 		[Dependency]
 		Config config;
+
+		SemaphoreSlim simultaneousConnectionsSemaphore;
 
 		public MyDbContext NewContext
 		{
 			get
 			{
+				simultaneousConnectionsSemaphore.Wait();
+
 				//MySql.Data.MySqlClient.MySqlClientFactory
 				// MySql doesn't support  MultipleActiveResultSets=True; http://stackoverflow.com/questions/25953560/mysql-connector-multipleactiveresultsets-issue
 				var connectionString = config.MySqlConnectionString;
 				var connection = new MySql.Data.MySqlClient.MySqlConnection(connectionString);
 
-				return new MyDbContext(connection, true);
+				var context = new MyDbContext(connection, true);
+				context.dbContextProvider = this;
+
+				return context;
 			}
+		}
+
+		public void OnDispose(MyDbContext context)
+		{
+			simultaneousConnectionsSemaphore.Release();
+		}
+
+		public void OnDependenciesResolved()
+		{
+			simultaneousConnectionsSemaphore = new SemaphoreSlim(config.MaxConcurrentDatabaseConnections);
 		}
 	}
 }

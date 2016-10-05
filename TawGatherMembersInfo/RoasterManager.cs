@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 
 namespace TawGatherMembersInfo
 {
-	public class RoasterManager
+	public class RoasterManager : IOnDependenciesResolved
 	{
+		public event Action OnDataGatheringCycleCompleted;
+
 		Thread thread;
 		WebDataParser dataParser;
 
@@ -22,9 +24,16 @@ namespace TawGatherMembersInfo
 		[Dependency]
 		Config config;
 
+		SessionMannager sessionManager;
+
 		public RoasterManager(IDependencyManager dependency)
 		{
 			dataParser = dependency.Create<WebDataParser>();
+		}
+
+		public void OnDependenciesResolved()
+		{
+			sessionManager = new SessionMannager(config.MaxConcurrentWebSessions, config.MaxWebRequestsPerMinutePerSession);
 		}
 
 		public void Join()
@@ -54,25 +63,22 @@ namespace TawGatherMembersInfo
 			await dataParser.UpdateUnitContents(sessionManager, 1);
 		}
 
-		SessionMannager sessionManager = new SessionMannager();
-
 		void ThreadMain()
 		{
 			// if this is the startup then update profiles really fast
-			var isFirstRun = true;
-			var profileUpdateDelayMiliSeconds = 1000;
-
 			Task gatherBasicInfoTask = null;
-			gatherBasicInfoTask = Task.Run(() => GatherBasicInformationFromUnitId1Roaster());
 
 			while (true)
 			{
+				gatherBasicInfoTask = Task.Run(() => GatherBasicInformationFromUnitId1Roaster());
+
 				gatherBasicInfoTask?.Wait();
+
 				{
 					var personsUpdated = new HashSet<string>();
-					foreach (var tawUnitId in config.UnitIdsToGatherMemberProfileInfo)
+					foreach (var tawUnitId in config.UnitsToGatherMemberInfo)
 					{
-						Log.Trace($"parsing people from unit taw id:{tawUnitId}");
+						Log.Trace($"parsing people from unit taw id:{tawUnitId}, gathering people");
 
 						HashSet<string> peopleNames;
 						using (var data = db.NewContext)
@@ -88,12 +94,13 @@ namespace TawGatherMembersInfo
 
 						foreach (var personName in peopleNames)
 						{
-							if (personsUpdated.Contains(personName)) continue;
-							personsUpdated.Add(personName);
+							var personNameCopy = personName;
+							if (personsUpdated.Contains(personNameCopy)) continue;
+							personsUpdated.Add(personNameCopy);
 
 							var task = Task.Run(async () =>
 							{
-								await dataParser.UpdateInfoFromProfilePage(sessionManager, personName);
+								await dataParser.UpdateInfoFromProfilePage(sessionManager, personNameCopy);
 							});
 							tasks.Add(task);
 						}
@@ -139,10 +146,11 @@ namespace TawGatherMembersInfo
 					}
 				}
 
-				gatherBasicInfoTask = Task.Run(() => GatherBasicInformationFromUnitId1Roaster());
+				OnDataGatheringCycleCompleted?.Invoke();
 
-				if (isFirstRun) isFirstRun = false;
-				profileUpdateDelayMiliSeconds = 60 * 1000;
+				Log.Info($"pausing data gathering loop for {config.WebCrawlerLoopPauseSeconds} seconds");
+
+				Thread.Sleep(config.WebCrawlerLoopPauseSeconds);
 			}
 		}
 	}

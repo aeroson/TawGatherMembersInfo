@@ -113,7 +113,9 @@ namespace Neitri.DependencyInjection
 			var parameters = ctor.GetParameters();
 			for (int i = 0; i < parameters.Length; i++)
 			{
-				var paramType = parameters[i].ParameterType;
+				var param = parameters[i];
+				var paramType = param.ParameterType;
+				if ((paramType == typeof(string) || paramType.IsValueType) && param.HasDefaultValue) continue;
 				if (paramsToStartWith != null && i < paramsToStartWith.Length)
 				{
 					if (paramType.IsAssignableFrom(paramsToStartWith[i].GetType()) == false) return false;
@@ -132,8 +134,10 @@ namespace Neitri.DependencyInjection
 			var args = new object[parameters.Length];
 			for (int i = 0; i < args.Length; i++)
 			{
+				var param = parameters[i];
 				if (paramsToStartWith != null && i < paramsToStartWith.Length) args[i] = paramsToStartWith[i];
-				else args[i] = Resolve(parameters[i].ParameterType);
+				else if (!CanResolve(param.ParameterType) && param.HasDefaultValue) args[i] = param.DefaultValue;
+				else args[i] = Resolve(param.ParameterType);
 			}
 			return args;
 		}
@@ -150,17 +154,16 @@ namespace Neitri.DependencyInjection
 
 			ConstructorInfo constructor = null;
 
-			foreach (var c in type.GetConstructors())
+			foreach (var c in type.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
 			{
-				if (IsConstructorUsable(c, type, args))
-				{
-					constructor = c;
-				}
+				if (IsConstructorUsable(c, type, args)) constructor = c;
 			}
 
 			if (constructor == null) throw new NullReferenceException("unable to create instance of " + type + ", unable to resolve all parameters");
 
-			var instance = Activator.CreateInstance(type, BuildConstrutorArgs(constructor, type, args));
+			//var instance = Activator.CreateInstance(type, BuildConstrutorArgs(constructor, type, args));
+			args = BuildConstrutorArgs(constructor, type, args);
+			var instance = constructor.Invoke(args);
 			return instance;
 		}
 

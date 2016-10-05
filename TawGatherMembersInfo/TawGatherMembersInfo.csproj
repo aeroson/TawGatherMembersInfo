@@ -127,7 +127,7 @@
     <Compile Include="MyDbContext.cs" />
     <Compile Include="Neitri\WebCrawling\MyHttpWebRequest.cs" />
     <Compile Include="Neitri\DependencyInjection\DependencyManager.cs" />
-    <Compile Include="Neitri\DependencyInjection\IOnDependencyResolved.cs" />
+    <Compile Include="Neitri\IOnDependencyResolved.cs" />
     <Compile Include="Neitri\Extensions\ActionExtensions.cs" />
     <Compile Include="Neitri\Extensions\ArrayExtensions.cs" />
     <Compile Include="Neitri\Extensions\AssemblyExtensions.cs" />
@@ -197,7 +197,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Neitri\_Version_2\" />
+    <Folder Include="Neitri\_Version_3\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -25,7 +25,7 @@ namespace TawGatherMembersInfo
 					var parameters = new Params(context.Request.RawUrl);
 					var authToken = parameters.GetValue("auth", "none");
 
-					if (config.AuthTokens.Contains(authToken) == false)
+					if (config.AuthenticationTokens.Contains(authToken) == false)
 					{
 						o.WriteLine("{\n\terror:' bad auth token'\n}");
 					}

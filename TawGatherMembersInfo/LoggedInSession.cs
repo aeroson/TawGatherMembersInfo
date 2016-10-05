@@ -3,7 +3,9 @@ using Neitri.WebCrawling;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -11,9 +13,14 @@ using System.Threading.Tasks;
 
 namespace TawGatherMembersInfo
 {
+	/// <summary>
+	/// Single thread.
+	/// </summary>
 	public partial class LoggedInSession
 	{
-		public CookieContainer cookieContainer { get; set; }
+		public int MaxRequestsPerMinute { get; set; }
+
+		public CookieContainer CookieContainer { get; set; }
 
 		string loginPageUrl = @"https://taw.net/themes/taw/common/login.aspx";
 
@@ -22,7 +29,7 @@ namespace TawGatherMembersInfo
 
 		public LoggedInSession()
 		{
-			cookieContainer = new CookieContainer();
+			CookieContainer = new CookieContainer();
 
 			var registry = Registry.CurrentUser.CreateSubKey(this.GetType().FullName);
 			username = registry.GetValue("username", "") as string;
@@ -47,6 +54,47 @@ namespace TawGatherMembersInfo
 			}
 		}
 
+		Queue<DateTime> requestTimes = new Queue<DateTime>();
+		int throttleForSeconds = 1;
+
+		public void ThrottleBeforeRequest()
+		{
+			if (MaxRequestsPerMinute <= 0) return;
+			do
+			{
+				var removeIfUnder = DateTime.UtcNow.Subtract(new TimeSpan(0, 1, 0));
+				while (requestTimes.Count > 0 && requestTimes.Peek() < removeIfUnder) requestTimes.Dequeue();
+				if (requestTimes.Count > MaxRequestsPerMinute)
+				{
+					Log.Trace($"too many requests per minute: {requestTimes.Count}, over limit: {MaxRequestsPerMinute}, sleeping for: {throttleForSeconds} seconds");
+					Thread.Sleep(throttleForSeconds * 1000);
+					throttleForSeconds *= 2;
+				}
+			}
+			while (requestTimes.Count > MaxRequestsPerMinute);
+			requestTimes.Enqueue(DateTime.UtcNow);
+			throttleForSeconds = 1;
+		}
+
+		public async Task ThrottleBeforeRequestAsync()
+		{
+			if (MaxRequestsPerMinute <= 0) return;
+			do
+			{
+				var removeIfUnder = DateTime.UtcNow.Subtract(new TimeSpan(0, 1, 0));
+				while (requestTimes.Count > 0 && requestTimes.Peek() < removeIfUnder) requestTimes.Dequeue();
+				if (requestTimes.Count > MaxRequestsPerMinute)
+				{
+					Log.Trace($"too many requests per minute: {requestTimes.Count}, over limit: {MaxRequestsPerMinute}, sleeping for: {throttleForSeconds} seconds");
+					await Task.Delay(throttleForSeconds * 1000);
+					throttleForSeconds *= 2;
+				}
+			}
+			while (requestTimes.Count > MaxRequestsPerMinute);
+			requestTimes.Enqueue(DateTime.UtcNow);
+			throttleForSeconds = 1;
+		}
+
 		/// <summary>
 		/// Login to the website with credentials.
 		/// </summary>
@@ -55,15 +103,16 @@ namespace TawGatherMembersInfo
 			Log.Info("Logging in...");
 
 			var request = MyHttpWebRequest.Create(loginPageUrl);
-			request.CookieContainer = cookieContainer;
+			request.CookieContainer = CookieContainer;
 			request.Method = "GET";
 
+			ThrottleBeforeRequest();
 			var response = request.GetResponse();
 
 			var html = response.HtmlDocument;
 			var loginForm = html.GetElementbyId("aspnetForm");
 
-			var form = new WebFormHandler(loginPageUrl, loginForm, cookieContainer);
+			var form = new WebFormHandler(loginPageUrl, loginForm, CookieContainer);
 			form.FillInput("ctl00$bcr$ctl03$ctl07$username", username);
 			form.FillInput("ctl00$bcr$ctl03$ctl07$password", password);
 			form.FillInput("ctl00$bcr$ctl03$ctl07$loginButton", "Sign in »");
@@ -103,9 +152,10 @@ namespace TawGatherMembersInfo
 				if (responseText != null) Login();
 
 				var request = MyHttpWebRequest.Create(url);
-				request.CookieContainer = cookieContainer;
+				request.CookieContainer = CookieContainer;
 				request.Method = "GET";
 
+				ThrottleBeforeRequest();
 				response = request.GetResponse();
 				responseText = response.ResponseText;
 			} while (IsLoggedIn(responseText) == false);
@@ -119,11 +169,12 @@ namespace TawGatherMembersInfo
 			var requsstTextBytes = Encoding.UTF8.GetBytes(requestText);
 
 			var request = MyHttpWebRequest.Create(url);
-			request.CookieContainer = cookieContainer;
+			request.CookieContainer = CookieContainer;
 			request.Method = "POST";
 			request.ContentType = "application/json";
 			request.GetRequestStream().Write(requsstTextBytes, 0, requsstTextBytes.Length);
 
+			await ThrottleBeforeRequestAsync();
 			var response = await request.GetResponseAsync();
 			var responseText = response.ResponseText;
 
@@ -132,7 +183,7 @@ namespace TawGatherMembersInfo
 
 		public void ClearCookies()
 		{
-			cookieContainer = new CookieContainer();
+			CookieContainer = new CookieContainer();
 		}
 	}
 
@@ -169,7 +220,7 @@ namespace TawGatherMembersInfo
 			s = new SemaphoreSlim(maxInstances);
 		}
 
-		public async Task<DisposableWrapper> GetAsync()
+		public virtual async Task<DisposableWrapper> GetAsync()
 		{
 			await s.WaitAsync();
 			T var;
@@ -180,8 +231,18 @@ namespace TawGatherMembersInfo
 
 	public class SessionMannager : TheadedVariableManager<LoggedInSession>
 	{
-		public SessionMannager() : base(10)
+		int maxRequestsPerMinutePerSession;
+
+		public SessionMannager(int maxInstances, int maxRequestsPerMinutePerSession) : base(maxInstances)
 		{
+			this.maxRequestsPerMinutePerSession = maxRequestsPerMinutePerSession;
+		}
+
+		public override async Task<DisposableWrapper> GetAsync()
+		{
+			var r = await base.GetAsync();
+			r.Value.MaxRequestsPerMinute = maxRequestsPerMinutePerSession;
+			return r;
 		}
 	}
 }

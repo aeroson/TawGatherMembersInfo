@@ -73,7 +73,7 @@ begin
 		
 			(select u.Name from Units u where u.TawId = rootUnitId),
 			(select p.Name from People p where p.PersonId = selected_PersonId),
-			(select pr.NameShort from People p join PersonRanks pr on p.PersonId = pr.Person_PersonId order by pr.ValidFrom limit 1),
+			(select pr.NameShort from People p join PersonRanks pr on p.PersonId = selected_PersonId and pr.Person_PersonId = selected_PersonId order by pr.ValidFrom desc limit 1),
 			
 			(select count(*) from PersonEvents pe join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > startDate
 			),
@@ -101,7 +101,7 @@ begin
 				0
 			),
 			
-			(select datediff(CURRENT_DATE, pr.ValidFrom) from People p join PersonRanks pr on p.PersonId = pr.Person_PersonId order by pr.ValidFrom limit 1)
+			(select datediff(CURRENT_DATE, pr.ValidFrom) from People p join PersonRanks pr on p.PersonId = selected_PersonId and pr.Person_PersonId = selected_PersonId order by pr.ValidFrom desc limit 1)
 		);
 
 	end loop;

@@ -34,7 +34,7 @@ namespace TawGatherMembersInfo
 
 			var rootUnit = data.RootUnit;
 
-			var targetSquadXmlFolder = fileSystem.GetDirectory(config.GetValue("targetSquadXmlFolder", "squadxml"));
+			var targetSquadXmlFolder = fileSystem.GetDirectory(config.GetOne("targetSquadXmlFolder", "squadxml"));
 			string source = File.ReadAllText(targetSquadXmlFolder.GetFile("template.handlebars").ExceptionIfNotExists());
 			var template = Handlebars.Compile(source);
 
@@ -42,7 +42,7 @@ namespace TawGatherMembersInfo
 
 			foreach (var person in rootUnit.GetAllPeople())
 			{
-				// TODO: skip discharged perso is
+				// TODO: skip discharged persons
 				var armaProfileName = person.Biography.GetData("profile name", "arma profile name");
 				if (armaProfileName.IsNullOrEmpty())
 				{

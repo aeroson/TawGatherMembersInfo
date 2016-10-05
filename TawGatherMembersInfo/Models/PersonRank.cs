@@ -146,7 +146,7 @@ namespace TawGatherMembersInfo.Models
 		public static BiDictionary<string, string> rankNameShortToRankNameLong = new BiDictionary<string, string>()
 			{
 				{"REC", "Recruit"},
-				{"PFC", "First Class"},
+				{"PFC", "Private First Class"},
 				{"LCP", "Lance Corporal"},
 				{"CPL", "Corporal"},
 				{"SGT", "Sergeant"},

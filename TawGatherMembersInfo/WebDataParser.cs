@@ -238,12 +238,18 @@ namespace TawGatherMembersInfo
 
 		static Person GetPersonFromName(MyDbContext data, string name, string rankNameShort = null)
 		{
+			if (name.IsNullOrWhiteSpace() || name.Length <= 1)
+			{
+				Debugger.Break();
+			}
+
 			var person = data.People.FirstOrDefault(p => p.Name == name);
 			if (person == null)
 			{
 				person = new Person();
 				person.Name = name;
 				person = data.People.Add(person);
+				data.SaveChanges();
 			}
 			if (!rankNameShort.IsNullOrEmpty())
 			{
@@ -254,6 +260,7 @@ namespace TawGatherMembersInfo
 					personRank.NameShort = rankNameShort;
 					personRank.ValidFrom = DateTime.UtcNow;
 					person.Ranks.Add(personRank);
+					data.SaveChanges();
 				}
 			}
 			return person;
@@ -352,20 +359,24 @@ namespace TawGatherMembersInfo
 				}
 
 				person.LastProfileDataUpdatedDate = DateTime.UtcNow;
-				person.ClearCache();
+			}
 
-				// dossier movements
-				// rank in time
-				// position in unit in time
+			// dossier movements
+			// rank in time
+			// position in unit in time
+			{
+				var res = await session.Value.PostJsonAsync("http://taw.net/services/JSONFactory.asmx/GetMovement", new { callsign = personName });
+				session.Dispose();
+				var d = (string)JObject.Parse(res)["d"];
+				var dossierMovements = JsonConvert.DeserializeObject<DossierMovements>(d);
+
+				using (var data = db.NewContext)
 				{
-					var res = await session.Value.PostJsonAsync("http://taw.net/services/JSONFactory.asmx/GetMovement", new { callsign = person.Name });
-					session.Dispose();
-					var d = (string)JObject.Parse(res)["d"];
-					var dossierMovements = JsonConvert.DeserializeObject<DossierMovements>(d);
+					var person = data.People.FirstOrDefault(p => p.Name == personName);
 
 					foreach (var dossierMovement in dossierMovements.Movements)
 					{
-						var timestamp = ParseMonthDayYear(dossierMovement.timestamp);
+						var timestamp = ParseUSDateTime(dossierMovement.timestamp);
 						var tawId = long.Parse(dossierMovement.id);
 						var description = dossierMovement.description;
 
@@ -375,7 +386,7 @@ namespace TawGatherMembersInfo
 						{
 							if (person.Ranks == null || person.Ranks.Any(r => r.PromotedBy == null))
 							{
-								person.Ranks?.ForEach(r => data.PersonRanks.Remove(r));
+								while (person.Ranks?.Count > 0) data.PersonRanks.Remove(person.Ranks.First());
 								person.Ranks = new List<PersonRank>();
 							}
 
@@ -392,7 +403,7 @@ namespace TawGatherMembersInfo
 								personRank.NameLong = rankNameLong;
 								personRank.ValidFrom = timestamp;
 								personRank.Person = person;
-								personRank.PromotedBy = GetPersonFromName(data, byWho);
+								if (!byWho.IsNullOrWhiteSpace() && byWho.Length > 0) personRank.PromotedBy = GetPersonFromName(data, byWho);
 								personRank.TawId = tawId;
 								person.Ranks.Add(personRank);
 							}
@@ -452,44 +463,56 @@ namespace TawGatherMembersInfo
 							Log.Warn("unexpected dossier row: " + description);
 						}
 					}
+
+					data.SaveChanges();
 				}
-				data.SaveChangesAsync();
 			}
 
 			Log.Trace(logPrefix + "done, parsed and saved");
 		}
 
-		/// <summary>
-		/// MM-dd-yyyy
-		/// </summary>
-		/// <param name="str"></param>
-		/// <returns></returns>
-		static DateTime ParseMonthDayYear([NotNull] string str)
-		{
-			try
-			{
-				return DateTime.ParseExact(str, "M-d-yyyy", CultureInfo.InvariantCulture);
-			}
-			catch
-			{
-				Log.Error($"failed to {nameof(ParseMonthDayYear)} DateTime:'{str}'");
-				throw;
-			}
-		}
+		public readonly static string[] possibleDateTimeFormats = new string[] {
+			"M.d.yyyy H:m:s",
+			"M.d.yyyy H:m",
+			"M.d.yyyy",
+		};
 
-		static DateTime ParseUsTime([NotNull] string str)
+		public static DateTime ParseUSDateTime(string str)
 		{
 			str = str.Replace('/', '.');
+			str = str.Replace('-', '.');
+
+			TimeSpan timeZoneOffset = TimeSpan.Zero;
+
+			var timeZoneStart = str.LastIndexOf("+");
+			if (timeZoneStart == -1) timeZoneStart = str.LastIndexOf("-");
+			if (timeZoneStart != -1)
+			{
+				var timeZoneStr = str.RemoveFromBegin(timeZoneStart + 1);
+				try
+				{
+					var t = DateTime.ParseExact(timeZoneStr, "H:m", CultureInfo.InvariantCulture, DateTimeStyles.None).TimeOfDay;
+					if (str[timeZoneStart] == '+') timeZoneOffset = -t;
+					else timeZoneOffset = t;
+				}
+				catch (Exception e)
+				{
+					Log.Error($"failed to {nameof(ParseUSDateTime)} {nameof(timeZoneOffset)}:'{timeZoneOffset}', error:{e}");
+				}
+				str = str.TakeFromBegin(timeZoneStart).Trim();
+			}
+
 			try
 			{
-				return DateTime.ParseExact(str, "M.d.yyyy H:mm:ss zzz", CultureInfo.InvariantCulture);
+				var d = DateTime.ParseExact(str, possibleDateTimeFormats, CultureInfo.InvariantCulture, DateTimeStyles.None);
+				d = d - timeZoneOffset;
+				return d;
 			}
-			catch
+			catch (Exception e)
 			{
-				Log.Error($"failed to {nameof(ParseUsTime)} DateTime:'{str}'");
+				Log.Error($"failed to {nameof(ParseUSDateTime)} DateTime:'{str}', error:{e}");
 				throw;
 			}
-			//return DateTime.Parse(str);
 		}
 
 		public enum ParseEventResult
@@ -586,10 +609,10 @@ namespace TawGatherMembersInfo
 			var when = eventInfo["When"];
 
 			var strFrom = when.TakeStringBetween("from:", "to:", StringComparison.InvariantCultureIgnoreCase).Trim();
-			if (strFrom != null) evt.From = ParseUsTime(strFrom);
+			if (strFrom != null) evt.From = ParseUSDateTime(strFrom);
 
 			var strTo = when.TakeStringAfter("to:", StringComparison.InvariantCultureIgnoreCase).Trim();
-			if (strTo != null) evt.To = ParseUsTime(strTo);
+			if (strTo != null) evt.To = ParseUSDateTime(strTo);
 
 			var attendeesText = htmlText.TakeStringBetween("<table width=100%>", "</table>");
 			var attendessDoc = new HtmlDocument();
@@ -602,32 +625,29 @@ namespace TawGatherMembersInfo
 				var nameHref = row[0]?.SelectSingleNode("a")?.GetAttributeValue("href", ""); // http://taw.net/event/66327.aspx last row, unit name has no link
 				if (nameHref != null && nameHref.StartsWith("/member"))
 				{
-					var person = GetPersonFromName(data, name);
-
-					var personToEvent = data.PersonEvents.FirstOrDefault(p => p.Event.EventId == evt.EventId && p.Person.PersonId == person.PersonId);
-					if (personToEvent == null)
+					if (name.IsNullOrWhiteSpace())
 					{
-						personToEvent = new PersonEvent();
-						personToEvent.Event = evt;
-						personToEvent.Person = person;
-						personToEvent = data.PersonEvents.Add(personToEvent);
+						// a deleted member attended event, so there is a row of event attendee with empty name
 					}
-
-					var attendanceStr = row[1]?.InnerText?.Trim();
-					AttendanceType attendanceType = AttendanceType.Unknown;
-					if (attendanceStr != null && Enum.TryParse(attendanceStr.ToLowerInvariant(), true, out attendanceType)) personToEvent.AttendanceType = attendanceType;
-
-					var timestampStr = row[2]?.InnerText?.Trim();
-					if (!timestampStr.Contains("--"))
+					else
 					{
-						try
+						var person = GetPersonFromName(data, name);
+
+						var personToEvent = data.PersonEvents.FirstOrDefault(p => p.Event.EventId == evt.EventId && p.Person.PersonId == person.PersonId);
+						if (personToEvent == null)
 						{
-							personToEvent.TimeStamp = DateTime.ParseExact(timestampStr, "M-d-yyyy hh:mm", CultureInfo.InvariantCulture, DateTimeStyles.None);
+							personToEvent = new PersonEvent();
+							personToEvent.Event = evt;
+							personToEvent.Person = person;
+							personToEvent = data.PersonEvents.Add(personToEvent);
 						}
-						catch (Exception e)
-						{
-							Log.Fatal($"failed to parse time:{timestampStr} exception:{e}");
-						}
+
+						var attendanceStr = row[1]?.InnerText?.Trim();
+						AttendanceType attendanceType = AttendanceType.Unknown;
+						if (attendanceStr != null && Enum.TryParse(attendanceStr.ToLowerInvariant(), true, out attendanceType)) personToEvent.AttendanceType = attendanceType;
+
+						var timestampStr = row[2]?.InnerText?.Trim();
+						if (!timestampStr.Contains("--")) personToEvent.TimeStamp = ParseUSDateTime(timestampStr);
 					}
 				}
 				else if (nameHref != null && nameHref.StartsWith("/unit"))

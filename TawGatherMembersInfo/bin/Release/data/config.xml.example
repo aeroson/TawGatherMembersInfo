@@ -1,17 +1,25 @@
-<configuration>
+<Configuration>
 	
-	<httpServerPort>8000</httpServerPort>
-	<targetSquadXmlFolder>data/squadxml</targetSquadXmlFolder>
+	<HttpServerPort>8000</HttpServerPort>
+	<TargetSquadXmlFolder>data/squadxml</TargetSquadXmlFolder>
 
-	<authenticationTokens>
+	<AuthenticationTokens>
 		<!-- passwords generated with http://passwordsgenerator.net/?length=16&symbols=1&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=0 -->
-		<authenticationToken>example_KMzZA8Jm5E2AhF9MN5NY9t6eqYr5MWSp</authenticationToken>
-	</authenticationTokens>
+		<v>example_KMzZA8Jm5E2AhF9MN5NY9t6eqYr5MWSp</v>
+	</AuthenticationTokens>
 
-	<unitsToGatherMemberInfo>
-		<unitId>2776</unitId><!-- Arma 3 division -->
-	</unitsToGatherMemberInfo>
+	<UnitsToGatherMemberInfo>
+		<UnitId>2776</UnitId><!-- Arma 3 division -->
+	</UnitsToGatherMemberInfo>
+	
+	<MySqlConnectionString>Server=[ip];Database=taw-db;Uid=root;Pwd=[password]</MySqlConnectionString>
+	
+	<MaxConcurrentDatabaseConnections>10</MaxConcurrentDatabaseConnections>
 
-	<mySqlConnectionString>Convert Zero Datetime=True;Allow Zero Datetime=True;Server=[ip];Database=taw-gather-members-info;Uid=root;Pwd=[password]</mySqlConnectionString>
+	<MaxConcurrentWebSessions>2</MaxConcurrentWebSessions>
 
-</configuration>
+	<MaxWebRequestsPerMinutePerSession>10</MaxWebRequestsPerMinutePerSession>
+
+	<WebCrawlerLoopPauseSeconds>600</WebCrawlerLoopPauseSeconds>
+
+</Configuration>
