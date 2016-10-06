@@ -346,19 +346,15 @@ namespace TawGatherMembersInfo
 				var table = new HtmlTwoColsStringTable(html.DocumentNode.SelectNodes("//*[@class='dossiernexttopicture']/table//tr"));
 
 				// country
-				person.CountryName = table.GetValue("Location:", person.CountryName);
-				person.Status = table.GetValue("Status:", person.Status).ToLower();
-				{
-					var joined = table.GetValue("Joined:", "01-01-0001"); // 10-03-2014  month-day-year // wtf.. americans...
-					var joinedParts = joined.Split('-');
-					person.DateJoinedTaw = new DateTime(
-						int.Parse(joinedParts[2]),
-						int.Parse(joinedParts[0]),
-						int.Parse(joinedParts[1])
-					);
-				}
+				person.CountryName = table.GetValue("Location:", person.CountryName).Trim(); ;
+				person.Status = table.GetValue("Status:", person.Status).Trim().ToLower();
+
+				var joined = table.GetValue("Joined:", "01-01-0001");
+				person.DateJoinedTaw = ParseUSDateTime(joined);
 
 				person.LastProfileDataUpdatedDate = DateTime.UtcNow;
+
+				data.SaveChanges();
 			}
 
 			// dossier movements
@@ -492,8 +488,8 @@ namespace TawGatherMembersInfo
 				try
 				{
 					var t = DateTime.ParseExact(timeZoneStr, "H:m", CultureInfo.InvariantCulture, DateTimeStyles.None).TimeOfDay;
-					if (str[timeZoneStart] == '+') timeZoneOffset = -t;
-					else timeZoneOffset = t;
+					if (str[timeZoneStart] == '+') timeZoneOffset = t;
+					else timeZoneOffset = -t;
 				}
 				catch (Exception e)
 				{

@@ -1,7 +1,6 @@
 <Configuration>
 	
 	<HttpServerPort>8000</HttpServerPort>
-	<TargetSquadXmlFolder>data/squadxml</TargetSquadXmlFolder>
 
 	<AuthenticationTokens>
 		<!-- passwords generated with http://passwordsgenerator.net/?length=16&symbols=1&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=0 -->
@@ -13,12 +12,12 @@
 	</UnitsToGatherMemberInfo>
 	
 	<MySqlConnectionString>Server=[ip];Database=taw-db;Uid=root;Pwd=[password]</MySqlConnectionString>
-	
-	<MaxConcurrentDatabaseConnections>10</MaxConcurrentDatabaseConnections>
 
-	<MaxConcurrentWebSessions>2</MaxConcurrentWebSessions>
+	<MaxConcurrentDatabaseConnections>10</MaxConcurrentDatabaseConnections> <!-- google cloud micro sql has limit of ~40 connections -->
 
-	<MaxWebRequestsPerMinutePerSession>10</MaxWebRequestsPerMinutePerSession>
+	<MaxConcurrentWebSessions>10</MaxConcurrentWebSessions>
+
+	<MaxWebRequestsPerMinutePerSession>0</MaxWebRequestsPerMinutePerSession> <!-- 0 means no limit -->
 
 	<WebCrawlerLoopPauseSeconds>600</WebCrawlerLoopPauseSeconds>
 

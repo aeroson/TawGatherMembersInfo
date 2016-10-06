@@ -47,11 +47,11 @@ namespace TawGatherMembersInfo.Models
 
 		public virtual ICollection<PersonEvent> Events { get; set; } = new List<PersonEvent>();
 
-		public virtual ICollection<PersonUnit> Units { get; set; }
+		public virtual ICollection<PersonUnit> Units { get; set; } = new List<PersonUnit>();
 
-		public virtual ICollection<PersonCommendation> Commendations { get; set; }
+		public virtual ICollection<PersonCommendation> Commendations { get; set; } = new List<PersonCommendation>();
 
-		public virtual ICollection<PersonStatus> Statuses { get; set; }
+		public virtual ICollection<PersonStatus> Statuses { get; set; } = new List<PersonStatus>();
 
 		[NotMapped]
 		public virtual PersonRank Rank => Ranks.OrderByDescending(r => r.ValidFrom).FirstOrDefault();
@@ -120,11 +120,15 @@ namespace TawGatherMembersInfo.Models
 		{
 			get
 			{
-				return countryCodeIso3166ToCountryName.GetValue(CountryCodeIso3166, "");
+				var name = Iso3166.countryNameToIso3166.Reverse.GetValue(CountryCodeIso3166, string.Empty);
+				if (name == string.Empty) name = Iso3166.countrySubdivisonNameToIso3166_2.Reverse.GetValue(CountryCodeIso3166, string.Empty);
+				return name;
 			}
 			set
 			{
-				CountryCodeIso3166 = countryCodeIso3166ToCountryName.Reverse.GetValue(value, "");
+				var iso = Iso3166.countryNameToIso3166.GetValue(value, string.Empty);
+				if (iso == string.Empty) Iso3166.countrySubdivisonNameToIso3166_2.GetValue(value, string.Empty);
+				CountryCodeIso3166 = iso;
 			}
 		}
 

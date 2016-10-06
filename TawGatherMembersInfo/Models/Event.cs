@@ -54,7 +54,7 @@ namespace TawGatherMembersInfo.Models
 
 		public override string ToString()
 		{
-			return Name + " desc:" + Description;
+			return $"{Name} - {Description} - From:{From} To:{To}";
 		}
 
 		public override bool Equals(object obj)

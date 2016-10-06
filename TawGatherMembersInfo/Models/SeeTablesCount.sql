@@ -1,4 +1,4 @@
-select * from 
+select * from
 	(SELECT count(*) as Commendations FROM Commendations) a,
 	(SELECT count(*) as Events FROM Events) b,
     (SELECT count(*) as People FROM People) c,

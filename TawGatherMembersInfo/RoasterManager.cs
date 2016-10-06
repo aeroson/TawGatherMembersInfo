@@ -63,16 +63,30 @@ namespace TawGatherMembersInfo
 			await dataParser.UpdateUnitContents(sessionManager, 1);
 		}
 
+		void Print(AggregateException es)
+		{
+			foreach (var e in es.InnerExceptions)
+			{
+				Log.Fatal(e);
+			}
+		}
+
 		void ThreadMain()
 		{
-			// if this is the startup then update profiles really fast
 			Task gatherBasicInfoTask = null;
 
 			while (true)
 			{
 				gatherBasicInfoTask = Task.Run(() => GatherBasicInformationFromUnitId1Roaster());
 
-				gatherBasicInfoTask?.Wait();
+				try
+				{
+					gatherBasicInfoTask?.Wait();
+				}
+				catch (AggregateException e)
+				{
+					Print(e);
+				}
 
 				{
 					var personsUpdated = new HashSet<string>();
@@ -107,7 +121,14 @@ namespace TawGatherMembersInfo
 
 						Log.Trace($"parsing people from unit taw id:{tawUnitId}, all tasks started");
 
-						Task.WaitAll(tasks.ToArray());
+						try
+						{
+							Task.WaitAll(tasks.ToArray());
+						}
+						catch (AggregateException e)
+						{
+							Print(e);
+						}
 
 						Log.Trace($"parsing people from unit taw id:{tawUnitId}, done");
 					}
@@ -116,14 +137,14 @@ namespace TawGatherMembersInfo
 				{
 					long eventIdStart;
 					using (var data = db.NewContext) eventIdStart = data.Events.OrderByDescending(e => e.TawId).Take(1).Select(e => e.TawId).FirstOrDefault();
-					if (eventIdStart == default(long)) eventIdStart = 65000;
+					if (eventIdStart == default(long)) eventIdStart = 0; // 65000 is theoretically enough, it is about 1 year back, but sometimes we want more
 					eventIdStart++;
 
 					var doBreak = new System.Threading.ManualResetEventSlim();
 
 					var tasks = new List<Task>();
 
-					for (long i = 0; i < 20000; i++)
+					for (long i = 0; i < 100000; i++)
 					{
 						long eventId = eventIdStart + i;
 						if (doBreak.IsSet) break;
@@ -140,13 +161,27 @@ namespace TawGatherMembersInfo
 						tasks.Add(task);
 						if (i % 200 == 0)
 						{
-							Task.WaitAll(tasks.ToArray());
+							try
+							{
+								Task.WaitAll(tasks.ToArray());
+							}
+							catch (AggregateException e)
+							{
+								Print(e);
+							}
 							tasks.Clear();
 						}
 					}
 				}
 
-				OnDataGatheringCycleCompleted?.Invoke();
+				try
+				{
+					OnDataGatheringCycleCompleted?.Invoke();
+				}
+				catch (Exception e)
+				{
+					Log.Fatal(e);
+				}
 
 				Log.Info($"pausing data gathering loop for {config.WebCrawlerLoopPauseSeconds} seconds");
 

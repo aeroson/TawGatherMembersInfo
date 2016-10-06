@@ -2,6 +2,7 @@
 using Neitri;
 using System;
 using System.IO;
+using System.Linq;
 using TawGatherMembersInfo.Models;
 
 namespace TawGatherMembersInfo
@@ -32,37 +33,41 @@ namespace TawGatherMembersInfo
 			// var rootUnit = instances.roaster.CurrentData.idToUnit.GetValue(2776, null); // 2776 == Arma 3 Division
 			// if (rootUnit == null) return;
 
-			var rootUnit = data.RootUnit;
-
-			var targetSquadXmlFolder = fileSystem.GetDirectory(config.GetOne("targetSquadXmlFolder", "squadxml"));
+			var targetSquadXmlFolder = fileSystem.GetDirectory("squadxml");
 			string source = File.ReadAllText(targetSquadXmlFolder.GetFile("template.handlebars").ExceptionIfNotExists());
 			var template = Handlebars.Compile(source);
 
 			Log.Info("generating squad xmls into: '" + targetSquadXmlFolder + "'");
 
-			foreach (var person in rootUnit.GetAllPeople())
+			foreach (var person in data.People.ToArray())
 			{
+				if (person.Units.Count == 0) continue; // no unit, not in taw probably
+
 				// TODO: skip discharged persons
 				var armaProfileName = person.Biography.GetData("profile name", "arma profile name");
 				if (armaProfileName.IsNullOrEmpty())
 				{
 					//if (person.IsTeamSpeakNameGuaranteedToBeCorrect == false) continue;
 					armaProfileName = person.TeamSpeakName;
+					if (armaProfileName.Contains("[]")) continue; // taw teamspeak name position suffix is empty, failed to figure it out
 				}
 
-				var image = GetUnitImage(rootUnit, person, targetSquadXmlFolder);
+				var image = GetUnitImage(person, targetSquadXmlFolder);
 
 				Log.Trace("generating squad xml for: " + person.Name + " image:" + image.Name + " armaProfileName:" + armaProfileName);
+
+				var showUnit = person.MostImportantIngameUnit;
+				if (showUnit.Type.ToLower() == "fire team" && showUnit.ParentUnit != null && showUnit.ParentUnit.People.Count > 0) showUnit = showUnit.ParentUnit;
 
 				var rendered = template(
 					new
 					{
 						nick = "TAW.net",
-						name = person.MostImportantIngameUnit.Name,
-						email = person.MostImportantIngameUnit.HighestRankingPerson.Name.ToLower() + "@taw.net",
+						name = showUnit.Name,
+						email = showUnit.HighestRankingPerson.Name.ToLower() + "@taw.net",
 						web = "http://www.taw.net",
 						picture = image.Name,
-						title = "TAW - " + person.MostImportantIngameUnit.Name,
+						title = "TAW - " + showUnit.Name,
 						fileGenerated = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
 						lastProfileDataUpdated = person.LastProfileDataUpdatedDate.ToString("yyyy-MM-dd HH:mm:ss"),
 						members = new[]
@@ -86,7 +91,7 @@ namespace TawGatherMembersInfo
 			Log.Info("done generating squad xmls");
 		}
 
-		FilePath GetUnitImage(Unit rootUnit, Person person, DirectoryPath targetSquadXmlFolder)
+		FilePath GetUnitImage(Person person, DirectoryPath targetSquadXmlFolder)
 		{
 			// try logo defined in taw profile biography
 			var image = person.Biography.GetData("squadxml logo", "arma squadxml logo");
@@ -100,7 +105,7 @@ namespace TawGatherMembersInfo
 
 				do
 				{
-					file = targetSquadXmlFolder.GetFile(unit.UnitId.ToString() + ".paa");
+					file = targetSquadXmlFolder.GetFile(unit.TawId.ToString() + ".paa");
 					if (file.Exists)
 					{
 						var t = unit.Type.ToLower();
@@ -112,12 +117,12 @@ namespace TawGatherMembersInfo
 						else return file;
 					}
 
-					file = targetSquadXmlFolder.GetFile(unit.UnitId.ToString() + "-child.paa");
+					file = targetSquadXmlFolder.GetFile(unit.TawId.ToString() + "-child.paa");
 					if (file.Exists) return file;
 
 					unit = unit.ParentUnit; // walk up the tree;
 				}
-				while (unit != rootUnit && unit != null);
+				while (unit != null);
 			}
 
 			file = targetSquadXmlFolder.GetFile("default.paa");
