@@ -79,6 +79,7 @@ namespace Neitri
 		public bool Equals(PathBase other)
 		{
 			if (other == null) return false;
+			if (ReferenceEquals(this, other)) return true;
 			return other.FullPath == this.FullPath;
 		}
 
@@ -91,8 +92,8 @@ namespace Neitri
 
 		public static bool operator ==(PathBase a, PathBase b)
 		{
-			if (a == null && b == null) return true;
-			if (a == null) return false;
+			if (ReferenceEquals(a, b)) return true;
+			if (ReferenceEquals(a, null)) return false;
 			return a.Equals(b);
 		}
 

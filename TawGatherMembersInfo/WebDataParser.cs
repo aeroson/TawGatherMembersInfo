@@ -411,11 +411,11 @@ namespace TawGatherMembersInfo
 						var tawId = long.Parse(dossierMovement.id);
 						var description = dossierMovement.description;
 
-						if (description.Contains("applied for TAW.")) person.AppliedForTaw = timestamp;
-						else if (description.Contains("was admitted to TAW")) person.AdmittedToTaw = timestamp;
-						else if (description.Contains("was promoted to"))
+						if (description.Contains("applied for TAW")) person.AppliedForTaw = timestamp;
+						if (description.Contains("was admitted to TAW")) person.AdmittedToTaw = timestamp;
+						if (description.Contains("was promoted to") || description.Contains("applied for TAW"))
 						{
-							if (person.Ranks == null || person.Ranks.Any(r => r.PromotedBy == null))
+							if (person.Ranks == null || person.Ranks.Any(r => r.TawId == 0))
 							{
 								while (person.Ranks?.Count > 0) data.PersonRanks.Remove(person.Ranks.First());
 								person.Ranks = new List<PersonRank>();
@@ -423,12 +423,23 @@ namespace TawGatherMembersInfo
 
 							if (!person.Ranks.Any(r => r.TawId == tawId))
 							{
-								// aeroson was promoted to Sergeant by <a href="/member/Samblues.aspx">Samblues</a>.
-								// aeroson was promoted to Private First Class by <a href="/member/MaverickSabre.aspx">MaverickSabre</a>.
-								var rankByWho = description.TakeStringAfter("was promoted to").Trim();
-								var byWho = description.TakeStringAfter("by").TakeStringBefore("</a>").TakeStringAfterLast(">");
+								string rankNameLong;
+
+								if (description.Contains("applied for TAW"))
+								{
+									person.AdmittedToTaw = timestamp;
+									rankNameLong = "Recruit";
+								}
+								else
+								{
+									// aeroson was promoted to Sergeant by <a href="/member/Samblues.aspx">Samblues</a>.
+									// aeroson was promoted to Private First Class by <a href="/member/MaverickSabre.aspx">MaverickSabre</a>.
+									var rankByWho = description.TakeStringAfter("was promoted to").Trim();
+									rankNameLong = rankByWho.TakeStringBefore("by").Trim();
+								}
+
+								var byWho = description.TakeStringAfter(" by ").TakeStringBetween(">", "</a>").Trim();
 								while (byWho.EndsWith(".")) byWho = byWho.RemoveFromEnd(1).Trim();
-								var rankNameLong = rankByWho.TakeStringBefore("by").Trim();
 
 								var personRank = new PersonRank();
 								personRank.NameLong = rankNameLong;

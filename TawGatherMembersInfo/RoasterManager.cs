@@ -13,8 +13,9 @@ namespace TawGatherMembersInfo
 	{
 		public event Action OnDataGatheringCycleCompleted;
 
-		Thread thread;
+		Task mainTask;
 		WebDataParser dataParser;
+		CancellationTokenSource cancel = new CancellationTokenSource();
 
 		[Dependency]
 		DbContextProvider db;
@@ -41,21 +42,17 @@ namespace TawGatherMembersInfo
 
 		public void Join()
 		{
-			thread.Join();
+			mainTask.Wait();
 		}
 
 		public void Run()
 		{
-			thread = new Thread(ThreadMain);
-			thread.Priority = ThreadPriority.Highest;
-			thread.Name = this.GetType().ToString();
-			thread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
-			thread.Start();
+			mainTask = Task.Run(ThreadMain, cancel.Token);
 		}
 
 		public void Stop()
 		{
-			if (thread != null && thread.IsAlive) thread.Abort();
+			cancel.Cancel();
 		}
 
 		/// <summary>
@@ -204,7 +201,21 @@ namespace TawGatherMembersInfo
 			}
 		}
 
-		void ThreadMain()
+		async Task Delay()
+		{
+			var seconds = config.WebCrawlerLoopPauseSeconds;
+			var scope = Log.Scope($"pausing data gathering loop");
+
+			while (seconds > 0)
+			{
+				scope.Trace($"{seconds} seconds to go");
+				if (seconds > 10) await Task.Delay(10 * 1000);
+				else await Task.Delay(seconds * 1000);
+				seconds -= 10;
+			}
+		}
+
+		async Task ThreadMain()
 		{
 			while (true)
 			{
@@ -218,9 +229,7 @@ namespace TawGatherMembersInfo
 
 				Run(() => OnDataGatheringCycleCompleted?.Invoke());
 
-				Log.Info($"pausing data gathering loop for {config.WebCrawlerLoopPauseSeconds} seconds");
-
-				Thread.Sleep(config.WebCrawlerLoopPauseSeconds);
+				await Delay();
 			}
 		}
 	}

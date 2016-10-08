@@ -109,6 +109,11 @@ namespace TawGatherMembersInfo.Models
 				"MAJ",
 				"LTC",
 				"COL",
+				"BGN",
+				"MGN",
+				"LGN",
+				"GEN",
+				"GEN5",
 			};
 
 		static Dictionary<string, string> rankNameShortToRankImageSmall = new Dictionary<string, string>()
@@ -162,6 +167,11 @@ namespace TawGatherMembersInfo.Models
 				{"MAJ", "Major"},
 				{"LTC", "Lieutenant Colonel"},
 				{"COL", "Colonel"},
+				{"BGN", "Brigadier General"},
+				{"MGN", "Major General"},
+				{"LGN", "Lieutenant General"},
+				{"GEN", "General"},
+				{"GEN5", "General of TAW"},
 			};
 	}
 }

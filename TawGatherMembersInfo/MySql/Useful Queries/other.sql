@@ -10,9 +10,6 @@ select * from Units where TawId = 3978;
 
 select count(*) NameShort from PersonRanks group by NameShort;
 
-
-delete from PersonRanks where NameShort = "Unknown" and PromotedBy_PersonId > 0;
-
 call GetChildUnits(2776);
 select * from GetChildUnits_result;
 
@@ -49,11 +46,9 @@ select now();
 
 select count(*),type from Units group by type;
 
+select * from PersonRanks where length(NameShort) > 3;
 
 
-delete from UnitEvents;
-delete from PersonEvents;
-delete from Events;
 ALTER TABLE Events AUTO_INCREMENT = 1;
 
 select * from Events order by TawId desc limit 10;

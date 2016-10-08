@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Neitri;
+using System.Collections.Generic;
 
 namespace TawGatherMembersInfo.Models
 {
@@ -54,19 +55,21 @@ namespace TawGatherMembersInfo.Models
 [23:42:29.771][E] cannot find positionNameShortToPositionNameLong.Reverse[Operations Member]
 [23:42:29.774][E] cannot find positionNameShortToPositionNameLong.Reverse[Operations Corps. Commander]
 [23:42:29.775][E] cannot find positionNameShortToPositionNameLong.Reverse[Operations Corps. Lt. Commander]
-[23:42:29.781][E] cannot find positionNameShortToPositionNameLong.Reverse[Public Information Administrator]
 [23:42:29.784][E] cannot find positionNameShortToPositionNameLong.Reverse[Operations Member]
 		*/
 
+		/// <summary>
+		/// TeamSpeak name position suffix
+		/// </summary>
 		public readonly static BiDictionary<string, string> positionNameShortToPositionNameLong = new BiDictionary<string, string>
 			{
                 // Support staff doesnt use these, they just have one and the same behind their names
 
 				// new 2016-09-09
-				{"PIA", "Public Information Administrator" },
-				{"HDI", "Head Drill Instructor" },
+				{"PIA", "Public Information Administrator"},
+				{"HDI", "Head Drill Instructor"},
 
-				// old, not seen in AM
+				// other, not seen in AM
 				{"CIC", "Commander-in-Chief"},
 				{"AC", "Army Commander"},
 				{"ALC", "Army Lt. Commander"},
@@ -121,9 +124,8 @@ namespace TawGatherMembersInfo.Models
 
 		public static string GetCountryFlagImageUrl(string countryCodeTwoLetter)
 		{
-			if (countryCodeTwoLetter.Length > 2) countryCodeTwoLetter = countryCodeTwoLetter.Substring(0, 2);
-			if (countryCodeTwoLetter.Length == 2) return @"http://i1028.photobucket.com/albums/y345/judgernaut/TS_flags/" + countryCodeTwoLetter + ".png";
-			return "";
+			if (countryCodeTwoLetter.Contains("-")) countryCodeTwoLetter = countryCodeTwoLetter.TakeStringBefore("-");
+			return @"http://i1028.photobucket.com/albums/y345/judgernaut/TS_flags/" + countryCodeTwoLetter + ".png";
 		}
 	}
 }
