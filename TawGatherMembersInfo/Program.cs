@@ -103,7 +103,7 @@ namespace TawGatherMembersInfo
 
 			//httpServer = dependency.Create<HttpServerHandler>();
 
-			//UpdateSquadXml();
+			UpdateSquadXml();
 			//roaster.OnDataGatheringCycleCompleted += UpdateSquadXml;
 			roaster.Run();
 

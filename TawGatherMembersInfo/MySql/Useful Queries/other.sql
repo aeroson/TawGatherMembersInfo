@@ -19,11 +19,33 @@ select * from GetChildUnits_result;
 call GetPeopleInUnit(2776);
 select * from GetPeopleInUnit_result;
 
-call AttendanceReport(2776, 2000);
+call AttendanceReport(2776, 30);
+
+select * from People p order by p.PersonId desc limit 10;
+
+select * from People where name = "Deceded";
+
+select * from People p join PersonUnits pu on p.PersonId = pu.Person_PersonId and p.Name = "Wingnut"
+join Units u on u.UnitId = pu.Unit_UnitId;
+
+select * from People p join PersonEvents pe on p.PersonId = pe.PersonId and p.Name = "Wingnut";
+
+update PersonUnits pu set pu.Removed = '9999-01-01 00:00:00' where pu.Removed < '0001-01-01 00:00:00';
+
+update PersonUnits pu set pu.Removed = '9999-01-01 00:00:00' where pu.Removed = '0000-00-00 00:00:00';
+
+select * from Events e where e.EventId = 13099;
 
 
-select * from People where name like "bigboom";
-select * from People;
+select count(*) from PersonUnits pu where pu.Removed = '0000-00-00 00:00:00';
+select * from PersonUnits pu where pu.Removed < '0001-01-01 00:00:00' limit 10;
+select * from People p where p.AdmittedToTaw = null limit 10;
+select * from PersonUnits pu order by pu.PersonUnitId desc limit 10;
+
+select * from PersonUnits pu where pu.Unit_UnitId = 590;
+
+
+select now();
 
 select count(*),type from Units group by type;
 
@@ -37,4 +59,3 @@ ALTER TABLE Events AUTO_INCREMENT = 1;
 select * from Events order by TawId desc limit 10;
 
 
-select * from People p where p.name = "Aleksander";

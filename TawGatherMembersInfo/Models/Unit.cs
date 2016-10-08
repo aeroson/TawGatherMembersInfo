@@ -42,10 +42,12 @@ namespace TawGatherMembersInfo.Models
 				Person highestPerson = null;
 				int highestPriority = int.MinValue;
 
-				foreach (var kvp in People)
+				foreach (var personUnit in People)
 				{
-					var positionNameShort = kvp.PositionNameShort;
-					var person = kvp.Person;
+					if (personUnit.Removed < DateTime.UtcNow) continue;
+
+					var positionNameShort = personUnit.PositionNameShort;
+					var person = personUnit.Person;
 
 					var positionPriority = Person.positionNameShortTeamSpeakNamePriorityOrder.IndexOf(positionNameShort);
 					if (positionPriority > highestPriority)

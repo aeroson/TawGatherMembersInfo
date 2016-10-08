@@ -41,10 +41,13 @@ namespace TawGatherMembersInfo
 
 			Log.Info("generating squad xmls into: '" + targetSquadXmlFolder + "'");
 
-			foreach (var person in data.People.ToArray())
-			{
-				if (person.Units.Count == 0) continue; // no unit, not in taw probably
+			targetSquadXmlFolder.FindFiles("*.xml").ForEach(f => f.Delete());
 
+			var utcNow = DateTime.UtcNow;
+			var people = data.People.Where(p => p.Units.Count(u => u.Removed > utcNow) > 0).ToArray();
+
+			foreach (var person in people)
+			{
 				// TODO: skip discharged persons
 				var armaProfileName = person.Biography.GetData("profile name", "arma profile name");
 				if (armaProfileName.IsNullOrEmpty())
@@ -66,7 +69,7 @@ namespace TawGatherMembersInfo
 					{
 						nick = "TAW.net",
 						name = showUnit.Name,
-						email = showUnit.HighestRankingPerson.Name.ToLower() + "@taw.net",
+						email = showUnit.HighestRankingPerson?.Name?.ToLower() + "@taw.net",
 						web = "http://www.taw.net",
 						picture = image.Name,
 						title = "TAW - " + showUnit.Name,

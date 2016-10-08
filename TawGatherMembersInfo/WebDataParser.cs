@@ -72,14 +72,15 @@ namespace TawGatherMembersInfo
 								await personLine.FinishParsing(data);
 							}
 							var personUnitIds = personLines.Select(p => p.PersonToUnitId).ToArray();
+							var utcNow = DateTime.UtcNow;
 							// if some person to unit is still valid, and not one of those we just updated, mark it as not valid anymore
 							data
 								.People
 								.First(p => p.Name == personName)
 								.Units
-								.Where(u => u.Removed == DateTime.MinValue) // still valid, not removed
+								.Where(u => u.Removed > utcNow) // still valid, not removed
 								.Where(u => !personUnitIds.Contains(u.PersonUnitId)) // except those we found & updated
-								.ForEach(u => u.Removed = DateTime.UtcNow); // remove it
+								.ForEach(u => u.Removed = utcNow); // remove it
 
 							try
 							{
@@ -176,7 +177,7 @@ namespace TawGatherMembersInfo
 						personToUnit = data.PersonUnits.Add(personToUnit);
 					}
 					personToUnit.PositionNameShort = positionNameShort;
-					personToUnit.Removed = DateTime.MinValue;
+					personToUnit.Removed = DateTime.MaxValue;
 
 					PersonToUnitId = personToUnit.PersonUnitId;
 					data.SaveChanges();
