@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,12 +66,20 @@ namespace TawGatherMembersInfo
 			await dataParser.UpdateUnitContents(sessionManager, 1);
 		}
 
+		void BackupPeopleOrder()
+		{
+			var file = fileSystem.GetFile("backup.personsOrder.txt");
+			using (var data = db.NewContext)
+			{
+				var people = data.People.OrderBy(p => p.PersonId).Select(p => p.Name).ToArray();
+				File.WriteAllLines(file, people);
+			}
+		}
+
 		void Print(AggregateException es)
 		{
-			foreach (var e in es.InnerExceptions)
-			{
-				Log.Fatal(e);
-			}
+			Log.Fatal(es);
+			foreach (var e in es.InnerExceptions) Log.Fatal(e);
 		}
 
 		void ThreadMain()
@@ -89,6 +98,8 @@ namespace TawGatherMembersInfo
 				{
 					Print(e);
 				}
+
+				BackupPeopleOrder();
 
 				{
 					var personsUpdated = new HashSet<string>();
@@ -182,7 +193,7 @@ namespace TawGatherMembersInfo
 							}
 						});
 						tasks.Add(task);
-						if (i % 100 == 0)
+						if (i % 10 == 0)
 						{
 							try
 							{

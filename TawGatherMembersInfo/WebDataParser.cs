@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -88,6 +89,7 @@ namespace TawGatherMembersInfo
 							}
 							catch (Exception e)
 							{
+								log.Fatal(e);
 							}
 							Log.Trace("done parsing & saving roaster person:" + personName);
 						}
@@ -177,10 +179,17 @@ namespace TawGatherMembersInfo
 						personToUnit = data.PersonUnits.Add(personToUnit);
 					}
 					personToUnit.PositionNameShort = positionNameShort;
-					personToUnit.Removed = DateTime.MaxValue;
+					personToUnit.Removed = new DateTime(9999, 1, 1); // (DateTime)SqlDateTime.MaxValue;
 
 					PersonToUnitId = personToUnit.PersonUnitId;
-					data.SaveChanges();
+					try
+					{
+						data.SaveChanges();
+					}
+					catch (Exception e)
+					{
+						Log.Fatal(e);
+					}
 				}
 			}
 

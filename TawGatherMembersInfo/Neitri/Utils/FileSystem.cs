@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Neitri
 {
-	public class PathBase
+	public class PathBase : IEquatable<PathBase>
 	{
 		public FileSystem FileSystem
 		{
@@ -69,6 +69,36 @@ namespace Neitri
 					)
 				);
 			}
+		}
+
+		public override int GetHashCode()
+		{
+			return FullPath.GetHashCode();
+		}
+
+		public bool Equals(PathBase other)
+		{
+			if (other == null) return false;
+			return other.FullPath == this.FullPath;
+		}
+
+		public override bool Equals(object obj)
+		{
+			var other = obj as PathBase;
+			if (other == null) return false;
+			return Equals(other);
+		}
+
+		public static bool operator ==(PathBase a, PathBase b)
+		{
+			if (a == null && b == null) return true;
+			if (a == null) return false;
+			return a.Equals(b);
+		}
+
+		public static bool operator !=(PathBase a, PathBase b)
+		{
+			return !(a == b);
 		}
 
 		public override string ToString()

@@ -1,6 +1,7 @@
 ﻿using HandlebarsDotNet;
 using Neitri;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TawGatherMembersInfo.Models;
@@ -41,10 +42,10 @@ namespace TawGatherMembersInfo
 
 			Log.Info("generating squad xmls into: '" + targetSquadXmlFolder + "'");
 
-			targetSquadXmlFolder.FindFiles("*.xml").ForEach(f => f.Delete());
-
 			var utcNow = DateTime.UtcNow;
 			var people = data.People.Where(p => p.Units.Count(u => u.Removed > utcNow) > 0).ToArray();
+
+			var filesSaved = new HashSet<FilePath>();
 
 			foreach (var person in people)
 			{
@@ -90,8 +91,15 @@ namespace TawGatherMembersInfo
 					}
 				);
 
-				File.WriteAllText(targetSquadXmlFolder.GetFile(person.Name + ".xml"), rendered);
+				var file = targetSquadXmlFolder.GetFile(person.Name + ".xml");
+				File.WriteAllText(file, rendered);
+				filesSaved.Add(file);
 			}
+
+			targetSquadXmlFolder
+				.FindFiles("*.xml")
+				.Where(f => !filesSaved.Contains(f))
+				.ForEach(f => f.Delete());
 
 			Log.Info("done generating squad xmls");
 		}
