@@ -25,9 +25,16 @@ namespace TawGatherMembersInfo
 
 		public void UpdateArma3SquadXml()
 		{
-			using (data = db.NewContext)
+			try
 			{
-				Private_UpdateArma3SquadXml();
+				using (data = db.NewContext)
+				{
+					Private_UpdateArma3SquadXml();
+				}
+			}
+			catch (Exception e)
+			{
+				Log.Fatal(e);
 			}
 		}
 
