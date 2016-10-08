@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 using TawGatherMembersInfo.Models;
 
 namespace TawGatherMembersInfo
@@ -19,7 +20,7 @@ namespace TawGatherMembersInfo
 
 		Config config;
 		FileSystem fileSystem;
-		ILogging log;
+		public static ILogEnd Log { get; private set; }
 
 		[Dependency(Register = true)]
 		DbContextProvider db;
@@ -42,8 +43,7 @@ namespace TawGatherMembersInfo
 
 			{
 				var a = new Neitri.Logging.LogAgregator();
-				this.log = a;
-				TawGatherMembersInfo.Log.log = a;
+				Log = a;
 
 				a.AddLogger(new Neitri.Logging.LogConsole());
 
@@ -53,7 +53,7 @@ namespace TawGatherMembersInfo
 				a.AddLogger(new Neitri.Logging.LogFile(sw));
 			}
 
-			dependency.Register(fileSystem, config, log);
+			dependency.Register(fileSystem, config, Log);
 
 			dependency.BuildUp(this);
 
@@ -85,7 +85,7 @@ namespace TawGatherMembersInfo
 			{
 				if (data.People.Count() == 0) // seed people from backed up order
 				{
-					log.Info("no people found, seeding people from backed up people order file, start");
+					Log.Info("no people found, seeding people from backed up people order file, start");
 					var people = File.ReadAllLines(fileSystem.GetFile("backup.personsOrder.txt").ExceptionIfNotExists());
 					foreach (var personName in people)
 					{
@@ -94,7 +94,7 @@ namespace TawGatherMembersInfo
 						data.People.Add(person);
 						data.SaveChanges();
 					}
-					log.Info("no people found, seeding people from backed up people order file, end");
+					Log.Info("no people found, seeding people from backed up people order file, end");
 				}
 			}
 
@@ -117,8 +117,8 @@ namespace TawGatherMembersInfo
 				var unit = data.Units.First(u => u.TawId == 1330);
 				var events = unit.Events.Where(e => e.Mandatory && !e.Cancelled).ToArray();
 
-				log.Info("unit: " + unit);
-				log.Info("mandatory, not cancelled events count: " + events.Length);
+				Log.Info("unit: " + unit);
+				Log.Info("mandatory, not cancelled events count: " + events.Length);
 
 				AttendanceStatisticsPerWeekDay_2(events, DayOfWeek.Sunday);
 				AttendanceStatisticsPerWeekDay_2(events, DayOfWeek.Tuesday);
@@ -130,22 +130,22 @@ namespace TawGatherMembersInfo
 			var events = _events.Where(e => e.From.DayOfWeek == dayOfWeek).OrderByDescending(e => e.From).ToArray();
 			var _attended = events.SelectMany(e => e.Attended).ToArray();
 
-			log.Info("");
-			log.Info("dayOfWeek: " + dayOfWeek);
-			log.Info("mandatory, not cancelled events count: " + events.Length);
-			log.Info("first event: " + events.First());
-			log.Info("last event: " + events.Last());
+			Log.Info("");
+			Log.Info("dayOfWeek: " + dayOfWeek);
+			Log.Info("mandatory, not cancelled events count: " + events.Length);
+			Log.Info("first event: " + events.First());
+			Log.Info("last event: " + events.Last());
 
 			var invited = _attended.Length;
 			var awol = _attended.Where(a => a.AttendanceType == AttendanceType.Missed).Count();
 			var excused = _attended.Where(a => a.AttendanceType == AttendanceType.Excused).Count();
 			var attended = _attended.Where(a => a.AttendanceType == AttendanceType.Attended).Count();
 
-			log.Info($"{nameof(invited)}: {invited}");
-			log.Info($"{nameof(attended)}: {attended}");
-			log.Info($"{nameof(awol)}: {awol}");
-			log.Info($"{nameof(excused)}: {excused}");
-			log.Info($"{nameof(attended)}/{nameof(invited)}: {attended / (float)invited}");
+			Log.Info($"{nameof(invited)}: {invited}");
+			Log.Info($"{nameof(attended)}: {attended}");
+			Log.Info($"{nameof(awol)}: {awol}");
+			Log.Info($"{nameof(excused)}: {excused}");
+			Log.Info($"{nameof(attended)}/{nameof(invited)}: {attended / (float)invited}");
 		}
 
 		void TestPrintAttendanceReport()

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using Neitri;
 using Neitri.WebCrawling;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -18,6 +19,8 @@ namespace TawGatherMembersInfo
 	/// </summary>
 	public partial class LoggedInSession
 	{
+		static ILogEnd Log => Program.Log;
+
 		public int MaxRequestsPerMinute { get; set; }
 
 		public CookieContainer CookieContainer { get; set; }
@@ -98,7 +101,7 @@ namespace TawGatherMembersInfo
 		/// <summary>
 		/// Login to the website with credentials.
 		/// </summary>
-		public void Login()
+		async Task Login()
 		{
 			Log.Info("Logging in...");
 
@@ -106,8 +109,8 @@ namespace TawGatherMembersInfo
 			request.CookieContainer = CookieContainer;
 			request.Method = "GET";
 
-			ThrottleBeforeRequest();
-			var response = request.GetResponse();
+			await ThrottleBeforeRequestAsync();
+			var response = await request.GetResponseAsync();
 
 			var html = response.HtmlDocument;
 			var loginForm = html.GetElementbyId("aspnetForm");
@@ -132,7 +135,7 @@ namespace TawGatherMembersInfo
 			}
 		}
 
-		public bool IsLoggedIn(string responseText)
+		bool IsLoggedIn(string responseText)
 		{
 			return responseText.Contains(">Sign in </a>") == false;
 		}
@@ -142,28 +145,28 @@ namespace TawGatherMembersInfo
 		/// </summary>
 		/// <param name="url"></param>
 		/// <returns></returns>
-		public MyHttpWebResponse GetUrl(string url)
+		public async Task<MyHttpWebResponse> GetUrl(string url)
 		{
 			MyHttpWebResponse response;
 			string responseText = null;
 
 			do
 			{
-				if (responseText != null) Login();
+				if (responseText != null) await Login();
 
 				var request = MyHttpWebRequest.Create(url);
 				request.CookieContainer = CookieContainer;
 				request.Method = "GET";
 
-				ThrottleBeforeRequest();
-				response = request.GetResponse();
+				await ThrottleBeforeRequestAsync();
+				response = await request.GetResponseAsync();
 				responseText = response.ResponseText;
 			} while (IsLoggedIn(responseText) == false);
 
 			return response;
 		}
 
-		public async Task<string> PostJsonAsync(string url, object payload)
+		public async Task<string> PostJson(string url, object payload)
 		{
 			var requestText = JsonConvert.SerializeObject(payload);
 			var requsstTextBytes = Encoding.UTF8.GetBytes(requestText);
@@ -243,6 +246,22 @@ namespace TawGatherMembersInfo
 			var r = await base.GetAsync();
 			r.Value.MaxRequestsPerMinute = maxRequestsPerMinutePerSession;
 			return r;
+		}
+
+		public async Task<string> PostJsonAsync(string url, object payload)
+		{
+			using (var session = await GetAsync())
+			{
+				return await session.Value.PostJson(url, payload);
+			}
+		}
+
+		public async Task<MyHttpWebResponse> GetUrl(string url)
+		{
+			using (var session = await GetAsync())
+			{
+				return await session.Value.GetUrl(url);
+			}
 		}
 	}
 }

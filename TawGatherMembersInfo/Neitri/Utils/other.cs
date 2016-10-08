@@ -7,9 +7,9 @@ namespace Neitri
 	{
 		string name;
 		Stopwatch time;
-		ILogging log;
+		ILogEnd log;
 
-		public Profiler(string name, ILogging log)
+		public Profiler(string name, ILogEnd log)
 		{
 			this.name = name;
 			this.time = new Stopwatch();

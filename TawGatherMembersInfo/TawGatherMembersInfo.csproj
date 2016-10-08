@@ -117,7 +117,6 @@
     <Compile Include="Models\Commendation.cs" />
     <Compile Include="Models\Event.cs" />
     <Compile Include="HttpServerHandler.cs" />
-    <Compile Include="Log.cs" />
     <Compile Include="Models\PersonCommendation.cs" />
     <Compile Include="Models\PersonCommendationComment.cs" />
     <Compile Include="Models\PersonEvent.cs" />

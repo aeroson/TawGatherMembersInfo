@@ -1,6 +1,3 @@
-
-
-
 delimiter //
 drop procedure if exists AttendanceReport//
 create procedure AttendanceReport(in rootUnitId bigint(20), in daysBackTo int(10)) -- , in daysBackFrom int(10)
@@ -16,16 +13,10 @@ begin
 	declare startDate datetime;
 	declare endDate datetime;
 	
-	declare selected_people cursor for
-		select p.PersonId from People p
-		join PersonUnits pu on pu.Person_PersonId = p.PersonId and pu.Unit_UnitId in
-		(
-		
-		)
-		group by p.PersonId
-		order by name;
-		
+	declare selected_people cursor for select PersonId from GetPeopleInUnit_result;
 	declare continue handler for not found set cursor_end = true;
+    
+	call GetPeopleInUnit(rootUnitId);
 	
 	create temporary table if not exists attendanceReportResult (
 		UnitName varchar(100),
@@ -37,11 +28,10 @@ begin
 		AWOL bigint(20),
 		MandatoryAVG float,
 		TotalAVG float,
-		DaysInRank bigint(20),
-        SteamId bigint(20)
-	);
-	
+		DaysInRank bigint(20)
+	);	
 	truncate table attendanceReportResult;
+    
 	select (date_sub(now(), interval daysBackTo day)) into startDate;
 	
 	open selected_people;
@@ -92,9 +82,7 @@ begin
 				0
 			),
 			
-			(select datediff(CURRENT_DATE, pr.ValidFrom) from People p join PersonRanks pr on p.PersonId = selected_PersonId and pr.Person_PersonId = selected_PersonId order by pr.ValidFrom desc limit 1),
-            
-            (select p.SteamId from People p where  p.PersonId = selected_PersonId)
+			(select datediff(CURRENT_DATE, pr.ValidFrom) from People p join PersonRanks pr on p.PersonId = selected_PersonId and pr.Person_PersonId = selected_PersonId order by pr.ValidFrom desc limit 1)
             
 		);
 

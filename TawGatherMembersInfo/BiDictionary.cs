@@ -111,14 +111,28 @@ namespace TawGatherMembersInfo
 
 		public void Add(TFirst key, TSecond value)
 		{
-			_firstToSecond.Add(key, value);
-			_secondToFirst.Add(value, key);
+			try
+			{
+				_firstToSecond.Add(key, value);
+				_secondToFirst.Add(value, key);
+			}
+			catch (Exception e)
+			{
+				throw new Exception("Add(" + key + ", " + value + ")", e);
+			}
 		}
 
 		void IDictionary.Add(object key, object value)
 		{
-			((IDictionary)_firstToSecond).Add(key, value);
-			((IDictionary)_secondToFirst).Add(value, key);
+			try
+			{
+				((IDictionary)_firstToSecond).Add(key, value);
+				((IDictionary)_secondToFirst).Add(value, key);
+			}
+			catch (Exception e)
+			{
+				throw new Exception("Add(" + key + ", " + value + ")", e);
+			}
 		}
 
 		static KeyValuePair<T1, T2> ReverseKVP<T2, T1>(KeyValuePair<T2, T1> kvp)

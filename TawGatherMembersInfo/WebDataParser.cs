@@ -19,6 +19,8 @@ namespace TawGatherMembersInfo
 		[Dependency]
 		DbContextProvider db;
 
+		static ILogEnd Log => Program.Log;
+
 		public async Task UpdateUnitContents(SessionMannager sessionManager, int tawUnitId)
 		{
 			await new UpdateUnitContentsHandler(db).Run(sessionManager, tawUnitId);
@@ -38,35 +40,36 @@ namespace TawGatherMembersInfo
 			{
 				var newVersion = new Random().Next(); // all person to unit relations without this unit version will be deleted
 
-				Log.Trace($"getting unit taw id:{tawUnitId} roaster");
+				var log = Log.Scope($"getting and parsing unit taw id:{tawUnitId} roaster");
+
 				var url = Unit.GetUnitRoasterPage(tawUnitId);
-				var session = await sessionManager.GetAsync();
-				var response = session.Value.GetUrl(url);
-				session.Dispose();
+
+				var logScope = log.StartScope("getting roaster html");
+				var response = await sessionManager.GetUrl(url);
+				logScope.End();
+
 				var html = response.HtmlDocument;
-				Log.Trace($"got unit taw id:{tawUnitId} roaster");
 
 				var roasterDiv = html.GetElementbyId("ctl00_bcr_UpdatePanel1").SelectSingleNode("./div/ul");
 
-				Log.Trace("parsing unit roaster");
-				await ParseUnitContents(roasterDiv, null);
-				Log.Trace("finished parsing unit roaster");
+				using (log.StartScope("parsing roaster gtml"))
+					await ParseUnitContents(roasterDiv, null);
 
-				Log.Trace("parsing roaster people");
+				logScope = log.StartScope("parsing people from roaster");
 				var tasks = new List<Task>(personNameToPersonLines.Count);
 
 				foreach (var kvp in personNameToPersonLines)
 				{
 					var personName = kvp.Key;
 					var personLines = kvp.Value;
-					var task = Task.Run(() =>
+					var task = Task.Run(async () =>
 					{
 						using (var data = db.NewContext)
 						{
 							Log.Trace("parsing & saving roaster person:" + personName);
 							foreach (var personLine in personLines)
 							{
-								personLine.FinishParsing(data);
+								await personLine.FinishParsing(data);
 							}
 							var personUnitIds = personLines.Select(p => p.PersonToUnitId).ToArray();
 							// if some person to unit is still valid, and not one of those we just updated, mark it as not valid anymore
@@ -92,7 +95,7 @@ namespace TawGatherMembersInfo
 				};
 				await Task.WhenAll(tasks.ToArray());
 
-				Log.Trace("finished parsing roaster people");
+				logScope.End();
 			}
 
 			class UnitRoasterPersonLine
@@ -147,7 +150,7 @@ namespace TawGatherMembersInfo
 					}
 				}
 
-				public void FinishParsing(MyDbContext data)
+				async public Task FinishParsing(MyDbContext data)
 				{
 					/*
 						text use cases:
@@ -160,7 +163,7 @@ namespace TawGatherMembersInfo
 						Juvenis, COL
 					*/
 
-					var person = GetPersonFromName(data, name, rank);
+					var person = await GetPersonFromName(data, name, rank);
 					if (onLeave) person.Status = "on leave";
 
 					var personToUnit = data.PersonUnits.FirstOrDefault(p => p.Person.PersonId == person.PersonId && p.Unit.UnitId == unitId);
@@ -236,21 +239,9 @@ namespace TawGatherMembersInfo
 			}
 		}
 
-		static Person GetPersonFromName(MyDbContext data, string name, string rankNameShort = null)
+		async static Task<Person> GetPersonFromName(MyDbContext data, string name, string rankNameShort)
 		{
-			if (name.IsNullOrWhiteSpace() || name.Length <= 1)
-			{
-				Debugger.Break();
-			}
-
-			var person = data.People.FirstOrDefault(p => p.Name == name);
-			if (person == null)
-			{
-				person = new Person();
-				person.Name = name;
-				person = data.People.Add(person);
-				data.SaveChanges();
-			}
+			var person = await GetPersonFromName(data, name);
 			if (!rankNameShort.IsNullOrEmpty())
 			{
 				if (person.Ranks.Count == 0)
@@ -266,6 +257,33 @@ namespace TawGatherMembersInfo
 			return person;
 		}
 
+		async static Task<Person> GetPersonFromName(MyDbContext data, string name)
+		{
+			if (name.IsNullOrWhiteSpace() || name.Length <= 1)
+			{
+				Debugger.Break();
+			}
+
+			var person = data.People.FirstOrDefault(p => p.Name == name);
+			if (person == null)
+			{
+				person = new Person();
+				person.Name = name;
+				person = data.People.Add(person);
+				try
+				{
+					data.SaveChanges();
+				}
+				catch
+				{
+					// conflicting key: entity was probably already added in different thread
+					data.Entry(person).State = System.Data.Entity.EntityState.Detached; // detach errorenous entity, so context is valid
+					person = data.People.First(p => p.Name == name);
+				}
+			}
+			return person;
+		}
+
 		static Unit GetUnit(MyDbContext data, int unitTawId, string name)
 		{
 			var unit = data.Units.FirstOrDefault(u => u.TawId == unitTawId);
@@ -274,6 +292,16 @@ namespace TawGatherMembersInfo
 				unit = new Unit();
 				unit.TawId = unitTawId;
 				unit = data.Units.Add(unit);
+				try
+				{
+					data.SaveChanges();
+				}
+				catch (Exception e)
+				{
+					// conflicting key: entity was probably already added in different thread
+					data.Entry(unit).State = System.Data.Entity.EntityState.Detached; // detach errorenous entity, so context is valid
+					unit = data.Units.First(p => p.TawId == unitTawId);
+				}
 			}
 			unit.Name = name;
 			return unit;
@@ -293,22 +321,20 @@ namespace TawGatherMembersInfo
 
 		public async Task UpdateInfoFromProfilePage(SessionMannager sessionManager, string personName)
 		{
-			var session = await sessionManager.GetAsync();
-			var logPrefix = "updating profile of " + personName + ", ";
-			Log.Trace(logPrefix + "start");
+			var log = Log.Scope("getting and updating profile of " + personName);
 
+			var scope = log.StartScope("getting html");
 			var url = Person.GetPersonProfilePageUrl(personName);
-			var response = session.Value.GetUrl(url);
+			var response = await sessionManager.GetUrl(url);
 			var html = response.HtmlDocument;
-
-			Log.Trace(logPrefix + "got web response");
+			scope.End();
 
 			using (var data = db.NewContext)
 			{
 				var person = data.People.FirstOrDefault(p => p.Name == personName);
 				if (person == null)
 				{
-					Log.Error(logPrefix + "person with name " + personName + " was not found in database");
+					log.Error("person not found in database");
 					return;
 				}
 
@@ -361,8 +387,7 @@ namespace TawGatherMembersInfo
 			// rank in time
 			// position in unit in time
 			{
-				var res = await session.Value.PostJsonAsync("http://taw.net/services/JSONFactory.asmx/GetMovement", new { callsign = personName });
-				session.Dispose();
+				var res = await sessionManager.PostJsonAsync("http://taw.net/services/JSONFactory.asmx/GetMovement", new { callsign = personName });
 				var d = (string)JObject.Parse(res)["d"];
 				var dossierMovements = JsonConvert.DeserializeObject<DossierMovements>(d);
 
@@ -399,7 +424,7 @@ namespace TawGatherMembersInfo
 								personRank.NameLong = rankNameLong;
 								personRank.ValidFrom = timestamp;
 								personRank.Person = person;
-								if (!byWho.IsNullOrWhiteSpace() && byWho.Length > 0) personRank.PromotedBy = GetPersonFromName(data, byWho);
+								if (!byWho.IsNullOrWhiteSpace() && byWho.Length > 0) personRank.PromotedBy = await GetPersonFromName(data, byWho);
 								personRank.TawId = tawId;
 								person.Ranks.Add(personRank);
 							}
@@ -456,7 +481,7 @@ namespace TawGatherMembersInfo
 						}
 						else
 						{
-							Log.Warn("unexpected dossier row: " + description);
+							log.Warn("unexpected dossier row: " + description);
 						}
 					}
 
@@ -464,7 +489,7 @@ namespace TawGatherMembersInfo
 				}
 			}
 
-			Log.Trace(logPrefix + "done, parsed and saved");
+			log.End("done, parsed and saved");
 		}
 
 		public readonly static string[] possibleDateTimeFormats = new string[] {
@@ -516,53 +541,59 @@ namespace TawGatherMembersInfo
 			ValidEvent,
 			ErrorenousEvent,
 			BaseEvent,
-			InvalidUriProbablyLastEvent,
+			InvalidUriShouldRetry,
 		}
 
 		public async Task<ParseEventResult> ParseEventData(SessionMannager sessionManager, long eventTawId)
 		{
+			var log = Log.Scope("gathering and parsing event data, taw id:" + eventTawId);
 			try
 			{
-				Log.Trace("parsing event data, taw id:" + eventTawId + " start");
 				var url = Event.GetEventPage(eventTawId);
-				var session = await sessionManager.GetAsync();
-				var response = session.Value.GetUrl(url);
-				session.Dispose();
+				var scope = log.StartScope("getting event html");
+				var response = await sessionManager.GetUrl(url);
+				scope.End();
+
 				ParseEventResult result;
-				Log.Trace("parsing event data, taw id:" + eventTawId + " got web response");
+
+				scope = log.StartScope("parsing event html");
 				using (var data = db.NewContext)
 				{
-					result = ParseEventData_1(data, response);
+					result = await ParseEventData_1(scope, data, response, eventTawId);
 					data.SaveChanges();
 				}
-				Log.Trace("parsing event data, taw id:" + eventTawId + " parsed and saved");
+				scope.End();
 				return result;
 			}
 			catch (Exception e)
 			{
-				Log.Error("ecountered errorenous event, taw id:" + eventTawId);
-				Log.Error(e);
+				log.Error("ecountered errorenous event, taw id:" + eventTawId);
+				log.Error(e);
 				return ParseEventResult.ErrorenousEvent;
 			}
 		}
 
-		ParseEventResult ParseEventData_1(MyDbContext data, MyHttpWebResponse response)
+		async Task<ParseEventResult> ParseEventData_1(ILogEnd log, MyDbContext data, MyHttpWebResponse response, long eventTawId)
 		{
 			var uriPath = response.ResponseUri.AbsolutePath;
 			if (uriPath.Contains("event") == false)
 			{
-				return ParseEventResult.InvalidUriProbablyLastEvent;
-				Log.Error("the event you are trying to parse has invalid uri");
+				log.Info("the event you are trying to parse has invalid uri:" + uriPath + " should contain event and taw event id:" + eventTawId);
+				return ParseEventResult.InvalidUriShouldRetry;
 			}
 
 			var eventTawIdStr = uriPath.Split('/', '\\').Last().RemoveFromEnd(".aspx".Length);
-			var eventTawId = int.Parse(eventTawIdStr);
+			var parsedEventTawId = int.Parse(eventTawIdStr);
+			if (eventTawId != parsedEventTawId)
+			{
+				throw new Exception($"should not happen, looking for tat event id:{eventTawId} but found:{parsedEventTawId}");
+			}
 
 			var htmlText = response.ResponseText;
 			htmlText = htmlText?.TakeStringAfter("ctl00_ctl00_bcr_bcr_UpdatePanel\">");
 			if (htmlText.Contains("This is a Base Event and should never be seen"))
 			{
-				Log.Trace("event " + eventTawId + " is invalid 'base event', skipping");
+				log.Trace("event " + eventTawId + " is invalid 'base event', skipping");
 				return ParseEventResult.BaseEvent; // http://taw.net/event/65132.aspx
 			}
 
@@ -573,11 +604,11 @@ namespace TawGatherMembersInfo
 				evt.TawId = eventTawId;
 				evt = data.Events.Add(evt);
 			}
-			ParseEventData_2(data, evt, htmlText);
+			await ParseEventData_2(log, data, evt, htmlText, eventTawId);
 			return ParseEventResult.ValidEvent;
 		}
 
-		void ParseEventData_2(MyDbContext data, Event evt, string htmlText)
+		async Task ParseEventData_2(ILogEnd log, MyDbContext data, Event evt, string htmlText, long eventTawId)
 		{
 			// this page is so badly coded the HTML is invalid, chrome shows it correctly though, kudos to it
 			// but HtmlAgilityPack just fails on it
@@ -627,9 +658,9 @@ namespace TawGatherMembersInfo
 					}
 					else
 					{
-						var person = GetPersonFromName(data, name);
+						var person = await GetPersonFromName(data, name);
 
-						var personToEvent = data.PersonEvents.FirstOrDefault(p => p.Event.EventId == evt.EventId && p.Person.PersonId == person.PersonId);
+						var personToEvent = data.PersonEvents.FirstOrDefault(p => p.EventId == evt.EventId && p.PersonId == person.PersonId);
 						if (personToEvent == null)
 						{
 							personToEvent = new PersonEvent();
@@ -659,7 +690,7 @@ namespace TawGatherMembersInfo
 				}
 				else
 				{
-					throw new Exception("something is wrong, found unexpected data");
+					throw new Exception("something is wrong, found unexpected data, taw event id:" + eventTawId);
 				}
 			}
 		}

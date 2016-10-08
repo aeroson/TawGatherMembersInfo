@@ -1,4 +1,5 @@
 ﻿using Neitri;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -15,7 +16,11 @@ namespace TawGatherMembersInfo
 
 		public IEnumerable<int> UnitsToGatherMemberInfo => GetMany(new int[] { 2776 });
 
-		public int MaxConcurrentDatabaseConnections => GetOne(10);
+		/// <summary>
+		/// Minimum is 2
+		/// </summary>
+		public int MaxConcurrentDatabaseConnections => Math.Max(GetOne(10), 2);
+
 		public int MaxConcurrentWebSessions => GetOne(10);
 		public int WebCrawlerLoopPauseSeconds => GetOne(10 * 60);
 

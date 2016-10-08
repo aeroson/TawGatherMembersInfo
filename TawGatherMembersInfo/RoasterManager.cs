@@ -24,6 +24,8 @@ namespace TawGatherMembersInfo
 		[Dependency]
 		Config config;
 
+		ILogEnd Log => Program.Log;
+
 		SessionMannager sessionManager;
 
 		public RoasterManager(IDependencyManager dependency)
@@ -137,7 +139,7 @@ namespace TawGatherMembersInfo
 				{
 					long eventIdStart;
 					using (var data = db.NewContext) eventIdStart = data.Events.OrderByDescending(e => e.TawId).Take(1).Select(e => e.TawId).FirstOrDefault();
-					if (eventIdStart == default(long)) eventIdStart = 0; // 65000 is theoretically enough, it is about 1 year back, but sometimes we want more
+					if (eventIdStart == default(long)) eventIdStart = 110; // 65000 is theoretically enough, it is about 1 year back, but sometimes we want more
 					eventIdStart++;
 
 					var doBreak = new System.Threading.ManualResetEventSlim();
@@ -147,19 +149,40 @@ namespace TawGatherMembersInfo
 					for (long i = 0; i < 100000; i++)
 					{
 						long eventId = eventIdStart + i;
+
+						if (eventId >= 32628 && eventId <= 33626) continue; // missing events, hard to tell if its last event or just missing one
+						if (eventId >= 38804 && eventId <= 39801) continue; // again missing fucking event
+
+						// TODO:
+						// a clever algorithm that works on ranges, e.g: try eventId+2  eventId+4 .. eventId+1024,
+						// then eventId+1024-2 eventId+1024-4 eventId+1024-128
+						// find the next event that works by checking suitable ranges
+
 						if (doBreak.IsSet) break;
 						var task = Task.Run(async () =>
 						{
 							if (doBreak.IsSet) return;
 							var result = await dataParser.ParseEventData(sessionManager, eventId);
-							if (result == WebDataParser.ParseEventResult.InvalidUriProbablyLastEvent)
+							if (result == WebDataParser.ParseEventResult.InvalidUriShouldRetry)
 							{
-								Log.Info("found probably last event with taw id:" + eventId);
-								doBreak.Set();
+								await Task.Delay(500);
+								if (doBreak.IsSet) return;
+								result = await dataParser.ParseEventData(sessionManager, eventId);
+								if (result == WebDataParser.ParseEventResult.InvalidUriShouldRetry)
+								{
+									await Task.Delay(500);
+									if (doBreak.IsSet) return;
+									result = await dataParser.ParseEventData(sessionManager, eventId);
+									if (result == WebDataParser.ParseEventResult.InvalidUriShouldRetry)
+									{
+										Log.Fatal("retried to parse event taw id:" + eventId + " already 3 times, failed all of them, probably last event, stopping event parsing");
+										doBreak.Set();
+									}
+								}
 							}
 						});
 						tasks.Add(task);
-						if (i % 200 == 0)
+						if (i % 100 == 0)
 						{
 							try
 							{

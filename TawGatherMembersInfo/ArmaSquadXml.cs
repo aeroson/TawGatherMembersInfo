@@ -20,6 +20,8 @@ namespace TawGatherMembersInfo
 
 		MyDbContext data;
 
+		static ILogEnd Log => Program.Log;
+
 		public void UpdateArma3SquadXml()
 		{
 			using (data = db.NewContext)

@@ -23,6 +23,8 @@ namespace TawGatherMembersInfo
 		HttpListener httpListener;
 		Thread thread;
 
+		static ILogEnd Log => Program.Log;
+
 		public void Join()
 		{
 			thread.Join();
