@@ -45,7 +45,7 @@ namespace TawGatherMembersInfo
 
 				var url = Unit.GetUnitRoasterPage(tawUnitId);
 
-				var logScope = log.StartScope("getting roaster html");
+				var logScope = log.ScopeStart("getting roaster html");
 				var response = await sessionManager.GetUrl(url);
 				logScope.End();
 
@@ -53,10 +53,10 @@ namespace TawGatherMembersInfo
 
 				var roasterDiv = html.GetElementbyId("ctl00_bcr_UpdatePanel1").SelectSingleNode("./div/ul");
 
-				using (log.StartScope("parsing roaster gtml"))
+				using (log.ScopeStart("parsing roaster gtml"))
 					await ParseUnitContents(roasterDiv, null);
 
-				logScope = log.StartScope("parsing people from roaster");
+				logScope = log.ScopeStart("parsing people from roaster");
 				var tasks = new List<Task>(personNameToPersonLines.Count);
 
 				foreach (var kvp in personNameToPersonLines)
@@ -333,11 +333,10 @@ namespace TawGatherMembersInfo
 		{
 			var log = Log.Scope("getting and updating profile of " + personName);
 
-			var scope = log.StartScope("getting html");
+			var scope = log.Profile("getting html");
 			var url = Person.GetPersonProfilePageUrl(personName);
-			var response = await sessionManager.GetUrl(url);
+			var response = await sessionManager.GetUrl(url, scope);
 			var html = response.HtmlDocument;
-			scope.End();
 
 			using (var data = db.NewContext)
 			{
@@ -397,7 +396,10 @@ namespace TawGatherMembersInfo
 			// rank in time
 			// position in unit in time
 			{
-				var res = await sessionManager.PostJsonAsync("http://taw.net/services/JSONFactory.asmx/GetMovement", new { callsign = personName });
+				scope = log.Profile("getting movements");
+				var res = await sessionManager.PostJsonAsync("http://taw.net/services/JSONFactory.asmx/GetMovement", new { callsign = personName }, scope);
+
+				scope = log.ProfileStart("parsing movements");
 				var d = (string)JObject.Parse(res)["d"];
 				var dossierMovements = JsonConvert.DeserializeObject<DossierMovements>(d);
 
@@ -411,9 +413,8 @@ namespace TawGatherMembersInfo
 						var tawId = long.Parse(dossierMovement.id);
 						var description = dossierMovement.description;
 
-						if (description.Contains("applied for TAW")) person.AppliedForTaw = timestamp;
 						if (description.Contains("was admitted to TAW")) person.AdmittedToTaw = timestamp;
-						if (description.Contains("was promoted to") || description.Contains("applied for TAW"))
+						else if (description.Contains("was promoted to") || description.Contains("applied for TAW"))
 						{
 							if (person.Ranks == null || person.Ranks.Any(r => r.TawId == 0))
 							{
@@ -423,11 +424,12 @@ namespace TawGatherMembersInfo
 
 							if (!person.Ranks.Any(r => r.TawId == tawId))
 							{
-								string rankNameLong;
+								string rankNameLong = "unknown";
+								string byWho = null;
 
 								if (description.Contains("applied for TAW"))
 								{
-									person.AdmittedToTaw = timestamp;
+									person.AppliedForTaw = timestamp;
 									rankNameLong = "Recruit";
 								}
 								else
@@ -435,11 +437,10 @@ namespace TawGatherMembersInfo
 									// aeroson was promoted to Sergeant by <a href="/member/Samblues.aspx">Samblues</a>.
 									// aeroson was promoted to Private First Class by <a href="/member/MaverickSabre.aspx">MaverickSabre</a>.
 									var rankByWho = description.TakeStringAfter("was promoted to").Trim();
+									byWho = description.TakeStringAfter(" by ").TakeStringBetween(">", "</a>").Trim();
+									while (byWho.EndsWith(".")) byWho = byWho.RemoveFromEnd(1).Trim();
 									rankNameLong = rankByWho.TakeStringBefore("by").Trim();
 								}
-
-								var byWho = description.TakeStringAfter(" by ").TakeStringBetween(">", "</a>").Trim();
-								while (byWho.EndsWith(".")) byWho = byWho.RemoveFromEnd(1).Trim();
 
 								var personRank = new PersonRank();
 								personRank.NameLong = rankNameLong;
@@ -502,12 +503,12 @@ namespace TawGatherMembersInfo
 						}
 						else
 						{
-							log.Warn("unexpected dossier row: " + description);
+							scope.Warn("unexpected dossier row: " + description);
 						}
 					}
-
 					data.SaveChanges();
 				}
+				scope.End();
 			}
 
 			log.End("done, parsed and saved");
@@ -571,13 +572,13 @@ namespace TawGatherMembersInfo
 			try
 			{
 				var url = Event.GetEventPage(eventTawId);
-				var scope = log.StartScope("getting event html");
+				var scope = log.ScopeStart("getting event html");
 				var response = await sessionManager.GetUrl(url);
 				scope.End();
 
 				ParseEventResult result;
 
-				scope = log.StartScope("parsing event html");
+				scope = log.ScopeStart("parsing event html");
 				using (var data = db.NewContext)
 				{
 					result = await ParseEventData_1(scope, data, response, eventTawId);
@@ -589,7 +590,7 @@ namespace TawGatherMembersInfo
 			catch (Exception e)
 			{
 				log.Error("ecountered errorenous event, taw id:" + eventTawId);
-				log.Error(e);
+				log.FatalException(e);
 				return ParseEventResult.ErrorenousEvent;
 			}
 		}
@@ -599,7 +600,7 @@ namespace TawGatherMembersInfo
 			var uriPath = response.ResponseUri.AbsolutePath;
 			if (uriPath.Contains("event") == false)
 			{
-				log.Info("the event you are trying to parse has invalid uri:" + uriPath + " should contain event and taw event id:" + eventTawId);
+				log.Warn("the event you are trying to parse has invalid uri:" + uriPath + " should contain taw event id:" + eventTawId);
 				return ParseEventResult.InvalidUriShouldRetry;
 			}
 

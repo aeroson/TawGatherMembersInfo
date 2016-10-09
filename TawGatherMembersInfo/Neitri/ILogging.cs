@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Neitri
@@ -64,14 +65,33 @@ namespace Neitri
 			));
 		}
 
+		public static void FatalException(this ILogEnd log, Exception e)
+		{
+			log.Fatal(e);
+			var ae = e as AggregateException;
+			if (ae != null) foreach (var _e in ae.InnerExceptions) log.FatalException(_e);
+		}
+
 		public static LogScope Scope<T>(this ILogEnd log, T value)
 		{
 			return new LogScope(log, value.ToString());
 		}
 
-		public static LogScope StartScope<T>(this ILogEnd log, T value)
+		public static LogScope ScopeStart<T>(this ILogEnd log, T value)
 		{
 			var scope = Scope<T>(log, value);
+			scope.Start();
+			return scope;
+		}
+
+		public static LogScope Profile<T>(this ILogEnd log, T value)
+		{
+			return new LogProfile(log, value.ToString());
+		}
+
+		public static LogScope ProfileStart<T>(this ILogEnd log, T value)
+		{
+			var scope = Profile<T>(log, value);
 			scope.Start();
 			return scope;
 		}
@@ -79,9 +99,9 @@ namespace Neitri
 
 	public class LogScope : ILogEnd, IDisposable
 	{
-		ILogEnd parent;
-		string scopeName;
-		bool started;
+		protected ILogEnd parent;
+		protected string scopeName;
+		protected bool started;
 
 		public LogScope(ILogEnd parent, string scopeName)
 		{
@@ -97,7 +117,7 @@ namespace Neitri
 			));
 		}
 
-		public void Start()
+		public virtual void Start()
 		{
 			if (started) return;
 			this.Trace("start");
@@ -109,12 +129,36 @@ namespace Neitri
 			End();
 		}
 
-		public void End(string differentEndMessage = null)
+		public virtual void End(string differentEndMessage = null)
 		{
 			if (!started) return;
 			if (differentEndMessage.IsNullOrWhiteSpace()) this.Trace("end");
 			else this.Trace("end - " + differentEndMessage);
 			started = false;
+		}
+	}
+
+	public class LogProfile : LogScope
+	{
+		string name;
+		Stopwatch time;
+		ILogEnd log;
+
+		public LogProfile(ILogEnd parent, string scopeName) : base(parent, scopeName)
+		{
+		}
+
+		public override void Start()
+		{
+			if (time == null) time = new Stopwatch();
+			time.Start();
+			base.Start();
+		}
+
+		public override void End(string differentEndMessage = null)
+		{
+			time.Stop();
+			base.End("took " + time.ElapsedMilliseconds + " ms");
 		}
 	}
 

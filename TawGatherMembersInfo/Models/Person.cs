@@ -31,7 +31,9 @@ namespace TawGatherMembersInfo.Models
 		[StringLength(100)]
 		public virtual string Status { get; set; } = "unknown"; // active, discharged, etc..
 
-		public virtual DateTime DateJoinedTaw { get; set; }
+		public virtual DateTime DateJoinedTaw { get; set; } // TODO: remove
+															//[NotMapped] public virtual DateTime DateJoinedTaw => AdmittedToTaw
+
 		public virtual DateTime LastProfileDataUpdatedDate { get; set; }
 
 		[StringLength(10)]

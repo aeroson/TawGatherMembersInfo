@@ -78,7 +78,9 @@ namespace TawGatherMembersInfo
 			var personsUpdated = new HashSet<string>();
 			foreach (var tawUnitId in config.UnitsToGatherMemberInfo)
 			{
-				Log.Trace($"parsing people from unit taw id:{tawUnitId}, gathering people");
+				var log = Log.Scope($"parsing people from unit taw id:{tawUnitId}");
+
+				var scope = log.ProfileStart("gathering people ids");
 
 				HashSet<string> peopleNames;
 				using (var data = db.NewContext)
@@ -87,8 +89,7 @@ namespace TawGatherMembersInfo
 					if (unit == null) break;
 					peopleNames = unit.GetAllPeopleNames();
 				}
-
-				Log.Trace($"parsing people from unit taw id:{tawUnitId}, got {peopleNames.Count} people");
+				scope.End($"got {peopleNames.Count} people");
 
 				var tasks = new List<Task>();
 
@@ -105,18 +106,18 @@ namespace TawGatherMembersInfo
 					tasks.Add(task);
 				}
 
-				Log.Trace($"parsing people from unit taw id:{tawUnitId}, all tasks started");
+				scope = log.ProfileStart($"all tasks");
 
 				try
 				{
 					Task.WaitAll(tasks.ToArray());
 				}
-				catch (AggregateException e)
+				catch (Exception e)
 				{
-					Print(e);
+					scope.FatalException(e);
 				}
 
-				Log.Trace($"parsing people from unit taw id:{tawUnitId}, done");
+				scope.End();
 			}
 		}
 
@@ -125,13 +126,14 @@ namespace TawGatherMembersInfo
 			long eventIdStart;
 			using (var data = db.NewContext) eventIdStart = data.Events.OrderByDescending(e => e.TawId).Take(1).Select(e => e.TawId).FirstOrDefault();
 			if (eventIdStart == default(long)) eventIdStart = 110; // 65000 is theoretically enough, it is about 1 year back, but sometimes we want more
-			eventIdStart++;
 
 			var doBreak = new System.Threading.ManualResetEventSlim();
 
 			var tasks = new List<Task>();
 
-			for (long i = 0; i < 100000; i++)
+			var pauseEachXEvents = 1;
+
+			for (long i = 1; i < 100000; i++)
 			{
 				long eventId = eventIdStart + i;
 
@@ -160,33 +162,30 @@ namespace TawGatherMembersInfo
 							result = await dataParser.ParseEventData(sessionManager, eventId);
 							if (result == WebDataParser.ParseEventResult.InvalidUriShouldRetry)
 							{
-								Log.Fatal("retried to parse event taw id:" + eventId + " already 3 times, failed all of them, probably last event, stopping event parsing");
+								Log.Warn("retried to parse event taw id:" + eventId + " already 3 times, failed all of them, probably last event, stopping event parsing");
 								doBreak.Set();
 							}
 						}
 					}
+					else
+					{
+						if (pauseEachXEvents <= 100) Interlocked.Increment(ref pauseEachXEvents); // successfull, lets parse more at the same time
+					}
 				});
 				tasks.Add(task);
-				if (i % 10 == 0)
+				if (i % pauseEachXEvents == 0)
 				{
 					try
 					{
 						Task.WaitAll(tasks.ToArray());
 					}
-					catch (AggregateException e)
+					catch (Exception e)
 					{
-						Print(e);
+						Log.FatalException(e);
 					}
 					tasks.Clear();
 				}
 			}
-		}
-
-		void Print(Exception e)
-		{
-			Log.Fatal(e);
-			var ae = e as AggregateException;
-			if (ae != null) foreach (var _e in ae.InnerExceptions) Print(_e);
 		}
 
 		void Run(Action action)
@@ -197,7 +196,7 @@ namespace TawGatherMembersInfo
 			}
 			catch (Exception e)
 			{
-				Print(e);
+				Log.FatalException(e);
 			}
 		}
 

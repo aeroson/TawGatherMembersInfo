@@ -125,6 +125,7 @@
     <Compile Include="Models\PersonUnit.cs" />
     <Compile Include="Models\Person_StaticData.cs" />
     <Compile Include="MyDbContext.cs" />
+    <Compile Include="Neitri\Utils\CsvReader.cs" />
     <Compile Include="Neitri\WebCrawling\MyHttpWebRequest.cs" />
     <Compile Include="Neitri\DependencyInjection\DependencyManager.cs" />
     <Compile Include="Neitri\IOnDependencyResolved.cs" />
@@ -162,7 +163,6 @@
     <Compile Include="Neitri\Utils\FormatUtils.cs" />
     <Compile Include="Neitri\Utils\MemberName.cs" />
     <Compile Include="Neitri\Utils\MyWeakReference.cs" />
-    <Compile Include="Neitri\Utils\other.cs" />
     <Compile Include="Neitri\Utils\PropertyDescriptors.cs" />
     <Compile Include="Neitri\Utils\ReadOnlyDictionary.cs" />
     <Compile Include="Neitri\Utils\Require.cs" />
@@ -185,6 +185,7 @@
     <None Include="App.config" />
     <None Include="app.manifest" />
     <Compile Include="HttpServerHandler.PerRequestHandler.cs" />
+    <None Include="Neitri\readme.md" />
     <None Include="packages.config" />
     <Compile Include="Models\Unit.cs" />
   </ItemGroup>
@@ -197,7 +198,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Neitri\_Version_3\" />
+    <Folder Include="Neitri\_Version_4\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -103,7 +103,7 @@ namespace TawGatherMembersInfo
 		/// </summary>
 		async Task Login()
 		{
-			Log.Info("Logging in...");
+			Log.Trace("Logging in...");
 
 			var request = MyHttpWebRequest.Create(loginPageUrl);
 			request.CookieContainer = CookieContainer;
@@ -123,12 +123,12 @@ namespace TawGatherMembersInfo
 
 			if (IsLoggedIn(response.ResponseText))
 			{
-				Log.Info("Successfully logged in...");
+				Log.Trace("Successfully logged in...");
 			}
 			else
 			{
-				Log.Info("Failed to log in...");
-				Log.Info("Resetting registry stored user details.");
+				Log.Warn("Failed to log in...");
+				Log.Trace("Resetting registry stored user details.");
 				var registry = Registry.CurrentUser.CreateSubKey(this.GetType().FullName);
 				registry.SetValue("username", "");
 				registry.SetValue("password", "");
@@ -248,19 +248,27 @@ namespace TawGatherMembersInfo
 			return r;
 		}
 
-		public async Task<string> PostJsonAsync(string url, object payload)
+		public async Task<string> PostJsonAsync(string url, object payload, LogScope log = null)
 		{
+			if (log != null) log.Trace("waiting for session");
 			using (var session = await GetAsync())
 			{
-				return await session.Value.PostJson(url, payload);
+				if (log != null) log.Start();
+				var ret = await session.Value.PostJson(url, payload);
+				if (log != null) log.End();
+				return ret;
 			}
 		}
 
-		public async Task<MyHttpWebResponse> GetUrl(string url)
+		public async Task<MyHttpWebResponse> GetUrl(string url, LogScope log = null)
 		{
+			if (log != null) log.Trace("waiting for session");
 			using (var session = await GetAsync())
 			{
-				return await session.Value.GetUrl(url);
+				if (log != null) log.Start();
+				var ret = await session.Value.GetUrl(url);
+				if (log != null) log.End();
+				return ret;
 			}
 		}
 	}

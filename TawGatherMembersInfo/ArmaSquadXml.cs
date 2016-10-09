@@ -65,7 +65,7 @@ namespace TawGatherMembersInfo
 					if (armaProfileName.Contains("[]")) continue; // taw teamspeak name position suffix is empty, failed to figure it out
 				}
 
-				var image = GetUnitImage(person, targetSquadXmlFolder);
+				var image = GetUnitImage(person, targetSquadXmlFolder).ExceptionIfNotExists();
 
 				Log.Trace("generating squad xml for: " + person.Name + " image:" + image.Name + " armaProfileName:" + armaProfileName);
 
@@ -115,9 +115,12 @@ namespace TawGatherMembersInfo
 		{
 			// try logo defined in taw profile biography
 			var image = person.Biography.GetData("squadxml logo", "arma squadxml logo");
-			if (image.IsNullOrEmpty() == false && image.EndsWith(".paa") == false) image += ".paa";
-			var file = targetSquadXmlFolder.GetFile(image);
-			if (file.Exists) return file;
+			if (image.IsNullOrEmpty() == false)
+			{
+				if (image.EndsWith(".paa") == false) image += ".paa";
+				var file = targetSquadXmlFolder.GetFile(image);
+				if (file.Exists) return file;
+			}
 
 			// try logo from our unit
 			{
@@ -125,7 +128,7 @@ namespace TawGatherMembersInfo
 
 				do
 				{
-					file = targetSquadXmlFolder.GetFile(unit.TawId.ToString() + ".paa");
+					var file = targetSquadXmlFolder.GetFile(unit.TawId.ToString() + ".paa");
 					if (file.Exists)
 					{
 						var t = unit.Type.ToLower();
@@ -145,8 +148,7 @@ namespace TawGatherMembersInfo
 				while (unit != null);
 			}
 
-			file = targetSquadXmlFolder.GetFile("default.paa");
-			return file;
+			return targetSquadXmlFolder.GetFile("default.paa");
 		}
 	}
 }

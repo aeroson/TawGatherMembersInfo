@@ -36,7 +36,7 @@ namespace TawGatherMembersInfo
 		Program(string[] args)
 		{
 			fileSystem = new FileSystem();
-			fileSystem.BaseDirectory = fileSystem.BaseDirectory.GetDirectory("data").CreateIfNotExists();
+			fileSystem.RootDirectory = fileSystem.GetDirectory("data").CreateIfNotExists();
 
 			config = new Config();
 			config.LoadFile(fileSystem.GetFile("config.xml"));
@@ -47,7 +47,7 @@ namespace TawGatherMembersInfo
 
 				a.AddLogger(new Neitri.Logging.LogConsole());
 
-				var logFile = fileSystem.BaseDirectory.GetDirectory("logs").CreateIfNotExists().GetFile(DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss") + ".txt");
+				var logFile = fileSystem.GetDirectory("logs").CreateIfNotExists().GetFile(DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss") + ".txt");
 				var sw = new StreamWriter(logFile);
 				sw.AutoFlush = true;
 				a.AddLogger(new Neitri.Logging.LogFile(sw));
