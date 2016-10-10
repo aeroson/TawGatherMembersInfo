@@ -7,17 +7,21 @@ namespace Neitri
 {
 	public abstract class PathBase : IEquatable<PathBase>
 	{
-		public DirectoryPath RootDirectory
-		{
-			get; set;
-		}
+		string[] absoluePathParts;
 
 		/// <summary>
-		/// Relative path parts.
+		/// Absolute path parts.
 		/// </summary>
 		public string[] PathParts
 		{
-			get; set;
+			get
+			{
+				return absoluePathParts;
+			}
+			set
+			{
+				absoluePathParts = Split(Path.GetFullPath(Join(value)));
+			}
 		}
 
 		/// <summary>
@@ -27,7 +31,11 @@ namespace Neitri
 		{
 			get
 			{
-				return GetFullPath(MakePath(PathParts));
+				return Join(PathParts);
+			}
+			set
+			{
+				PathParts = Split(value);
 			}
 		}
 
@@ -51,44 +59,13 @@ namespace Neitri
 			get
 			{
 				var dir = new DirectoryPath(FullPath, "..");
-				dir.RootDirectory = RootDirectory;
 				return dir;
 			}
 		}
 
 		public PathBase(params string[] pathParts)
 		{
-			// makes sure there are no white characters around / or \
-			// input: D:\SSD_GAMES\steamapps\common\Arma 3\@taw_div_core/addons\task_force_radio_items.pbo
-			// output: D:\SSD_GAMES\steamapps\common\Arma 3\@taw_div_core / addons\task_force_radio_items.pbo
-			this.PathParts = Split(MakePath(pathParts));
-		}
-
-		string GetFullPath(params string[] pathParts)
-		{
-			if (pathParts.First().Contains(":")) // a non relative path e.g.: C:/Windows
-			{
-				return Path.GetFullPath(MakePath(pathParts));
-			}
-			else
-			{
-				if (RootDirectory == null)
-				{
-					// no root directory, lets use default
-					return Path.GetFullPath(
-						MakePath(pathParts)
-					);
-				}
-				else
-				{
-					return Path.GetFullPath(
-						MakePath(
-							MakePath(RootDirectory.FullPath),
-							MakePath(pathParts)
-						)
-					);
-				}
-			}
+			PathParts = pathParts;
 		}
 
 		public override int GetHashCode()
@@ -124,7 +101,7 @@ namespace Neitri
 
 		public override string ToString()
 		{
-			return MakePath(PathParts);
+			return FullPath;
 		}
 
 		/// <summary>
@@ -132,27 +109,20 @@ namespace Neitri
 		/// </summary>
 		/// <param name="pathParts"></param>
 		/// <returns></returns>
-		protected string MakePath(params string[] pathParts)
+		protected string Join(params string[] pathParts)
 		{
 			return string.Join("/", pathParts);
 		}
 
 		/// <summary>
 		/// Path into path parts.
+		/// makes sure there are no white characters around / or \
 		/// </summary>
 		/// <param name="path"></param>
 		/// <returns></returns>
 		protected string[] Split(string path)
 		{
 			return path.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray();
-		}
-
-		string[] ArrayAdd(string[] arr, string add)
-		{
-			var ret = new string[arr.Length + 1];
-			Array.Copy(arr, ret, arr.Length);
-			ret[ret.Length] = add;
-			return ret;
 		}
 
 		protected string[] CombinePathParts(string[] arr1, params string[] arr2)
@@ -238,25 +208,18 @@ namespace Neitri
 		public FilePath GetFile(params string[] pathParts)
 		{
 			var file = new FilePath(CombinePathParts(PathParts, pathParts));
-			file.RootDirectory = this.RootDirectory;
 			return file;
 		}
 
 		public IEnumerable<FilePath> FindFiles(string searchPattern)
 		{
-			return Directory.GetFiles(this.FullPath, searchPattern).Select(f => GetFile(f));
+			return Directory.GetFiles(this.FullPath, searchPattern).Select(f => new FilePath(f));
 		}
 
 		public DirectoryPath GetDirectory(params string[] pathParts)
 		{
 			var dir = new DirectoryPath(CombinePathParts(this.PathParts, pathParts));
-			dir.RootDirectory = this.RootDirectory;
 			return dir;
-		}
-
-		public override string ToString()
-		{
-			return this.FullPath;
 		}
 
 		public static implicit operator string(DirectoryPath me)
@@ -283,7 +246,7 @@ namespace Neitri
 			}
 		}
 
-		public FilePath(string[] pathParts) : base(pathParts)
+		public FilePath(params string[] pathParts) : base(pathParts)
 		{
 		}
 
@@ -325,11 +288,6 @@ namespace Neitri
 			return this;
 		}
 
-		public override string ToString()
-		{
-			return this.FullPath;
-		}
-
 		public static implicit operator string(FilePath me)
 		{
 			return me.FullPath;
@@ -338,13 +296,13 @@ namespace Neitri
 
 	public class FileSystem : DirectoryPath
 	{
-		public FileSystem() : base(new string[] { })
-		{
-			RootDirectory = new DirectoryPath(AppDomain.CurrentDomain.BaseDirectory);
+		public FileSystem() :
 #if DEBUG
-			RootDirectory = new DirectoryPath("..", "release");
+			base("../release")
+#else
+			base(AppDomain.CurrentDomain.BaseDirectory)
 #endif
-			RootDirectory.ExceptionIfNotExists();
+		{
 		}
 	}
 }

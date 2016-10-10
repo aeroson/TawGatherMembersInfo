@@ -38,7 +38,17 @@ begin
 		AWOL bigint(20),
 		MandatoryAVG float,
 		TotalAVG float,
-		DaysInRank bigint(20)
+		DaysInRank bigint(20),
+        
+        TotalInvitedAnyEvent bigint(20),
+		TotalAttendedAnyEvent bigint(20),
+		TotalExcusedAnyEvent bigint(20),
+		TotalAwolAnyEvent bigint(20),
+        
+		TotalExcusedMandatories bigint(20),
+		TotalAwolMandatories bigint(20),
+		TotalInvitedMandatories bigint(20),
+		TotalAttendedMandatories bigint(20)
 	);	
 	truncate table attendanceReportResult;
     
@@ -60,29 +70,33 @@ begin
 			ifnull(count(*), 0),
             ifnull(sum(case when pe.AttendanceType = 1 then 1 else 0 end), 0),
             ifnull(sum(case when pe.AttendanceType = 2 then 1 else 0 end), 0),
-            ifnull(sum(case when pe.AttendanceType = 3 then 1 else 0 end), 0),
-            
-            ifnull(sum(case when e.Mandatory then 1 else 0 end), 0),
-            ifnull(sum(case when pe.AttendanceType = 1 and e.Mandatory then 1 else 0 end), 0),
-            ifnull(sum(case when pe.AttendanceType = 2 and e.Mandatory then 1 else 0 end), 0),
-            ifnull(sum(case when pe.AttendanceType = 3 and e.Mandatory then 1 else 0 end), 0)
-    
+            ifnull(sum(case when pe.AttendanceType = 3 then 1 else 0 end), 0)
 		into 
 			totalInvitedAnyEvent,
             totalAttendedAnyEvent,
             totalExcusedAnyEvent,
-            totalAwolAnyEvent,
-            
+            totalAwolAnyEvent    
+        from People p
+        join PersonEvents pe on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId
+        join Events e on e.EventId = pe.EventId and e.From > startDate -- and e.Cancelled = false
+        ;
+        
+		select 
+			ifnull(count(*), 0),
+            ifnull(sum(case when pe.AttendanceType = 1 then 1 else 0 end), 0),
+            ifnull(sum(case when pe.AttendanceType = 2 then 1 else 0 end), 0),
+            ifnull(sum(case when pe.AttendanceType = 3 then 1 else 0 end), 0)
+		into 
 			totalInvitedMandatories,            
             totalAttendedMandatories,
 			totalExcusedMandatories,
-			totalAwolMandatories	
-    
-        from PersonEvents pe 
-        join People p on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId
-        join Events e on e.EventId = pe.EventId and e.From > startDate
-        join PersonUnits pu on pu.Person_PersonId = p.PersonId and pu.Removed > now() and pu.Unit_UnitId in (select * from GetChildUnits_result)
+			totalAwolMandatories	    
+        from People p
+        join PersonEvents pe on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId
+		join Events e on e.EventId = pe.EventId and e.From > startDate and e.Mandatory = true -- and e.Cancelled = false
+		-- join UnitEvents ue on ue.Event_EventId = e.EventId and ue.Unit_UnitId in (select * from GetChildUnits_result)
         ;
+               
                
         
 		insert into attendanceReportResult values (
@@ -107,7 +121,17 @@ begin
 				1
 			),
 			
-			(select datediff(CURRENT_DATE, pr.ValidFrom) from People p join PersonRanks pr on p.PersonId = selected_PersonId and pr.Person_PersonId = selected_PersonId order by pr.ValidFrom desc limit 1)
+			(select datediff(CURRENT_DATE, pr.ValidFrom) from People p join PersonRanks pr on p.PersonId = selected_PersonId and pr.Person_PersonId = selected_PersonId order by pr.ValidFrom desc limit 1),
+            
+            totalInvitedAnyEvent,
+			totalAttendedAnyEvent,
+			totalExcusedAnyEvent,
+			totalAwolAnyEvent,
+            
+			totalExcusedMandatories,
+			totalAwolMandatories,
+			totalInvitedMandatories,
+			totalAttendedMandatories
             
 		);
         

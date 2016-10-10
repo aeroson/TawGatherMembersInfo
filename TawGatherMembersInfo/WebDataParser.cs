@@ -20,6 +20,9 @@ namespace TawGatherMembersInfo
 		[Dependency]
 		DbContextProvider db;
 
+		[Dependency]
+		SessionMannager sessionManager;
+
 		static ILogEnd Log => Program.Log;
 
 		public async Task UpdateUnitContents(SessionMannager sessionManager, int tawUnitId)
@@ -329,7 +332,7 @@ namespace TawGatherMembersInfo
 			}
 		}
 
-		public async Task UpdateInfoFromProfilePage(SessionMannager sessionManager, string personName)
+		public async Task UpdateInfoFromProfilePage(string personName)
 		{
 			var log = Log.Scope("getting and updating profile of " + personName);
 
@@ -566,7 +569,7 @@ namespace TawGatherMembersInfo
 			InvalidUriShouldRetry,
 		}
 
-		public async Task<ParseEventResult> ParseEventData(SessionMannager sessionManager, long eventTawId)
+		public async Task<ParseEventResult> ParseEventData(long eventTawId)
 		{
 			var log = Log.Scope("gathering and parsing event data, taw id:" + eventTawId);
 			try
@@ -686,8 +689,8 @@ namespace TawGatherMembersInfo
 						if (personToEvent == null)
 						{
 							personToEvent = new PersonEvent();
-							personToEvent.Event = evt;
-							personToEvent.Person = person;
+							personToEvent.EventId = evt.EventId;
+							personToEvent.PersonId = person.PersonId;
 							personToEvent = data.PersonEvents.Add(personToEvent);
 						}
 

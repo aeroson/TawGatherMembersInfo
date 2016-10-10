@@ -14,7 +14,7 @@ namespace TawGatherMembersInfo
 		public event Action OnDataGatheringCycleCompleted;
 
 		Task mainTask;
-		WebDataParser dataParser;
+
 		CancellationTokenSource cancel = new CancellationTokenSource();
 
 		[Dependency]
@@ -26,18 +26,21 @@ namespace TawGatherMembersInfo
 		[Dependency]
 		Config config;
 
+		[Dependency]
+		IDependencyManager dependency;
+
 		ILogEnd Log => Program.Log;
 
 		SessionMannager sessionManager;
 
-		public RoasterManager(IDependencyManager dependency)
-		{
-			dataParser = dependency.Create<WebDataParser>();
-		}
+		WebDataParser dataParser;
 
 		public void OnDependenciesResolved()
 		{
 			sessionManager = new SessionMannager(config.MaxConcurrentWebSessions, config.MaxWebRequestsPerMinutePerSession);
+			dependency.Register(sessionManager);
+
+			dataParser = dependency.Create<WebDataParser>();
 		}
 
 		public void Join()
@@ -58,9 +61,12 @@ namespace TawGatherMembersInfo
 		/// <summary>
 		/// Gather basic information from unit roaster, still needs more detailed updating for each person from his/her profile page.
 		/// </summary>
-		async Task GatherBasicInformationFromUnitId1Roaster()
+		void GatherBasicInformationFromUnitId1Roaster()
 		{
-			await dataParser.UpdateUnitContents(sessionManager, 1);
+			Task.Run(async () =>
+			{
+				await dataParser.UpdateUnitContents(sessionManager, 1);
+			}).Wait();
 		}
 
 		void BackupPeopleOrder()
@@ -101,7 +107,7 @@ namespace TawGatherMembersInfo
 
 					var task = Task.Run(async () =>
 					{
-						await dataParser.UpdateInfoFromProfilePage(sessionManager, personNameCopy);
+						await dataParser.UpdateInfoFromProfilePage(personNameCopy);
 					});
 					tasks.Add(task);
 				}
@@ -121,11 +127,41 @@ namespace TawGatherMembersInfo
 			}
 		}
 
-		void GatherEvents()
+		void UpdateOldEvents(int maxDaysBack = 7)
+		{
+			long[] eventIdsToUpdate;
+			using (var data = db.NewContext)
+			{
+				var afterDate = DateTime.UtcNow.AddDays(-maxDaysBack);
+				eventIdsToUpdate = data.Events.Where(e => e.From > afterDate).Select(e => e.EventId).ToArray();
+			}
+
+			var tasks = new List<Task>();
+			foreach (var eventId in eventIdsToUpdate)
+			{
+				var task = Task.Run(async () =>
+				{
+					var result = await dataParser.ParseEventData(eventId);
+				});
+				tasks.Add(task);
+			}
+
+			Task.WaitAll(tasks.ToArray());
+		}
+
+		bool SkipEvent(long tawEventId)
+		{
+			if (tawEventId < 114) return true; // first valid event is 114
+			if (tawEventId >= 32628 && tawEventId <= 33626) return true; // missing events, hard to tell if its last event or just missing one
+			if (tawEventId >= 38804 && tawEventId <= 39801) return true; // again missing fucking event
+			return false;
+		}
+
+		void GatherNewEvents()
 		{
 			long eventIdStart;
 			using (var data = db.NewContext) eventIdStart = data.Events.OrderByDescending(e => e.TawId).Take(1).Select(e => e.TawId).FirstOrDefault();
-			if (eventIdStart == default(long)) eventIdStart = 110; // 65000 is theoretically enough, it is about 1 year back, but sometimes we want more
+			// if (eventIdStart == default(long)) eventIdStart = 0; // 65000 is theoretically enough, it is about 1 year back, but sometimes we want more
 
 			var doBreak = new System.Threading.ManualResetEventSlim();
 
@@ -137,9 +173,7 @@ namespace TawGatherMembersInfo
 			{
 				long eventId = eventIdStart + i;
 
-				if (eventId >= 32628 && eventId <= 33626) continue; // missing events, hard to tell if its last event or just missing one
-				if (eventId >= 38804 && eventId <= 39801) continue; // again missing fucking event
-
+				if (SkipEvent(eventId)) continue;
 				// TODO:
 				// a clever algorithm that works on ranges, e.g: try eventId+2  eventId+4 .. eventId+1024,
 				// then eventId+1024-2 eventId+1024-4 eventId+1024-128
@@ -149,17 +183,17 @@ namespace TawGatherMembersInfo
 				var task = Task.Run(async () =>
 				{
 					if (doBreak.IsSet) return;
-					var result = await dataParser.ParseEventData(sessionManager, eventId);
+					var result = await dataParser.ParseEventData(eventId);
 					if (result == WebDataParser.ParseEventResult.InvalidUriShouldRetry)
 					{
 						await Task.Delay(500);
 						if (doBreak.IsSet) return;
-						result = await dataParser.ParseEventData(sessionManager, eventId);
+						result = await dataParser.ParseEventData(eventId);
 						if (result == WebDataParser.ParseEventResult.InvalidUriShouldRetry)
 						{
 							await Task.Delay(500);
 							if (doBreak.IsSet) return;
-							result = await dataParser.ParseEventData(sessionManager, eventId);
+							result = await dataParser.ParseEventData(eventId);
 							if (result == WebDataParser.ParseEventResult.InvalidUriShouldRetry)
 							{
 								Log.Warn("retried to parse event taw id:" + eventId + " already 3 times, failed all of them, probably last event, stopping event parsing");
@@ -186,6 +220,31 @@ namespace TawGatherMembersInfo
 					tasks.Clear();
 				}
 			}
+		}
+
+		async Task ReparseMissingEvnets()
+		{
+			var missingTawIds = new List<long>(2048);
+
+			long[] ids;
+			using (var data = db.NewContext) ids = data.Events.OrderBy(e => e.TawId).Select(e => e.TawId).ToArray();
+
+			long expectedId = 0;
+			foreach (var id in ids)
+			{
+				while (id != expectedId)
+				{
+					if (!SkipEvent(expectedId)) missingTawIds.Add(expectedId);
+					expectedId++;
+				}
+				expectedId = id + 1; // we expect this id next
+			}
+
+			Log.Info("taw event id gaps:" + missingTawIds.Count);
+
+			await Task.WhenAll(
+				missingTawIds.Select(tawId => Task.Run(async () => await dataParser.ParseEventData(tawId)))
+			);
 		}
 
 		void Run(Action action)
@@ -216,19 +275,26 @@ namespace TawGatherMembersInfo
 
 		async Task ThreadMain()
 		{
+			long i = 0;
+
 			while (true)
 			{
-				Run(() => Task.Run(() => GatherBasicInformationFromUnitId1Roaster()).Wait());
+				Run(() => GatherBasicInformationFromUnitId1Roaster());
 
 				Run(() => BackupPeopleOrder());
 
 				Run(() => UpdateProfiles());
 
-				Run(() => GatherEvents());
+				if (i % 1000 == 0) Run(async () => await ReparseMissingEvnets());
+
+				if (i % 10 == 0) Run(() => UpdateOldEvents());
+
+				Run(() => GatherNewEvents());
 
 				Run(() => OnDataGatheringCycleCompleted?.Invoke());
 
 				await Delay();
+				i++;
 			}
 		}
 	}

@@ -25,7 +25,8 @@ select * from People where name = "Deceded";
 select * from People p join PersonUnits pu on p.PersonId = pu.Person_PersonId and p.Name = "Wingnut"
 join Units u on u.UnitId = pu.Unit_UnitId;
 
-select * from People p join PersonEvents pe on p.PersonId = pe.PersonId and p.Name = "Wingnut";
+select * from People p join PersonEvents pe on p.PersonId = pe.PersonId and p.Name = "Afromann";
+select pr.* from People p join PersonRanks pr on p.PersonId = pr.Person_PersonId and p.Name = "Afromann";
 
 update PersonUnits pu set pu.Removed = '9999-01-01 00:00:00' where pu.Removed < '0001-01-01 00:00:00';
 

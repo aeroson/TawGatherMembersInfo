@@ -36,7 +36,7 @@ namespace TawGatherMembersInfo
 		Program(string[] args)
 		{
 			fileSystem = new FileSystem();
-			fileSystem.RootDirectory = fileSystem.GetDirectory("data").CreateIfNotExists();
+			fileSystem.FullPath = fileSystem.GetDirectory("data").CreateIfNotExists().FullPath;
 
 			config = new Config();
 			config.LoadFile(fileSystem.GetFile("config.xml"));
