@@ -8,15 +8,15 @@ begin
 	declare cursor_end tinyint(1);
 	
 	
-	declare totalInvitedAnyEvent bigint(20);
-    declare totalAttendedAnyEvent bigint(20);
-	declare totalExcusedAnyEvent bigint(20);
-	declare totalAwolAnyEvent bigint(20);
+	declare AllEventsInvited bigint(20);
+    declare AllEventsAttended bigint(20);
+	declare AllEventsExcused bigint(20);
+	declare AllEventsMissed bigint(20);
             
-	declare totalExcusedMandatories bigint(20);
-	declare totalAwolMandatories bigint(20);
-	declare totalInvitedMandatories bigint(20);
-	declare totalAttendedMandatories bigint(20);
+	declare MandatoryEventsExcused bigint(20);
+	declare MandatoryEventsMissed bigint(20);
+	declare MandatoryEventsInvited bigint(20);
+	declare MandatoryEventsAttended bigint(20);
 	
 	declare startDate datetime;
 	declare endDate datetime;
@@ -40,19 +40,19 @@ begin
 		TotalAVG float,
 		DaysInRank bigint(20),
         
-        TotalInvitedAnyEvent bigint(20),
-		TotalAttendedAnyEvent bigint(20),
-		TotalExcusedAnyEvent bigint(20),
-		TotalAwolAnyEvent bigint(20),
+        AllEventsInvited bigint(20),
+		AllEventsAttended bigint(20),
+		AllEventsExcused bigint(20),
+		AllEventsMissed bigint(20),
         
-		TotalExcusedMandatories bigint(20),
-		TotalAwolMandatories bigint(20),
-		TotalInvitedMandatories bigint(20),
-		TotalAttendedMandatories bigint(20)
+		MandatoryEventsInvited bigint(20),        
+		MandatoryEventsAttended bigint(20),
+        MandatoryEventsExcused bigint(20),
+		MandatoryEventsMissed bigint(20)		
 	);	
 	truncate table attendanceReportResult;
     
-	call GetChildUnits(rootUnitId);
+	-- call GetChildUnits(rootUnitId);
 
 	select (date_sub(now(), interval daysBackTo day)) into startDate;
 	
@@ -72,10 +72,10 @@ begin
             ifnull(sum(case when pe.AttendanceType = 2 then 1 else 0 end), 0),
             ifnull(sum(case when pe.AttendanceType = 3 then 1 else 0 end), 0)
 		into 
-			totalInvitedAnyEvent,
-            totalAttendedAnyEvent,
-            totalExcusedAnyEvent,
-            totalAwolAnyEvent    
+			AllEventsInvited,
+            AllEventsAttended,
+            AllEventsExcused,
+            AllEventsMissed    
         from People p
         join PersonEvents pe on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId
         join Events e on e.EventId = pe.EventId and e.From > startDate -- and e.Cancelled = false
@@ -87,10 +87,10 @@ begin
             ifnull(sum(case when pe.AttendanceType = 2 then 1 else 0 end), 0),
             ifnull(sum(case when pe.AttendanceType = 3 then 1 else 0 end), 0)
 		into 
-			totalInvitedMandatories,            
-            totalAttendedMandatories,
-			totalExcusedMandatories,
-			totalAwolMandatories	    
+			MandatoryEventsInvited,            
+            MandatoryEventsAttended,
+			MandatoryEventsExcused,
+			MandatoryEventsMissed	    
         from People p
         join PersonEvents pe on p.PersonId = selected_PersonId and p.PersonId = pe.PersonId
 		join Events e on e.EventId = pe.EventId and e.From > startDate and e.Mandatory = true -- and e.Cancelled = false
@@ -104,34 +104,34 @@ begin
 			(select u.Name from Units u where u.TawId = rootUnitId),
 			(select p.Name from People p where p.PersonId = selected_PersonId),
 			(select pr.NameShort from People p join PersonRanks pr on p.PersonId = selected_PersonId and pr.Person_PersonId = selected_PersonId order by pr.ValidFrom desc limit 1),			
-			totalInvitedAnyEvent,			
-			totalAttendedAnyEvent,			
-			totalExcusedAnyEvent,			
-			totalAwolAnyEvent,
+			AllEventsInvited,			
+			AllEventsAttended,			
+			AllEventsExcused,			
+			AllEventsMissed,
 		
 			IF(
-				totalInvitedMandatories > 0,
-				totalAttendedMandatories / totalInvitedMandatories,
+				MandatoryEventsInvited > 0,
+				MandatoryEventsAttended / MandatoryEventsInvited,
 				1
 			),
 			
 			IF(
-				totalInvitedAnyEvent > 0,
-				totalAttendedAnyEvent / totalInvitedAnyEvent,
+				AllEventsInvited > 0,
+				AllEventsAttended / AllEventsInvited,
 				1
 			),
 			
 			(select datediff(CURRENT_DATE, pr.ValidFrom) from People p join PersonRanks pr on p.PersonId = selected_PersonId and pr.Person_PersonId = selected_PersonId order by pr.ValidFrom desc limit 1),
             
-            totalInvitedAnyEvent,
-			totalAttendedAnyEvent,
-			totalExcusedAnyEvent,
-			totalAwolAnyEvent,
+            AllEventsInvited,
+			AllEventsAttended,
+			AllEventsExcused,
+			AllEventsMissed,
             
-			totalExcusedMandatories,
-			totalAwolMandatories,
-			totalInvitedMandatories,
-			totalAttendedMandatories
+            MandatoryEventsInvited,			
+			MandatoryEventsAttended,
+            MandatoryEventsExcused,
+			MandatoryEventsMissed		
             
 		);
         
