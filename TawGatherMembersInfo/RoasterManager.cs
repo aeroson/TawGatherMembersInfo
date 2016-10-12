@@ -65,17 +65,20 @@ namespace TawGatherMembersInfo
 		{
 			Task.Run(async () =>
 			{
-				await dataParser.UpdateUnitContents(sessionManager, 1);
+				await dataParser.UpdateUnitContents(Log, sessionManager, 1);
 			}).Wait();
 		}
 
 		void BackupPeopleOrder()
 		{
-			var file = fileSystem.GetFile("backup.personsOrder.txt");
-			using (var data = db.NewContext)
+			using (var log = Log.ProfileStart("backing up people names order"))
 			{
-				var people = data.People.OrderBy(p => p.PersonId).Select(p => p.Name).ToArray();
-				File.WriteAllLines(file, people);
+				var file = fileSystem.GetFile("backup.personsOrder.txt");
+				using (var data = db.NewContext)
+				{
+					var people = data.People.OrderBy(p => p.PersonId).Select(p => p.Name).ToArray();
+					File.WriteAllLines(file, people);
+				}
 			}
 		}
 
@@ -84,51 +87,55 @@ namespace TawGatherMembersInfo
 			var personsUpdated = new HashSet<string>();
 			foreach (var tawUnitId in config.UnitsToGatherMemberInfo)
 			{
-				var log = Log.Scope($"parsing people from unit taw id:{tawUnitId}");
-
-				var scope = log.ProfileStart("gathering people ids");
-
-				HashSet<string> peopleNames;
-				using (var data = db.NewContext)
+				using (var log = Log.ScopeStart($"parsing people from unit taw id:{tawUnitId}"))
 				{
-					var unit = data.Units.FirstOrDefault(u => u.TawId == tawUnitId);
-					if (unit == null) break;
-					peopleNames = unit.GetAllPeopleNames();
-				}
-				scope.End($"got {peopleNames.Count} people");
+					HashSet<string> peopleNames;
 
-				var tasks = new List<Task>();
-
-				foreach (var personName in peopleNames)
-				{
-					var personNameCopy = personName;
-					if (personsUpdated.Contains(personNameCopy)) continue;
-					personsUpdated.Add(personNameCopy);
-
-					var task = Task.Run(async () =>
 					{
-						await dataParser.UpdateInfoFromProfilePage(personNameCopy);
-					});
-					tasks.Add(task);
-				}
+						var log2 = log.ProfileStart("gathering people ids");
+						using (var data = db.NewContext)
+						{
+							var unit = data.Units.FirstOrDefault(u => u.TawId == tawUnitId);
+							if (unit == null) break;
+							peopleNames = unit.GetAllPeopleNames();
+						}
+						log2.End($"got {peopleNames.Count} people");
+					}
 
-				scope = log.ProfileStart($"all tasks");
+					var tasks = new List<Task>();
 
-				try
-				{
-					Task.WaitAll(tasks.ToArray());
-				}
-				catch (Exception e)
-				{
-					scope.FatalException(e);
-				}
+					foreach (var personName in peopleNames)
+					{
+						var personNameCopy = personName;
+						if (personsUpdated.Contains(personNameCopy)) continue;
+						personsUpdated.Add(personNameCopy);
 
-				scope.End();
+						var task = Task.Run(async () =>
+						{
+							await dataParser.UpdateInfoFromProfilePage(Log, personNameCopy);
+						});
+						tasks.Add(task);
+					}
+
+					using (var log2 = log.ProfileStart($"all tasks"))
+					{
+						try
+						{
+							Task.WaitAll(tasks.ToArray());
+						}
+						catch (Exception e)
+						{
+							log2.FatalException(e);
+						}
+					}
+				}
 			}
 		}
 
 		void UpdateOldEvents(int maxDaysBack = 7)
 		{
+			var log = Log.ScopeStart($"updating old events {maxDaysBack} days back");
+
 			long[] eventIdsToUpdate;
 			using (var data = db.NewContext)
 			{
@@ -141,15 +148,17 @@ namespace TawGatherMembersInfo
 			{
 				var task = Task.Run(async () =>
 				{
-					var result = await dataParser.ParseEventData(eventId);
+					var result = await dataParser.ParseEventData(log, eventId);
 				});
 				tasks.Add(task);
 			}
 
 			Task.WaitAll(tasks.ToArray());
+
+			log.End();
 		}
 
-		bool SkipEvent(long tawEventId)
+		bool ShouldSkipEvent(long tawEventId)
 		{
 			if (tawEventId < 114) return true; // first valid event is 114
 			if (tawEventId >= 32628 && tawEventId <= 33626) return true; // missing events, hard to tell if its last event or just missing one
@@ -159,6 +168,8 @@ namespace TawGatherMembersInfo
 
 		void GatherNewEvents()
 		{
+			var log = Log.ScopeStart($"gathering new events");
+
 			long eventIdStart;
 			using (var data = db.NewContext) eventIdStart = data.Events.OrderByDescending(e => e.TawId).Take(1).Select(e => e.TawId).FirstOrDefault();
 			// if (eventIdStart == default(long)) eventIdStart = 0; // 65000 is theoretically enough, it is about 1 year back, but sometimes we want more
@@ -173,7 +184,7 @@ namespace TawGatherMembersInfo
 			{
 				long eventId = eventIdStart + i;
 
-				if (SkipEvent(eventId)) continue;
+				if (ShouldSkipEvent(eventId)) continue;
 				// TODO:
 				// a clever algorithm that works on ranges, e.g: try eventId+2  eventId+4 .. eventId+1024,
 				// then eventId+1024-2 eventId+1024-4 eventId+1024-128
@@ -183,20 +194,20 @@ namespace TawGatherMembersInfo
 				var task = Task.Run(async () =>
 				{
 					if (doBreak.IsSet) return;
-					var result = await dataParser.ParseEventData(eventId);
+					var result = await dataParser.ParseEventData(log, eventId);
 					if (result == WebDataParser.ParseEventResult.InvalidUriShouldRetry)
 					{
 						await Task.Delay(500);
 						if (doBreak.IsSet) return;
-						result = await dataParser.ParseEventData(eventId);
+						result = await dataParser.ParseEventData(log, eventId);
 						if (result == WebDataParser.ParseEventResult.InvalidUriShouldRetry)
 						{
 							await Task.Delay(500);
 							if (doBreak.IsSet) return;
-							result = await dataParser.ParseEventData(eventId);
+							result = await dataParser.ParseEventData(log, eventId);
 							if (result == WebDataParser.ParseEventResult.InvalidUriShouldRetry)
 							{
-								Log.Warn("retried to parse event taw id:" + eventId + " already 3 times, failed all of them, probably last event, stopping event parsing");
+								log.Warn("retried to parse event taw id:" + eventId + " already 3 times, failed all of them, probably last event, stopping event parsing");
 								doBreak.Set();
 							}
 						}
@@ -220,10 +231,14 @@ namespace TawGatherMembersInfo
 					tasks.Clear();
 				}
 			}
+
+			log.End();
 		}
 
 		async Task ReparseMissingEvnets()
 		{
+			var log = Log.ProfileStart("reparsing missing events");
+
 			var missingTawIds = new List<long>(2048);
 
 			long[] ids;
@@ -234,17 +249,19 @@ namespace TawGatherMembersInfo
 			{
 				while (id != expectedId)
 				{
-					if (!SkipEvent(expectedId)) missingTawIds.Add(expectedId);
+					if (!ShouldSkipEvent(expectedId)) missingTawIds.Add(expectedId);
 					expectedId++;
 				}
 				expectedId = id + 1; // we expect this id next
 			}
 
-			Log.Info("taw event id gaps:" + missingTawIds.Count);
+			log.Info("taw event id gaps:" + missingTawIds.Count);
 
 			await Task.WhenAll(
-				missingTawIds.Select(tawId => Task.Run(async () => await dataParser.ParseEventData(tawId)))
+				missingTawIds.Select(tawId => Task.Run(async () => await dataParser.ParseEventData(log, tawId)))
 			);
+
+			log.End();
 		}
 
 		void Run(Action action)
@@ -261,16 +278,21 @@ namespace TawGatherMembersInfo
 
 		async Task Delay()
 		{
-			var seconds = config.WebCrawlerLoopPauseSeconds;
-			var scope = Log.Scope($"pausing data gathering loop");
+			var secondsLeft = config.WebCrawlerLoopPauseSeconds;
+			var log = Log.ScopeStart($"pausing data gathering loop");
 
-			while (seconds > 0)
+			var logEverySeconds = (int)(secondsLeft / 1000);
+			if (logEverySeconds < 1) logEverySeconds = 1;
+
+			while (secondsLeft > 0)
 			{
-				scope.Trace($"{seconds} seconds to go");
-				if (seconds > 10) await Task.Delay(10 * 1000);
-				else await Task.Delay(seconds * 1000);
-				seconds -= 10;
+				log.Trace($"{secondsLeft} seconds to go");
+				if (secondsLeft > logEverySeconds) await Task.Delay(logEverySeconds * 1000);
+				else await Task.Delay(secondsLeft * 1000);
+				logEverySeconds -= 10;
 			}
+
+			log.End();
 		}
 
 		async Task ThreadMain()

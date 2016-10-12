@@ -23,11 +23,9 @@ namespace TawGatherMembersInfo
 		[Dependency]
 		SessionMannager sessionManager;
 
-		static ILogEnd Log => Program.Log;
-
-		public async Task UpdateUnitContents(SessionMannager sessionManager, int tawUnitId)
+		public async Task UpdateUnitContents(ILogEnd log, SessionMannager sessionManager, int tawUnitId)
 		{
-			await new UpdateUnitContentsHandler(db).Run(sessionManager, tawUnitId);
+			await new UpdateUnitContentsHandler(db).Run(log, sessionManager, tawUnitId);
 		}
 
 		class UpdateUnitContentsHandler
@@ -40,68 +38,66 @@ namespace TawGatherMembersInfo
 				this.db = db;
 			}
 
-			public async Task Run(SessionMannager sessionManager, int tawUnitId)
+			public async Task Run(ILogEnd log, SessionMannager sessionManager, int tawUnitId)
 			{
 				var newVersion = new Random().Next(); // all person to unit relations without this unit version will be deleted
 
-				var log = Log.Scope($"getting and parsing unit taw id:{tawUnitId} roaster");
+				log = log.ProfileStart($"roaster unit {tawUnitId}");
 
 				var url = Unit.GetUnitRoasterPage(tawUnitId);
 
-				var logScope = log.ScopeStart("getting roaster html");
-				var response = await sessionManager.GetUrl(url);
-				logScope.End();
+				var response = await sessionManager.GetUrl(url, log.ScopeStart("getting html"));
 
 				var html = response.HtmlDocument;
 
 				var roasterDiv = html.GetElementbyId("ctl00_bcr_UpdatePanel1").SelectSingleNode("./div/ul");
 
-				using (log.ScopeStart("parsing roaster gtml"))
-					await ParseUnitContents(roasterDiv, null);
+				using (log.ScopeStart("parsing html"))
+					await ParseUnitContents(log, roasterDiv, null);
 
-				logScope = log.ScopeStart("parsing people from roaster");
-				var tasks = new List<Task>(personNameToPersonLines.Count);
-
-				foreach (var kvp in personNameToPersonLines)
+				using (var log2 = log.ScopeStart("parsing people"))
 				{
-					var personName = kvp.Key;
-					var personLines = kvp.Value;
-					var task = Task.Run(async () =>
+					var tasks = new List<Task>(personNameToPersonLines.Count);
+
+					foreach (var kvp in personNameToPersonLines)
 					{
-						using (var data = db.NewContext)
+						var personName = kvp.Key;
+						var personLines = kvp.Value;
+						var task = Task.Run(async () =>
 						{
-							Log.Trace("parsing & saving roaster person:" + personName);
-							foreach (var personLine in personLines)
+							using (var data = db.NewContext)
 							{
-								await personLine.FinishParsing(data);
-							}
-							var personUnitIds = personLines.Select(p => p.PersonToUnitId).ToArray();
-							var utcNow = DateTime.UtcNow;
-							// if some person to unit is still valid, and not one of those we just updated, mark it as not valid anymore
-							data
-								.People
-								.First(p => p.Name == personName)
-								.Units
-								.Where(u => u.Removed > utcNow) // still valid, not removed
-								.Where(u => !personUnitIds.Contains(u.PersonUnitId)) // except those we found & updated
-								.ForEach(u => u.Removed = utcNow); // remove it
+								log2.Trace("parsing & saving roaster person " + personName);
+								foreach (var personLine in personLines)
+								{
+									await personLine.FinishParsing(log2, data);
+								}
+								var personUnitIds = personLines.Select(p => p.PersonToUnitId).ToArray();
+								var utcNow = DateTime.UtcNow;
+								// if some person to unit is still valid, and not one of those we just updated, mark it as not valid anymore
+								data
+										.People
+										.First(p => p.Name == personName)
+										.Units
+										.Where(u => u.Removed > utcNow) // still valid, not removed
+										.Where(u => !personUnitIds.Contains(u.PersonUnitId)) // except those we found & updated
+										.ForEach(u => u.Removed = utcNow); // remove it
 
-							try
-							{
-								data.SaveChanges();
+								try
+								{
+									data.SaveChanges();
+								}
+								catch (Exception e)
+								{
+									log2.Fatal(e);
+								}
+								log2.Trace("done parsing & saving roaster person:" + personName);
 							}
-							catch (Exception e)
-							{
-								log.Fatal(e);
-							}
-							Log.Trace("done parsing & saving roaster person:" + personName);
-						}
-					});
-					tasks.Add(task);
-				};
-				await Task.WhenAll(tasks.ToArray());
-
-				logScope.End();
+						});
+						tasks.Add(task);
+					};
+					await Task.WhenAll(tasks.ToArray());
+				}
 			}
 
 			class UnitRoasterPersonLine
@@ -117,7 +113,7 @@ namespace TawGatherMembersInfo
 				bool onLeave = false;
 				long unitId;
 
-				public UnitRoasterPersonLine(string text, long unitId)
+				public UnitRoasterPersonLine(ILogEnd log, string text, long unitId)
 				{
 					this.unitId = unitId;
 					var dashIndex = text.LastIndexOf("-");
@@ -152,11 +148,11 @@ namespace TawGatherMembersInfo
 					if (positionNameLong != "")
 					{
 						positionNameShort = Person.positionNameShortToPositionNameLong.Reverse.GetValue(positionNameLong, null);
-						if (positionNameShort == null) Log.Error("cannot find positionNameShortToPositionNameLong.Reverse[" + positionNameLong + "]");
+						if (positionNameShort == null) log.Warn("cannot find positionNameShortToPositionNameLong.Reverse[" + positionNameLong + "]");
 					}
 				}
 
-				async public Task FinishParsing(MyDbContext data)
+				async public Task FinishParsing(ILogEnd log, MyDbContext data)
 				{
 					/*
 						text use cases:
@@ -191,12 +187,12 @@ namespace TawGatherMembersInfo
 					}
 					catch (Exception e)
 					{
-						Log.Fatal(e);
+						log.Fatal(e);
 					}
 				}
 			}
 
-			async Task ParseUnitContents(HtmlNode unitNamePlusUl, long? parentUnitId)
+			async Task ParseUnitContents(ILogEnd log, HtmlNode unitNamePlusUl, long? parentUnitId)
 			{
 				List<Task> tasks;
 				using (var data = db.NewContext)
@@ -209,7 +205,7 @@ namespace TawGatherMembersInfo
 					var tawId = int.Parse(unitNameA.GetAttributeValue("href", "/unit/-1.aspx").TakeStringBetweenLast("/", ".aspx"));
 					var name = unitNameA.InnerText;
 
-					Log.Trace("parsing unit roaster, taw unit id: " + tawId);
+					log.Trace("parsing " + tawId);
 
 					var unit = GetUnit(data, tawId, name);
 					unit.Type = type;
@@ -229,7 +225,7 @@ namespace TawGatherMembersInfo
 							// person
 							var text = child.InnerText;
 							//tasks.Add(Task.Run(() => ParsePersonFromUnitRoaster(text, unit.Id)));
-							var personLine = new UnitRoasterPersonLine(text, unit.UnitId);
+							var personLine = new UnitRoasterPersonLine(log, text, unit.UnitId);
 
 							lock (personNameToPersonLines)
 							{
@@ -244,7 +240,7 @@ namespace TawGatherMembersInfo
 						else
 						{
 							// unit
-							tasks.Add(Task.Run(() => ParseUnitContents(child, unit.UnitId)));
+							tasks.Add(Task.Run(() => ParseUnitContents(log, child, unit.UnitId)));
 						}
 					}
 				}
@@ -332,9 +328,9 @@ namespace TawGatherMembersInfo
 			}
 		}
 
-		public async Task UpdateInfoFromProfilePage(string personName)
+		public async Task UpdateInfoFromProfilePage(ILogEnd _log, string personName)
 		{
-			var log = Log.Scope("getting and updating profile of " + personName);
+			var log = _log.ProfileStart("updating profile of " + personName);
 
 			var scope = log.Profile("getting html");
 			var url = Person.GetPersonProfilePageUrl(personName);
@@ -543,7 +539,7 @@ namespace TawGatherMembersInfo
 				}
 				catch (Exception e)
 				{
-					Log.Error($"failed to {nameof(ParseUSDateTime)} {nameof(timeZoneOffset)}:'{timeZoneOffset}', error:{e}");
+					throw new Exception($"failed to {nameof(ParseUSDateTime)} {nameof(timeZoneOffset)}:'{timeZoneOffset}', error:{e}");
 				}
 				str = str.TakeFromBegin(timeZoneStart).Trim();
 			}
@@ -556,7 +552,7 @@ namespace TawGatherMembersInfo
 			}
 			catch (Exception e)
 			{
-				Log.Error($"failed to {nameof(ParseUSDateTime)} DateTime:'{str}', error:{e}");
+				throw new Exception($"failed to {nameof(ParseUSDateTime)} DateTime:'{str}', error:{e}");
 				throw;
 			}
 		}
@@ -569,19 +565,19 @@ namespace TawGatherMembersInfo
 			InvalidUriShouldRetry,
 		}
 
-		public async Task<ParseEventResult> ParseEventData(long eventTawId)
+		public async Task<ParseEventResult> ParseEventData(ILogEnd _log, long eventTawId)
 		{
-			var log = Log.Scope("gathering and parsing event data, taw id:" + eventTawId);
+			var log = _log.ProfileStart("working event data " + eventTawId);
 			try
 			{
 				var url = Event.GetEventPage(eventTawId);
-				var scope = log.ScopeStart("getting event html");
+				var scope = log.ScopeStart("getting html");
 				var response = await sessionManager.GetUrl(url);
 				scope.End();
 
 				ParseEventResult result;
 
-				scope = log.ScopeStart("parsing event html");
+				scope = log.ScopeStart("parsing html");
 				using (var data = db.NewContext)
 				{
 					result = await ParseEventData_1(scope, data, response, eventTawId);
@@ -592,7 +588,7 @@ namespace TawGatherMembersInfo
 			}
 			catch (Exception e)
 			{
-				log.Error("ecountered errorenous event, taw id:" + eventTawId);
+				log.Error("error");
 				log.FatalException(e);
 				return ParseEventResult.ErrorenousEvent;
 			}
@@ -618,7 +614,7 @@ namespace TawGatherMembersInfo
 			htmlText = htmlText?.TakeStringAfter("ctl00_ctl00_bcr_bcr_UpdatePanel\">");
 			if (htmlText.Contains("This is a Base Event and should never be seen"))
 			{
-				log.Trace("event " + eventTawId + " is invalid 'base event', skipping");
+				log.Trace("invalid 'base event', skipping");
 				return ParseEventResult.BaseEvent; // http://taw.net/event/65132.aspx
 			}
 
