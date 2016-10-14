@@ -4,8 +4,17 @@ using System.Linq;
 
 namespace Neitri
 {
-	public static class EnumerableExtensions
+	public static class IEnumerableExtensions
 	{
+		public static void ForEach<T, TResult>(this IEnumerable<T> enumerable, Func<T, TResult> action)
+		{
+			foreach (var item in enumerable)
+			{
+				action(item);
+			}
+		}
+
+		/*
 		public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)
 		{
 			foreach (var item in enumerable)
@@ -13,6 +22,7 @@ namespace Neitri
 				action(item);
 			}
 		}
+		*/
 
 		public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T, int> action)
 		{

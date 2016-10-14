@@ -295,28 +295,36 @@ namespace TawGatherMembersInfo
 			log.End();
 		}
 
+		bool Chance(int percent)
+		{
+			var r = new Random();
+			return percent >= r.Next(101);
+		}
+
 		async Task ThreadMain()
 		{
 			long i = 0;
 
 			while (true)
 			{
+				i++;
+				Log.Info(nameof(ThreadMain) + " loop number #" + i);
+
 				Run(() => GatherBasicInformationFromUnitId1Roaster());
 
 				Run(() => BackupPeopleOrder());
 
 				Run(() => UpdateProfiles());
 
-				if (i % 1000 == 0) Run(async () => await ReparseMissingEvnets());
-
-				if (i % 10 == 0) Run(() => UpdateOldEvents());
+				if (Chance(10)) Run(() => UpdateOldEvents());
 
 				Run(() => GatherNewEvents());
 
 				Run(() => OnDataGatheringCycleCompleted?.Invoke());
 
+				if (Chance(1)) Run(async () => await ReparseMissingEvnets());
+
 				await Delay();
-				i++;
 			}
 		}
 	}

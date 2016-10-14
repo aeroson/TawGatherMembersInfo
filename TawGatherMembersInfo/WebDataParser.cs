@@ -85,7 +85,7 @@ namespace TawGatherMembersInfo
 
 								try
 								{
-									data.SaveChanges();
+									await data.SaveChangesAsync();
 								}
 								catch (Exception e)
 								{
@@ -183,7 +183,7 @@ namespace TawGatherMembersInfo
 					PersonToUnitId = personToUnit.PersonUnitId;
 					try
 					{
-						data.SaveChanges();
+						await data.SaveChangesAsync();
 					}
 					catch (Exception e)
 					{
@@ -207,11 +207,11 @@ namespace TawGatherMembersInfo
 
 					log.Trace("parsing " + tawId);
 
-					var unit = GetUnit(data, tawId, name);
+					var unit = await GetUnit(data, tawId, name);
 					unit.Type = type;
 					if (parentUnitId.HasValue) unit.ParentUnit = data.Units.Find(parentUnitId.Value);
 
-					data.SaveChanges();
+					await data.SaveChangesAsync();
 
 					var children = unitNamePlusUl.SelectSingleNode("ul");
 
@@ -260,7 +260,7 @@ namespace TawGatherMembersInfo
 					personRank.NameShort = rankNameShort;
 					personRank.ValidFrom = DateTime.UtcNow;
 					person.Ranks.Add(personRank);
-					data.SaveChanges();
+					await data.SaveChangesAsync();
 				}
 			}
 			return person;
@@ -281,7 +281,7 @@ namespace TawGatherMembersInfo
 				person = data.People.Add(person);
 				try
 				{
-					data.SaveChanges();
+					await data.SaveChangesAsync();
 				}
 				catch
 				{
@@ -293,7 +293,7 @@ namespace TawGatherMembersInfo
 			return person;
 		}
 
-		static Unit GetUnit(MyDbContext data, int unitTawId, string name)
+		async static Task<Unit> GetUnit(MyDbContext data, int unitTawId, string name)
 		{
 			var unit = data.Units.FirstOrDefault(u => u.TawId == unitTawId);
 			if (unit == null)
@@ -303,7 +303,7 @@ namespace TawGatherMembersInfo
 				unit = data.Units.Add(unit);
 				try
 				{
-					data.SaveChanges();
+					await data.SaveChangesAsync();
 				}
 				catch (Exception e)
 				{
@@ -388,7 +388,7 @@ namespace TawGatherMembersInfo
 
 				person.LastProfileDataUpdatedDate = DateTime.UtcNow;
 
-				data.SaveChanges();
+				await data.SaveChangesAsync();
 			}
 
 			// dossier movements
@@ -505,7 +505,7 @@ namespace TawGatherMembersInfo
 							scope.Warn("unexpected dossier row: " + description);
 						}
 					}
-					data.SaveChanges();
+					await data.SaveChangesAsync();
 				}
 				scope.End();
 			}
@@ -581,7 +581,6 @@ namespace TawGatherMembersInfo
 				using (var data = db.NewContext)
 				{
 					result = await ParseEventData_1(scope, data, response, eventTawId);
-					data.SaveChanges();
 				}
 				scope.End();
 				return result;
@@ -624,8 +623,10 @@ namespace TawGatherMembersInfo
 				evt = new Event();
 				evt.TawId = eventTawId;
 				evt = data.Events.Add(evt);
+				await data.SaveChangesAsync();
 			}
 			await ParseEventData_2(log, data, evt, htmlText, eventTawId);
+			await data.SaveChangesAsync();
 			return ParseEventResult.ValidEvent;
 		}
 
@@ -667,6 +668,9 @@ namespace TawGatherMembersInfo
 			attendessDoc.LoadHtml(attendeesText);
 			var attendeesTable = new HtmlTable(attendessDoc.DocumentNode);
 
+			var newPersonEvents = new List<PersonEvent>();
+			var personEvents = evt.Attended.ToList();
+
 			foreach (var row in attendeesTable)
 			{
 				var name = row[0]?.InnerText?.Trim();
@@ -681,13 +685,16 @@ namespace TawGatherMembersInfo
 					{
 						var person = await GetPersonFromName(data, name);
 
-						var personToEvent = data.PersonEvents.FirstOrDefault(p => p.EventId == evt.EventId && p.PersonId == person.PersonId);
+						var personToEvent = personEvents.FirstOrDefault(p => p.EventId == evt.EventId && p.PersonId == person.PersonId);
+
 						if (personToEvent == null)
 						{
 							personToEvent = new PersonEvent();
 							personToEvent.EventId = evt.EventId;
 							personToEvent.PersonId = person.PersonId;
-							personToEvent = data.PersonEvents.Add(personToEvent);
+
+							personEvents.Add(personToEvent);
+							newPersonEvents.Add(personToEvent);
 						}
 
 						var attendanceStr = row[1]?.InnerText?.Trim();
@@ -702,7 +709,7 @@ namespace TawGatherMembersInfo
 				{
 					var unitTawIdStr = nameHref.Split('/', '\\').Last().RemoveFromEnd(".aspx".Length);
 					var unitTawId = int.Parse(unitTawIdStr);
-					var unit = GetUnit(data, unitTawId, name);
+					var unit = await GetUnit(data, unitTawId, name);
 					evt.Units.Add(unit);
 				}
 				else if (nameHref == null)
@@ -714,6 +721,7 @@ namespace TawGatherMembersInfo
 					throw new Exception("something is wrong, found unexpected data, taw event id:" + eventTawId);
 				}
 			}
+			newPersonEvents.ForEach(pe => data.PersonEvents.Add(pe));
 		}
 	}
 }
