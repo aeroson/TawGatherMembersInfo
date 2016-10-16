@@ -329,8 +329,8 @@ namespace TawGatherMembersInfo.Models
 								if (type == "battalion" && doesNotHaveBattalionIndex) unit = unit.ParentUnit;
 
 								var prefix = unit.TeamSpeakNamePrefix;
-								if (prefix.IsNullOrEmpty()) prefix = unit.ParentUnit?.TeamSpeakNamePrefix; // if battalion has not valid prefix, try take one from division
-								if (prefix.IsNullOrEmpty() == false) newBattalionPrefix = prefix;
+								if (prefix.IsNullOrWhiteSpace()) prefix = unit.ParentUnit?.TeamSpeakNamePrefix; // if battalion has not valid prefix, try take one from division
+								if (prefix.IsNullOrWhiteSpace() == false) newBattalionPrefix = prefix;
 							}
 
 							// take the longest prefix we found

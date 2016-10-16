@@ -132,8 +132,10 @@ namespace TawGatherMembersInfo
 			}
 		}
 
-		void UpdateOldEvents(int maxDaysBack = 7)
+		void UpdateOldEvents()
 		{
+			var maxDaysBack = config.GetOne(45, "ReparseExistingEventsThatAreDaysBack");
+
 			var log = Log.ScopeStart($"updating old events {maxDaysBack} days back");
 
 			long[] eventIdsToUpdate;
@@ -235,7 +237,7 @@ namespace TawGatherMembersInfo
 			log.End();
 		}
 
-		async Task ReparseMissingEvnets()
+		async Task ReparseMissingEvents()
 		{
 			var log = Log.ProfileStart("reparsing missing events");
 
@@ -289,7 +291,7 @@ namespace TawGatherMembersInfo
 				log.Trace($"{secondsLeft} seconds to go");
 				if (secondsLeft > logEverySeconds) await Task.Delay(logEverySeconds * 1000);
 				else await Task.Delay(secondsLeft * 1000);
-				logEverySeconds -= 10;
+				secondsLeft -= logEverySeconds;
 			}
 
 			log.End();
@@ -316,13 +318,13 @@ namespace TawGatherMembersInfo
 
 				Run(() => UpdateProfiles());
 
-				if (Chance(10)) Run(() => UpdateOldEvents());
+				if (Chance(config.GetOne(10, "ChancePerLoopToReparseExistingEvents"))) Run(() => UpdateOldEvents());
 
 				Run(() => GatherNewEvents());
 
 				Run(() => OnDataGatheringCycleCompleted?.Invoke());
 
-				if (Chance(1)) Run(async () => await ReparseMissingEvnets());
+				if (Chance(config.GetOne(1, "ChancePerLoopToReparseMissingEvents"))) Run(async () => await ReparseMissingEvents());
 
 				await Delay();
 			}

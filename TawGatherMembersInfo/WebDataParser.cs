@@ -486,6 +486,8 @@ namespace TawGatherMembersInfo
 						}
 						else if (description.Contains("was discharged by"))
 						{
+							// http://taw.net/member/gravedigger.aspx
+							// leave from unit that is before this
 							// <a href="/member/MaverickSabre.aspx">MaverickSabre</a> was discharged by <a href="/member/Lucid.aspx">Lucid</a>.
 						}
 						else if (description.Contains("was discharged honorable by"))

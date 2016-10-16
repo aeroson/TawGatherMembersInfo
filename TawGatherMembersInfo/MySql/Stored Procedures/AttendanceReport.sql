@@ -21,7 +21,7 @@ begin
 	declare startDate datetime;
 	declare endDate datetime;
 	
-	declare selected_people cursor for select PersonId from GetPeopleInUnit_result;
+	declare selected_people cursor for select PersonId from GetPeopleInUnit_result where Status not like "discharged%";
 	declare continue handler for not found set cursor_end = true;
     
 	call GetPeopleInUnit(rootUnitId);

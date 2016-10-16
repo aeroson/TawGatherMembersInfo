@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Neitri;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -75,27 +76,31 @@ namespace TawGatherMembersInfo.Models
 				// special use cases
 				if (Type.ToLower() == "division" && Name.ToLower().Contains("arma ")) return "AM";
 
-				var prefix = "";
-				var nameParts = Name.Split(' '); // AM1 1st Battalion North American || AM2 2nd Battalion European
-				prefix = nameParts[0];
+				if (Name.IsNullOrWhiteSpace()) return null;
+
+				var prefix = Name.TakeStringBefore(" "); // AM1 1st Battalion North American || AM2 2nd Battalion European
+														 // we take only AM1 or AM2
+				if (prefix.IsNullOrWhiteSpace()) return null;
+
+				// special use case
+				if (prefix == "TAW") return null;
+
+				// then take the last number out of it
 				int lastCharAsInt;
 				var isLastCharNumber = int.TryParse(prefix.Last().ToString(), out lastCharAsInt);
 				if (isLastCharNumber)
 				{
 					// first part of battalion name is TS prefix
-					prefix = prefix.Substring(0, prefix.Length - 1) + " " + lastCharAsInt;
+					prefix = prefix.RemoveFromEnd(1) + " " + lastCharAsInt;
 				}
 
-				// special use case
-				if (prefix == "TAW") return null;
-
-				// prefix must be uppercase, if not its not valid, then return null
+				// only take prefix if its uppercase and looks valid
 				if (prefixValidRegexp.IsMatch(prefix)) return prefix;
 				return null;
 			}
 		}
 
-		static Regex prefixValidRegexp = new Regex("^[0-9 A-Z]*$");
+		static Regex prefixValidRegexp = new Regex("^[0-9 A-Z]+$", RegexOptions.Compiled);
 
 		public static string GetUnitRoasterPage(int unitTawId)
 		{
