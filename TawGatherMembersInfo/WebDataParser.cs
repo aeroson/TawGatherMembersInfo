@@ -593,6 +593,10 @@ namespace TawGatherMembersInfo
 				log.FatalException(e);
 				return ParseEventResult.ErrorenousEvent;
 			}
+			finally
+			{
+				log.End();
+			}
 		}
 
 		async Task<ParseEventResult> ParseEventData_1(ILogEnd log, MyDbContext data, MyHttpWebResponse response, long eventTawId)

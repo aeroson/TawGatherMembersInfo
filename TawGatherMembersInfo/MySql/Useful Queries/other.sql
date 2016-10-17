@@ -19,6 +19,7 @@ call GetPeopleInUnit(2776);
 select * from GetPeopleInUnit_result;
 
 call AttendanceReport(2776, 30);
+call AttendanceReport(1330, 30);
 
 select * from People p order by p.PersonId desc limit 10;
 
@@ -28,8 +29,8 @@ select * from People p join PersonUnits pu on p.PersonId = pu.Person_PersonId an
 join Units u on u.UnitId = pu.Unit_UnitId;
 
 select pr.* from People p join PersonRanks pr on p.PersonId = pr.Person_PersonId and p.Name = "Asbuster";
-select pe.*, e.* from People p join PersonEvents pe on p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and p.Name = "AllaPaul";
-select e.*, pe.* from People p join PersonEvents pe on p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > (date_sub(now(), interval 30 day)) and p.Name = "Asbuster";
+select pe.*, e.* from People p join PersonEvents pe on p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and p.Name = "Pepsimax";
+select e.*, pe.* from People p join PersonEvents pe on p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > (date_sub(now(), interval 30 day)) and p.Name = "Bazoon";
 
 update PersonUnits pu set pu.Removed = '9999-01-01 00:00:00' where pu.Removed < '0001-01-01 00:00:00';
 

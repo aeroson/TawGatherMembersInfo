@@ -138,19 +138,19 @@ namespace TawGatherMembersInfo
 
 			var log = Log.ScopeStart($"updating old events {maxDaysBack} days back");
 
-			long[] eventIdsToUpdate;
+			long[] eventTawIdsToUpdate;
 			using (var data = db.NewContext)
 			{
 				var afterDate = DateTime.UtcNow.AddDays(-maxDaysBack);
-				eventIdsToUpdate = data.Events.Where(e => e.From > afterDate).Select(e => e.EventId).ToArray();
+				eventTawIdsToUpdate = data.Events.Where(e => e.From > afterDate).Select(e => e.TawId).ToArray();
 			}
 
 			var tasks = new List<Task>();
-			foreach (var eventId in eventIdsToUpdate)
+			foreach (var eventTawId in eventTawIdsToUpdate)
 			{
 				var task = Task.Run(async () =>
 				{
-					var result = await dataParser.ParseEventData(log, eventId);
+					var result = await dataParser.ParseEventData(log, eventTawId);
 				});
 				tasks.Add(task);
 			}
