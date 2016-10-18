@@ -15,7 +15,7 @@ Squad xmls are thus always up to date (the changes may take up to several hours 
 You need to fill in your steam id on your TAW.net profile.
 After you fill it, it takes several hours before the system updates it.
 
-The URL to paste: http://am2.taw.net/squadxml/[your_name].xml
+Squad url to edit & paste: http://am2.taw.net/squadxml/[your_name].xml
 
 Examples: 
 * http://am2.taw.net/squadxml/aeroson.xml
