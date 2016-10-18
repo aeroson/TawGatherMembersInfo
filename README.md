@@ -13,12 +13,15 @@ Squad xmls are thus always up to date (the changes may take up to several hours 
 
 ### How to get squad xml
 You need to fill in your steam id on your TAW.net profile.
+After you fill it, it takes several hours before the system updates it.
 
-The URL to paste: http://am2.taw.net/squadxml/[your name].xml
+The URL to paste: http://am2.taw.net/squadxml/[your_name].xml
+
 Examples: 
-http://am2.taw.net/squadxml/aeroson.xml
-http://am2.taw.net/squadxml/Ionide.xml
-http://am2.taw.net/squadxml/AckAck.xml
+* http://am2.taw.net/squadxml/aeroson.xml
+* http://am2.taw.net/squadxml/Ionide.xml
+* http://am2.taw.net/squadxml/AckAck.xml
+
 ![How to get squad xml](http://am2.taw.net/squadxml/how_to_get_squadxml.png)
 
 ### Custom squad xml logo
