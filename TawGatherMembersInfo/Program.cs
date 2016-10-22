@@ -109,38 +109,47 @@ namespace TawGatherMembersInfo
 		{
 			using (var data = db.NewContext)
 			{
-				var unit = data.Units.First(u => u.TawId == 1330);
-				var events = unit.Events.Where(e => e.Mandatory && !e.Cancelled).ToArray();
+				var units = data.Units.Where(u => u.TawId == 1330).ToArray();
+				var events = units.SelectMany(u => u.Events.Where(e => e.Mandatory && !e.Cancelled));
 
-				Log.Info("unit: " + unit);
-				Log.Info("mandatory, not cancelled events count: " + events.Length);
+				Console.WriteLine("unit: " + units.Select(u => u.ToString()).Join(","));
+				Console.WriteLine("not cancelled mandatory events count: " + events.Count());
 
 				AttendanceStatisticsPerWeekDay_2(events, DayOfWeek.Sunday);
+				AttendanceStatisticsPerWeekDay_2(events, DayOfWeek.Monday);
 				AttendanceStatisticsPerWeekDay_2(events, DayOfWeek.Tuesday);
+				AttendanceStatisticsPerWeekDay_2(events, DayOfWeek.Wednesday);
+				AttendanceStatisticsPerWeekDay_2(events, DayOfWeek.Thursday);
+				AttendanceStatisticsPerWeekDay_2(events, DayOfWeek.Friday);
+				AttendanceStatisticsPerWeekDay_2(events, DayOfWeek.Saturday);
 			}
 		}
 
 		void AttendanceStatisticsPerWeekDay_2(IEnumerable<Event> _events, DayOfWeek dayOfWeek)
 		{
-			var events = _events.Where(e => e.From.DayOfWeek == dayOfWeek).OrderByDescending(e => e.From).ToArray();
-			var _attended = events.SelectMany(e => e.Attended).ToArray();
+			Console.WriteLine("");
 
-			Log.Info("");
-			Log.Info("dayOfWeek: " + dayOfWeek);
-			Log.Info("mandatory, not cancelled events count: " + events.Length);
-			Log.Info("first event: " + events.First());
-			Log.Info("last event: " + events.Last());
+			var events = _events.Where(e => e.From.DayOfWeek == dayOfWeek).OrderBy(e => e.From);
 
-			var invited = _attended.Length;
+			Console.WriteLine("dayOfWeek: " + dayOfWeek);
+			var eventsCount = events.Count();
+			Console.WriteLine("not cancelled mandatory events count: " + eventsCount);
+			if (eventsCount == 0) return;
+
+			Console.WriteLine("first event: " + events.First());
+			Console.WriteLine("last event: " + events.Last());
+
+			var _attended = events.SelectMany(e => e.Attended);
+			var invited = _attended.Count();
 			var awol = _attended.Where(a => a.AttendanceType == AttendanceType.Missed).Count();
 			var excused = _attended.Where(a => a.AttendanceType == AttendanceType.Excused).Count();
 			var attended = _attended.Where(a => a.AttendanceType == AttendanceType.Attended).Count();
 
-			Log.Info($"{nameof(invited)}: {invited}");
-			Log.Info($"{nameof(attended)}: {attended}");
-			Log.Info($"{nameof(awol)}: {awol}");
-			Log.Info($"{nameof(excused)}: {excused}");
-			Log.Info($"{nameof(attended)}/{nameof(invited)}: {attended / (float)invited}");
+			Console.WriteLine($"{nameof(invited)}: {invited}");
+			Console.WriteLine($"{nameof(attended)}: {attended}");
+			Console.WriteLine($"{nameof(awol)}: {awol}");
+			Console.WriteLine($"{nameof(excused)}: {excused}");
+			Console.WriteLine($"{nameof(attended)}/{nameof(invited)}: {attended / (float)invited}");
 		}
 
 		void TestPrintAttendanceReport()
