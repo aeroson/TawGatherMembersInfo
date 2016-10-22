@@ -71,7 +71,7 @@ namespace Neitri
 			return ret;
 		}
 
-		static IPropertyDescriptor GetOnePart(
+		private static IPropertyDescriptor GetOnePart(
 			Type type,
 			string name,
 			BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetProperty | BindingFlags.SetProperty | BindingFlags.IgnoreCase

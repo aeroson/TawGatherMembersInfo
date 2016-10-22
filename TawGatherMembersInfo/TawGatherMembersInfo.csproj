@@ -173,6 +173,7 @@
     <Compile Include="Neitri\WebCrawling\HtmlTables.cs" />
     <Compile Include="Neitri\WebCrawling\MyHttpWebResponse.cs" />
     <Compile Include="Neitri\WebCrawling\WebFormHandler.cs" />
+    <Compile Include="NoApi.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="LoggedInSession.cs" />

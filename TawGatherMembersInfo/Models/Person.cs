@@ -20,9 +20,6 @@ namespace TawGatherMembersInfo.Models
 		[Index(IsUnique = true), StringLength(500), Required]
 		public virtual string Name { get; set; } = "unnamed";
 
-		[NotMapped]
-		public virtual string RankNameShort => Rank?.NameShort;
-
 		public virtual long SteamId { get; set; }
 
 		[StringLength(1000)]
@@ -45,14 +42,19 @@ namespace TawGatherMembersInfo.Models
 		public virtual DateTime AppliedForTaw { get; set; }
 		public virtual DateTime AdmittedToTaw { get; set; }
 
+		[NoApi]
 		public virtual ICollection<PersonRank> Ranks { get; set; } = new List<PersonRank>();
 
+		[NoApi]
 		public virtual ICollection<PersonEvent> Events { get; set; } = new List<PersonEvent>();
 
+		[NoApi]
 		public virtual ICollection<PersonUnit> Units { get; set; } = new List<PersonUnit>();
 
+		[NoApi]
 		public virtual ICollection<PersonCommendation> Commendations { get; set; } = new List<PersonCommendation>();
 
+		[NoApi]
 		public virtual ICollection<PersonStatus> Statuses { get; set; } = new List<PersonStatus>();
 
 		[NotMapped]
@@ -61,10 +63,10 @@ namespace TawGatherMembersInfo.Models
 		[NonSerialized]
 		BiographyData biography;
 
-		[NotMapped]
+		[NotMapped, NoApi]
 		public BiographyData Biography => biography;
 
-		[NotMapped]
+		[NotMapped, NoApi]
 		public Dictionary<Unit, string> UnitToPositionNameShort => Units.ToDictionary(i => i.Unit, i => i.PositionNameShort);
 
 		public class BiographyData
@@ -74,6 +76,11 @@ namespace TawGatherMembersInfo.Models
 			public BiographyData(Person person)
 			{
 				this.person = person;
+			}
+
+			public override string ToString()
+			{
+				return person.BiographyContents;
 			}
 
 			public string GetData(params string[] names)
@@ -153,14 +160,14 @@ namespace TawGatherMembersInfo.Models
 		}
 
 		[NonSerialized, NotMapped]
-		Unit mostImportantIngamecache;
+		Unit mostImportantIngameUnit_cache;
 
 		[NotMapped]
 		public Unit MostImportantIngameUnit
 		{
 			get
 			{
-				if (mostImportantIngamecache == null)
+				if (mostImportantIngameUnit_cache == null)
 				{
 					var unitsSortedAccordingToInGameImportance = UnitToPositionNameShort
 						.OrderByDescending(unitToPositionNameShort =>
@@ -177,9 +184,9 @@ namespace TawGatherMembersInfo.Models
 							return priority;
 						});
 
-					mostImportantIngamecache = unitsSortedAccordingToInGameImportance.FirstOrDefault().Key;
+					mostImportantIngameUnit_cache = unitsSortedAccordingToInGameImportance.FirstOrDefault().Key;
 				}
-				return mostImportantIngamecache;
+				return mostImportantIngameUnit_cache;
 			}
 		}
 
@@ -204,7 +211,7 @@ namespace TawGatherMembersInfo.Models
 		}
 
 		[NotMapped, NonSerialized]
-		Unit teamSpeakcache;
+		Unit teamSpeakUnit_cache;
 
 		/// <summary>
 		/// Unit in which you hold position that you put next to your name in teamSpeak
@@ -214,7 +221,7 @@ namespace TawGatherMembersInfo.Models
 		{
 			get
 			{
-				if (teamSpeakcache == null)
+				if (teamSpeakUnit_cache == null)
 				{
 					Unit highestPositionUnit = null;
 					int highestPositionPriority = int.MinValue;
@@ -231,9 +238,9 @@ namespace TawGatherMembersInfo.Models
 							highestPositionUnit = unit;
 						}
 					}
-					teamSpeakcache = highestPositionUnit;
+					teamSpeakUnit_cache = highestPositionUnit;
 				}
-				return teamSpeakcache;
+				return teamSpeakUnit_cache;
 			}
 		}
 
@@ -387,14 +394,14 @@ namespace TawGatherMembersInfo.Models
 
 		public void ClearCache()
 		{
-			mostImportantIngamecache = null;
+			mostImportantIngameUnit_cache = null;
 			teamSpeakName_cache = null;
-			teamSpeakcache = null;
+			teamSpeakUnit_cache = null;
 		}
 
 		public override string ToString()
 		{
-			return Name + " rank:" + RankNameShort + " steamId:" + SteamId;
+			return Name + " rank:" + Rank.NameShort + " steamId:" + SteamId;
 		}
 
 		public override bool Equals(object obj)

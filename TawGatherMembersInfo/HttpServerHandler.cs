@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using TawGatherMembersInfo.Models;
 
 namespace TawGatherMembersInfo
@@ -21,32 +22,34 @@ namespace TawGatherMembersInfo
 		DbContextProvider db;
 
 		HttpListener httpListener;
-		Thread thread;
+
+		Task mainTask;
+		CancellationTokenSource cancel = new CancellationTokenSource();
 
 		static ILogEnd Log => Program.Log;
 
 		public void Join()
 		{
-			thread.Join();
+			mainTask?.Wait();
 		}
 
 		public void Run()
 		{
-			thread = new Thread(ThreadMain);
-			thread.Name = this.GetType().ToString();
-			thread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
-			thread.Start();
+			mainTask = Task.Run(ThreadMain, cancel.Token);
 		}
 
 		public void Stop()
 		{
-			if (httpListener != null) httpListener.Stop();
-			if (thread != null && thread.IsAlive) thread.Abort();
+			cancel?.Cancel();
 		}
 
-		void ThreadMain()
+		Dictionary<string, DateTime> ipToLastRequest = new Dictionary<string, DateTime>();
+
+		async Task ThreadMain()
 		{
 			var serverPort = config.HttpServerPort;
+
+			var allowRequestFromSameIpEverySeconds = config.GetOne(5, "httpServerAllowRequestFromSameIpEverySeconds");
 
 			if (!HttpListener.IsSupported)
 			{
@@ -64,35 +67,42 @@ namespace TawGatherMembersInfo
 				Log.Info("Failed to start server listener on, " + serverPort + " reason, " + e);
 				return;
 			}
-			HttpListenerContext context;
-			while (Thread.CurrentThread.ThreadState == ThreadState.Running)
+			while (cancel.Token.IsCancellationRequested == false)
 			{
-				context = null;
-				try
+				var context = await httpListener.GetContextAsync();
+
+				var ip = context.Request.RemoteEndPoint.Address.ToString();
+				DateTime lastRequestTime;
+				if (ipToLastRequest.TryGetValue(ip, out lastRequestTime) && lastRequestTime.AddSeconds(allowRequestFromSameIpEverySeconds) > DateTime.UtcNow)
 				{
-					context = httpListener.GetContext();
-					if (ProcessContext(context))
-					{
-						context.Response.StatusCode = (int)HttpStatusCode.OK;
-					}
-					else
-					{
-						context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-					}
+					context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+					context.Response.Close();
+					continue;
 				}
-				catch (Exception e)
+				ipToLastRequest[ip] = DateTime.UtcNow;
+
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+				Task.Run(async () =>
 				{
-					if (context != null) context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-					Log.Info(e);
-				}
-				finally
-				{
-					if (context != null)
+					try
 					{
-						Log.Info(context.Request.HttpMethod + " " + context.Request.RawUrl + " " + ((HttpStatusCode)context.Response.StatusCode).ToString());
-						context.Response.Close();
+						context.Response.StatusCode = (int)await ProcessContext(context);
 					}
-				}
+					catch (Exception e)
+					{
+						if (context != null) context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+						Log.Info(e);
+					}
+					finally
+					{
+						if (context != null)
+						{
+							Log.Info(ip + " " + context.Request.HttpMethod + " " + context.Request.RawUrl + " " + ((HttpStatusCode)context.Response.StatusCode).ToString());
+							context.Response.Close();
+						}
+					}
+				}, cancel.Token);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 			}
 		}
 
@@ -115,10 +125,10 @@ namespace TawGatherMembersInfo
 			}
 		}
 
-		bool ProcessContext(HttpListenerContext context)
+		async Task<HttpStatusCode> ProcessContext(HttpListenerContext context)
 		{
 			var p = new PerRequestHandler();
-			return p.ProcessContext(context, config, db);
+			return await p.ProcessContext(context, config, db);
 		}
 	}
 }

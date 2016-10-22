@@ -1,9 +1,12 @@
 ﻿using Neitri;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TawGatherMembersInfo.Models;
@@ -14,30 +17,32 @@ namespace TawGatherMembersInfo
 	{
 		class PerRequestHandler
 		{
-			public bool ProcessContext(HttpListenerContext context, Config config, DbContextProvider db)
+			async public Task<HttpStatusCode> ProcessContext(HttpListenerContext context, Config config, DbContextProvider db)
 			{
-				using (var data = db.NewContext)
+				var parameters = new Params(context.Request.RawUrl);
+				var authToken = parameters.GetValue("auth", "none");
+				var binaryStream = new MemoryStream();
+				var o = new StreamWriter(binaryStream);
+				var format = "json";
+				var status = HttpStatusCode.OK;
+
+				if (config.AuthenticationTokens.Contains(authToken) == false)
 				{
-					var binaryStream = new MemoryStream();
-					var o = new StreamWriter(binaryStream);
-
-					string format = "json";
-					var parameters = new Params(context.Request.RawUrl);
-					var authToken = parameters.GetValue("auth", "none");
-
-					if (config.AuthenticationTokens.Contains(authToken) == false)
-					{
-						o.WriteLine("{\n\terror:' bad auth token'\n}");
-					}
-					else
+					o.WriteLine("{\n\terror:' bad auth token'\n}");
+				}
+				else
+				{
+					using (var data = db.NewContext)
 					{
 						format = parameters.GetValue("format", "table");
-						var version = parameters.GetValue("version", "3");
-						var fields = new HashSet<string>(parameters.GetValue("fields", "name").Split(','));
-						var orderBy = parameters.GetValue("orderBy", "none");
-						var goodApiCall = true;
+						int version = 0;
+						int.TryParse(parameters.GetValue("version", "3"), out version);
 
-						if (parameters.GetValue("type", "distinct_person_list") == "distinct_person_list")
+						var fields = parameters.GetValue("fields", "name").Split(',');
+						var orderBy = parameters.GetValue("orderBy", "none");
+
+						var type = parameters.GetValue("type", "distinct_person_list");
+						if (type == "distinct_person_list")
 						{
 							Unit rootUnit = null;
 
@@ -50,153 +55,178 @@ namespace TawGatherMembersInfo
 							}
 							else
 							{
-								if (format == "table" && version == "3")
+								const int minimalSupportedVetsion = 3;
+								if (version < minimalSupportedVetsion)
 								{
-									Format_Table_Version_3(o, rootUnit, fields, orderBy);
-									goodApiCall = true;
+									o.WriteLine("{\n\terror:'wrong api call, you are using old version: " + version + ", minimal supported version is: " + minimalSupportedVetsion + "'\n}");
+								}
+								else if (format == "table" && version == 3)
+								{
+									try
+									{
+										var tableData = Format_Table_Version_3(rootUnit, fields, orderBy);
+										WriteHtmlTable(tableData, o);
+									}
+									catch (Exception e)
+									{
+										Log.Error(e);
+										o.WriteLine("{\n\terror:'" + e.Message + "'\n}");
+									}
 								}
 							}
 						}
-
-						if (goodApiCall == false)
+						else
 						{
-							o.WriteLine("{\n\terror:'wrong api call, ask owner for more details'\n}");
+							o.WriteLine("{\n\terror:'unsupported parameter type: " + type + ", valid values are: distinct_person_list'\n}");
 						}
 					}
+				}
 
-					o.Flush();
-					context.Response.AddHeader("Date", DateTime.Now.ToString("r"));
-					if (format == "json") context.Response.ContentType = "application/json";
-					if (format == "table") context.Response.ContentType = "text/html";
-					context.Response.ContentLength64 = binaryStream.Length;
-					context.Response.OutputStream.Write(binaryStream.GetBuffer(), 0, (int)binaryStream.Length);
-					context.Response.OutputStream.Close();
+				o.Flush();
+				context.Response.AddHeader("Date", DateTime.Now.ToString("r"));
+				if (format == "json") context.Response.ContentType = "application/json";
+				if (format == "table") context.Response.ContentType = "text/html";
+				context.Response.ContentLength64 = binaryStream.Length;
+				await context.Response.OutputStream.WriteAsync(binaryStream.GetBuffer(), 0, (int)binaryStream.Length);
+				context.Response.OutputStream.Close();
 
-					return true;
+				return status;
+			}
+
+			public class StringTable
+			{
+				public List<string> Columns { get; set; } = new List<string>();
+				public List<Row> Rows { get; set; } = new List<Row>();
+
+				public class Row
+				{
+					public List<string> Values { get; set; }
+
+					public void Add(string val)
+					{
+						Values.Add(val);
+					}
+				}
+
+				public Row NewRow()
+				{
+					var row = new Row();
+					row.Values = new List<string>(Columns.Count);
+					return row;
+				}
+
+				public void AddColumn(string name)
+				{
+					Columns.Add(name);
+				}
+
+				public void AddRow(Row row)
+				{
+					if (row.Values.Count != Columns.Count) throw new Exception($"values.Length {row.Values.Count} != columns.Count {Columns.Count}");
+					Rows.Add(row);
 				}
 			}
 
-			void Format_Table_Version_3(StreamWriter o, Unit rootUnit, HashSet<string> fields, string orderBy)
+			void WriteHtmlTable(StringTable d, StreamWriter o)
 			{
-				var people = rootUnit.GetAllPeople();
-
-				IEnumerable<Person> persons = people;
-				if (orderBy == "id") persons = people.OrderBy(p => p.PersonId);
-
 				o.WriteLine("<table>");
 
 				o.WriteLine("<thead>");
 				o.WriteLine("<tr>");
 
-				o.WriteLine("<td>name</td>");
-
-				var showAll = fields.Contains("all");
-				var avatarImageUrl = fields.Contains("avatarImageUrl") || showAll;
-				var country = fields.Contains("country") || showAll;
-				var dateJoinedTaw = fields.Contains("dateJoinedTaw") || showAll;
-				var daysInTaw = fields.Contains("daysInTaw") || showAll;
-				var id = fields.Contains("id") || showAll;
-				var mostImportantIngameUnit = fields.Contains("mostImportantIngameUnit") || showAll;
-				var rank = fields.Contains("rank") || showAll;
-				var status = fields.Contains("status") || showAll;
-				var teamSpeak = fields.Contains("teamSpeak") || showAll;
-
-				if (avatarImageUrl) o.WriteLine("<td>avatarImageUrl</td>");
-				if (country)
+				foreach (var c in d.Columns)
 				{
-					o.WriteLine("<td>countryCodeIso3166</td>");
-					o.WriteLine("<td>countryFlagImageUrl</td>");
-					o.WriteLine("<td>countryName</td>");
-				}
-				if (dateJoinedTaw)
-				{
-					o.WriteLine("<td>dateJoinedTaw.Year</td>");
-					o.WriteLine("<td>dateJoinedTaw.Month</td>");
-					o.WriteLine("<td>dateJoinedTaw.Day</td>");
-				}
-				if (daysInTaw) o.WriteLine("<td>daysInTaw</td>");
-				if (id) o.WriteLine("<td>id</td>");
-				if (mostImportantIngameUnit)
-				{
-					o.WriteLine("<td>mostImportantIngameUnit.name</td>");
-					o.WriteLine("<td>mostImportantIngameUnit.type</td>");
-					o.WriteLine("<td>mostImportantIngameUnit.id</td>");
-					o.WriteLine("<td>mostImportantIngameUnitPositionNameLong</td>");
-					o.WriteLine("<td>mostImportantIngameUnitPositionNameShort</td>");
-				}
-				if (rank)
-				{
-					o.WriteLine("<td>rankImageBigUrl</td>");
-					o.WriteLine("<td>rankImageSmallUrl</td>");
-					o.WriteLine("<td>rankNameLong</td>");
-					o.WriteLine("<td>rankNameShort</td>");
-				}
-				if (status) o.WriteLine("<td>status</td>");
-				if (teamSpeak)
-				{
-					o.WriteLine("<td>teamSpeakName</td>");
-					o.WriteLine("<td>teamSpeakUnit.name</td>");
-					o.WriteLine("<td>teamSpeakUnit.type</td>");
-					o.WriteLine("<td>teamSpeakUnit.id</td>");
-					o.WriteLine("<td>teamSpeakUnitPositionNameLong</td>");
-					o.WriteLine("<td>teamSpeakUnitPositionNameShort</td>");
+					o.WriteLine("<td>" + c + "</td>");
 				}
 
 				o.WriteLine("</tr>");
 				o.WriteLine("</thead>");
 
 				o.WriteLine("<tbody>");
-				foreach (var p in persons)
+				foreach (var r in d.Rows)
 				{
 					o.WriteLine("<tr>");
-
-					o.WriteLine("<td>" + p.Name + "</td>");
-					if (avatarImageUrl) o.WriteLine("<td>" + p.AvatarImageUrl + "</td>");
-					if (country)
+					foreach (var v in r.Values)
 					{
-						o.WriteLine("<td>" + p.CountryCodeIso3166 + "</td>");
-						o.WriteLine("<td>" + p.CountryFlagImageUrl + "</td>");
-						o.WriteLine("<td>" + p.CountryName + "</td>");
+						o.WriteLine("<td>" + v + "</td>");
 					}
-					if (dateJoinedTaw)
-					{
-						o.WriteLine("<td>" + p.DateJoinedTaw.Year + "</td>");
-						o.WriteLine("<td>" + p.DateJoinedTaw.Month + "</td>");
-						o.WriteLine("<td>" + p.DateJoinedTaw.Day + "</td>");
-					}
-					if (daysInTaw) o.WriteLine("<td>" + p.DaysInTaw + "</td>");
-					if (id) o.WriteLine("<td>" + p.PersonId + "</td>");
-					if (mostImportantIngameUnit)
-					{
-						o.WriteLine("<td>" + p.MostImportantIngameUnit.Name + "</td>");
-						o.WriteLine("<td>" + p.MostImportantIngameUnit.Type + "</td>");
-						o.WriteLine("<td>" + p.MostImportantIngameUnit.UnitId + "</td>");
-						o.WriteLine("<td>" + p.MostImportantIngameUnitPositionNameLong + "</td>");
-						o.WriteLine("<td>" + p.MostImportantIngameUnitPositionNameShort + "</td>");
-					}
-					if (rank)
-					{
-						o.WriteLine("<td>" + p.Rank.ImageBigUrl + "</td>");
-						o.WriteLine("<td>" + p.Rank.ImageSmallUrl + "</td>");
-						o.WriteLine("<td>" + p.Rank.NameLong + "</td>");
-						o.WriteLine("<td>" + p.Rank.NameShort + "</td>");
-					}
-					if (status) o.WriteLine("<td>" + p.Status + "</td>");
-					if (teamSpeak)
-					{
-						o.WriteLine("<td>" + p.TeamSpeakName + "</td>");
-						o.WriteLine("<td>" + p.TeamSpeakUnit.Name + "</td>");
-						o.WriteLine("<td>" + p.TeamSpeakUnit.Type + "</td>");
-						o.WriteLine("<td>" + p.TeamSpeakUnit.UnitId + "</td>");
-						o.WriteLine("<td>" + p.TeamSpeakUnitPositionNameLong + "</td>");
-						o.WriteLine("<td>" + p.TeamSpeakUnitPositionNameShort + "</td>");
-					}
-
 					o.WriteLine("</tr>");
 				}
 				o.WriteLine("</tbody>");
 
 				o.WriteLine("</table>");
+			}
+
+			const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase | BindingFlags.FlattenHierarchy;
+
+			IEnumerable<IPropertyDescriptor> GetAllProperties()
+			{
+				return PropertyDescriptorUtils.GetAll(typeof(Person), flags).Where(p => RemoveProperty(p) == false);
+			}
+
+			bool RemoveProperty(IPropertyDescriptor p)
+			{
+				if (p == null) return true;
+				if (p.IsDefined<NoApi>()) return true;
+				// we dont want many to many realationship tables
+				if (typeof(ICollection<>).IsAssignableFrom(p.Type)) return true;
+				if (typeof(ICollection).IsAssignableFrom(p.Type)) return true;
+				return false;
+			}
+
+			IPropertyDescriptor GetOneProperty(string name)
+			{
+				var p = PropertyDescriptorUtils.GetOne(typeof(Person), name, flags);
+				if (RemoveProperty(p)) return null;
+				return p;
+			}
+
+			StringTable Format_Table_Version_3(Unit rootUnit, IEnumerable<string> fields, string orderBy)
+			{
+				var fieldsToLower = fields.Select(s => s.ToLowerInvariant()).ToList();
+
+				IEnumerable<IPropertyDescriptor> selectedProperties;
+
+				if (fieldsToLower.Count == 1 && (fieldsToLower.Contains("*") || fieldsToLower.Contains("all")))
+				{
+					selectedProperties = GetAllProperties();
+					fields = selectedProperties.Select(p => p.Name);
+				}
+				else
+				{
+					var s = new List<IPropertyDescriptor>();
+					selectedProperties = s;
+
+					foreach (var f in fieldsToLower)
+					{
+						var prop = GetOneProperty(f);
+						if (prop != null) s.Add(prop);
+						else throw new Exception($"field {f} was not found in {typeof(Person)}, possible field values are: {GetAllProperties().Select(p => p.Name).Join(",")}");
+					}
+				}
+
+				var data = new StringTable();
+				foreach (var f in fields) data.AddColumn(f);
+
+				var people = rootUnit.GetAllActivePeople();
+
+				IEnumerable<Person> persons = people;
+				if (orderBy == "id") persons = people.OrderBy(p => p.PersonId);
+
+				foreach (var person in persons)
+				{
+					var row = data.NewRow();
+
+					foreach (var p in selectedProperties)
+					{
+						var val = p.Read(person);
+						row.Add(val == null ? string.Empty : val.ToString());
+					}
+
+					data.AddRow(row);
+				}
+
+				return data;
 			}
 		}
 	}

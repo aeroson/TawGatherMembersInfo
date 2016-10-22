@@ -16,8 +16,6 @@ namespace TawGatherMembersInfo
 	{
 		public static IDependencyManager dependency = new Neitri.DependencyInjection.DependencyManager();
 
-		HttpServerHandler httpServer;
-
 		Config config;
 		FileSystem fileSystem;
 		public static ILogEnd Log { get; private set; }
@@ -27,6 +25,9 @@ namespace TawGatherMembersInfo
 
 		[Dependency(Register = true)]
 		RoasterManager roaster;
+
+		[Dependency(Register = true)]
+		HttpServerHandler httpServer;
 
 		static void Main(string[] args)
 		{
@@ -74,13 +75,6 @@ namespace TawGatherMembersInfo
 
 		void Start(string[] args)
 		{
-			// DB TEST
-			using (var data = db.NewContext)
-			{
-				var u = data.RootUnit;
-				var name = u.Name;
-			}
-
 			using (var data = db.NewContext)
 			{
 				if (data.People.Count() == 0) // seed people from backed up order
@@ -104,6 +98,7 @@ namespace TawGatherMembersInfo
 			//httpServer = dependency.Create<HttpServerHandler>();
 
 			//UpdateSquadXml();
+
 			roaster.OnDataGatheringCycleCompleted += UpdateSquadXml;
 			roaster.Run();
 
@@ -153,7 +148,7 @@ namespace TawGatherMembersInfo
 			using (var ctx = db.NewContext)
 			{
 				var armaUnit = ctx.Units.First(u => u.TawId == 2776);
-				var people = armaUnit.GetAllPeople();
+				var people = armaUnit.GetAllActivePeople();
 
 				Console.WriteLine("UnitName	UserName	Rank	Trainings	Attended	Excused	AWOL	Unknown	Mandatory AVG	Total AVG	Days In Rank");
 				foreach (var person in people)
@@ -194,14 +189,14 @@ namespace TawGatherMembersInfo
 
 		void Join()
 		{
-			roaster.Join();
-			httpServer.Join();
+			roaster?.Join();
+			httpServer?.Join();
 		}
 
 		void Stop()
 		{
-			roaster.Stop();
-			httpServer.Stop();
+			roaster?.Stop();
+			httpServer?.Stop();
 		}
 
 		// its pain in the ass to detect close in C#

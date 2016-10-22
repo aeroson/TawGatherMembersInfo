@@ -14,7 +14,6 @@ namespace TawGatherMembersInfo
 		public event Action OnDataGatheringCycleCompleted;
 
 		Task mainTask;
-
 		CancellationTokenSource cancel = new CancellationTokenSource();
 
 		[Dependency]
@@ -45,7 +44,7 @@ namespace TawGatherMembersInfo
 
 		public void Join()
 		{
-			mainTask.Wait();
+			mainTask?.Wait();
 		}
 
 		public void Run()
@@ -55,7 +54,7 @@ namespace TawGatherMembersInfo
 
 		public void Stop()
 		{
-			cancel.Cancel();
+			cancel?.Cancel();
 		}
 
 		/// <summary>
@@ -97,7 +96,7 @@ namespace TawGatherMembersInfo
 						{
 							var unit = data.Units.FirstOrDefault(u => u.TawId == tawUnitId);
 							if (unit == null) break;
-							peopleNames = unit.GetAllPeopleNames();
+							peopleNames = unit.GetAllActivePeopleNames();
 						}
 						log2.End($"got {peopleNames.Count} people");
 					}
@@ -243,18 +242,18 @@ namespace TawGatherMembersInfo
 
 			var missingTawIds = new List<long>(2048);
 
-			long[] ids;
-			using (var data = db.NewContext) ids = data.Events.OrderBy(e => e.TawId).Select(e => e.TawId).ToArray();
+			long[] tawIds;
+			using (var data = db.NewContext) tawIds = data.Events.OrderBy(e => e.TawId).Select(e => e.TawId).ToArray();
 
-			long expectedId = 0;
-			foreach (var id in ids)
+			long expectedTawId = 0;
+			foreach (var tawId in tawIds)
 			{
-				while (id != expectedId)
+				while (tawId != expectedTawId)
 				{
-					if (!ShouldSkipEvent(expectedId)) missingTawIds.Add(expectedId);
-					expectedId++;
+					if (!ShouldSkipEvent(expectedTawId)) missingTawIds.Add(expectedTawId);
+					expectedTawId++;
 				}
-				expectedId = id + 1; // we expect this id next
+				expectedTawId = tawId + 1; // we expect this id next
 			}
 
 			log.Info("taw event id gaps:" + missingTawIds.Count);

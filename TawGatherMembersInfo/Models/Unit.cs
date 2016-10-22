@@ -77,6 +77,7 @@ namespace TawGatherMembersInfo.Models
 				if (Type.ToLower() == "division" && Name.ToLower().Contains("arma ")) return "AM";
 
 				if (Name.IsNullOrWhiteSpace()) return null;
+				if (Name.Contains(" ") == false) return null;
 
 				var prefix = Name.TakeStringBefore(" "); // AM1 1st Battalion North American || AM2 2nd Battalion European
 														 // we take only AM1 or AM2
@@ -108,31 +109,31 @@ namespace TawGatherMembersInfo.Models
 			return @"http://taw.net/unit/" + unitTawId + "/roster.aspx";
 		}
 
-		void FillWithAllPeopleNames(HashSet<string> people)
+		private void FillWithAllActivePeopleNames(HashSet<string> people)
 		{
-			var names = this.People.Select(p => p.Person.Name);
+			var names = this.People.Where(p => !p.Person.Status.StartsWith("discharged")).Select(p => p.Person.Name);
 			people.UnionWith(names);
-			foreach (var unit in ChildUnits) unit.FillWithAllPeopleNames(people);
+			foreach (var unit in ChildUnits) unit.FillWithAllActivePeopleNames(people);
 		}
 
-		public HashSet<string> GetAllPeopleNames()
+		public HashSet<string> GetAllActivePeopleNames()
 		{
 			var hs = new HashSet<string>();
-			FillWithAllPeopleNames(hs);
+			FillWithAllActivePeopleNames(hs);
 			return hs;
 		}
 
-		public void FillWithAllPeople(HashSet<Person> people)
+		private void FillWithAllActivePeople(HashSet<Person> people)
 		{
-			var names = this.People.Select(p => p.Person);
+			var names = this.People.Where(p => !p.Person.Status.StartsWith("discharged")).Select(p => p.Person);
 			people.UnionWith(names);
-			foreach (var unit in ChildUnits) unit.FillWithAllPeople(people);
+			foreach (var unit in ChildUnits) unit.FillWithAllActivePeople(people);
 		}
 
-		public HashSet<Person> GetAllPeople()
+		public HashSet<Person> GetAllActivePeople()
 		{
 			var hs = new HashSet<Person>();
-			FillWithAllPeople(hs);
+			FillWithAllActivePeople(hs);
 			return hs;
 		}
 
