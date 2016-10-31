@@ -127,7 +127,7 @@ namespace TawGatherMembersInfo
 				}
 			}
 
-			void WriteHtmlTable(StringTable d, StreamWriter o)
+			static void WriteHtmlTable(StringTable d, StreamWriter o)
 			{
 				o.WriteLine("<table>");
 
@@ -157,56 +157,79 @@ namespace TawGatherMembersInfo
 				o.WriteLine("</table>");
 			}
 
-			const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase | BindingFlags.FlattenHierarchy;
+			const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase | BindingFlags.FlattenHierarchy;
 
-			IEnumerable<IPropertyDescriptor> GetAllProperties()
+			readonly static List<IPropertyDescriptor> allProperties;
+			readonly static Dictionary<string, IPropertyDescriptor> lowerCaseNameToProperty;
+			readonly static string allPropertiesNames;
+
+			static PerRequestHandler()
 			{
-				return PropertyDescriptorUtils.GetAll(typeof(Person), flags).Where(p => RemoveProperty(p) == false);
+				allProperties = PropertyDescriptorUtils.GetAll(
+					typeof(Person),
+					ShouldExpandSequence,
+					bindingFlags
+				)
+				.Where(IsValid)
+				.ToList();
+
+				lowerCaseNameToProperty = allProperties.ToDictionary(
+					p => p.Name.ToLowerInvariant(),
+					p => p
+				);
+
+				allPropertiesNames = allProperties.Select(p => p.Name).Join("\n");
 			}
 
-			bool RemoveProperty(IPropertyDescriptor p)
+			static bool ShouldExpandSequence(IPropertyDescriptor property, int currentDepth)
 			{
-				if (p == null) return true;
-				if (p.IsDefined<NoApi>()) return true;
-				// we dont want many to many realationship tables
-				if (typeof(ICollection<>).IsAssignableFrom(p.Type)) return true;
-				if (typeof(ICollection).IsAssignableFrom(p.Type)) return true;
+				if (currentDepth > 2) return false;
+				if (property.Type == typeof(DateTime)) return true;
+				if (property.Type.Assembly == Assembly.GetExecutingAssembly() && IsValid(property)) return true;
 				return false;
 			}
 
-			IPropertyDescriptor GetOneProperty(string name)
+			static bool IsValid(IPropertyDescriptor p)
 			{
-				var p = PropertyDescriptorUtils.GetOne(typeof(Person), name, flags);
-				if (RemoveProperty(p)) return null;
-				return p;
+				if (p == null) return false;
+				if (p.IsDefined<NoApi>()) return false;
+				// we dont want many to many realationship tables, it didnt work anyway, lets be explicit with NoApi
+				//if (typeof(ICollection<>).IsAssignableFrom(p.Type)) return false;
+				//if (typeof(ICollection).IsAssignableFrom(p.Type)) return false;
+				return true;
 			}
 
-			StringTable Format_Table_Version_3(Unit rootUnit, IEnumerable<string> fields, string orderBy)
+			static IPropertyDescriptor GetOneProperty(string name)
+			{
+				return lowerCaseNameToProperty.GetValue(name, null);
+			}
+
+			static StringTable Format_Table_Version_3(Unit rootUnit, string[] fields, string orderBy)
 			{
 				var fieldsToLower = fields.Select(s => s.ToLowerInvariant()).ToList();
+				IEnumerable<string> fieldNames = fields;
 
-				IEnumerable<IPropertyDescriptor> selectedProperties;
+				List<IPropertyDescriptor> selectedProperties;
 
-				if (fieldsToLower.Count == 1 && (fieldsToLower.Contains("*") || fieldsToLower.Contains("all")))
+				if (fieldsToLower.Contains("*") || fieldsToLower.Contains("all"))
 				{
-					selectedProperties = GetAllProperties();
-					fields = selectedProperties.Select(p => p.Name);
+					if (fieldsToLower.Count > 1) selectedProperties = lowerCaseNameToProperty.OrderBy(kvp => fieldsToLower.IndexOf(kvp.Key)).Select(kvp => kvp.Value).ToList();
+					else selectedProperties = allProperties;
+					fieldNames = selectedProperties.Select(p => p.Name);
 				}
 				else
 				{
-					var s = new List<IPropertyDescriptor>();
-					selectedProperties = s;
-
-					foreach (var f in fieldsToLower)
+					selectedProperties = new List<IPropertyDescriptor>();
+					for (int i = 0; i < fields.Length; i++)
 					{
-						var prop = GetOneProperty(f);
-						if (prop != null) s.Add(prop);
-						else throw new Exception($"field {f} was not found in {typeof(Person)}, possible field values are: {GetAllProperties().Select(p => p.Name).Join(",")}");
+						var prop = GetOneProperty(fieldsToLower[i]);
+						if (prop != null) selectedProperties.Add(prop);
+						else throw new Exception($"field {fields[i]} was not found in {typeof(Person)}, possible field values are:\n{allPropertiesNames}");
 					}
 				}
 
 				var data = new StringTable();
-				foreach (var f in fields) data.AddColumn(f);
+				foreach (var f in fieldNames) data.AddColumn(f);
 
 				var people = rootUnit.GetAllActivePeople();
 

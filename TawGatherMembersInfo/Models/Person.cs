@@ -10,7 +10,7 @@ using System.Runtime.Serialization;
 
 namespace TawGatherMembersInfo.Models
 {
-	public partial class Person : IEquatable<Person>
+	public partial class Person
 	{
 		[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 		public long PersonId { get; set; }
@@ -57,6 +57,16 @@ namespace TawGatherMembersInfo.Models
 		[NoApi]
 		public virtual ICollection<PersonStatus> Statuses { get; set; } = new List<PersonStatus>();
 
+		[NotMapped, NoApi]
+		public IEnumerable<PersonUnit> ActiveUnits
+		{
+			get
+			{
+				var utcNow = DateTime.UtcNow;
+				return Units.Where(u => u.Removed > utcNow);
+			}
+		}
+
 		[NotMapped]
 		public virtual PersonRank Rank => Ranks.OrderByDescending(r => r.ValidFrom).FirstOrDefault();
 
@@ -65,9 +75,6 @@ namespace TawGatherMembersInfo.Models
 
 		[NotMapped, NoApi]
 		public BiographyData Biography => biography;
-
-		[NotMapped, NoApi]
-		public Dictionary<Unit, string> UnitToPositionNameShort => Units.ToDictionary(i => i.Unit, i => i.PositionNameShort);
 
 		public class BiographyData
 		{
@@ -159,115 +166,52 @@ namespace TawGatherMembersInfo.Models
 			}
 		}
 
-		[NonSerialized, NotMapped]
-		Unit mostImportantIngameUnit_cache;
-
 		[NotMapped]
-		public Unit MostImportantIngameUnit
+		public PersonUnit MostImportantIngameUnit
 		{
 			get
 			{
-				if (mostImportantIngameUnit_cache == null)
-				{
-					var unitsSortedAccordingToInGameImportance = UnitToPositionNameShort
-						.OrderByDescending(unitToPositionNameShort =>
-						{
-							int priority = 0;
+				var unitsSortedAccordingToInGameImportance = ActiveUnits
+					.OrderByDescending(u =>
+					{
+						int priority = 0;
 
-							var squatTypeImportance = inGameUnitNamePriority.IndexOf(unitToPositionNameShort.Key.Type.ToLower());
-							priority += squatTypeImportance;
+						var squatTypeImportance = inGameUnitNamePriority.IndexOf(u.Unit.Type.ToLower());
+						priority += squatTypeImportance;
 
-							var positionNameShort = unitToPositionNameShort.Value;
-							var positionImportance = positionNameShortIngamePriority.IndexOf(positionNameShort);
-							priority += 10 * positionImportance;
+						var positionNameShort = u.PositionNameShort;
+						var positionImportance = positionNameShortIngamePriority.IndexOf(positionNameShort);
+						priority += 10 * positionImportance;
 
-							return priority;
-						});
+						return priority;
+					});
 
-					mostImportantIngameUnit_cache = unitsSortedAccordingToInGameImportance.FirstOrDefault().Key;
-				}
-				return mostImportantIngameUnit_cache;
+				return unitsSortedAccordingToInGameImportance.FirstOrDefault();
 			}
 		}
-
-		[NotMapped]
-		public string MostImportantIngameUnitPositionNameShort
-		{
-			get
-			{
-				if (UnitToPositionNameShort == null) return string.Empty;
-				return UnitToPositionNameShort.GetValue(MostImportantIngameUnit, string.Empty);
-			}
-		}
-
-		[NotMapped]
-		public string MostImportantIngameUnitPositionNameLong
-		{
-			get
-			{
-				if (UnitToPositionNameShort == null) return string.Empty;
-				return positionNameShortToPositionNameLong.GetValue(MostImportantIngameUnitPositionNameShort, string.Empty);
-			}
-		}
-
-		[NotMapped, NonSerialized]
-		Unit teamSpeakUnit_cache;
 
 		/// <summary>
 		/// Unit in which you hold position that you put next to your name in teamSpeak
 		/// </summary>
 		[NotMapped]
-		public Unit TeamSpeakUnit
+		public PersonUnit TeamSpeakUnit
 		{
 			get
 			{
-				if (teamSpeakUnit_cache == null)
-				{
-					Unit highestPositionUnit = null;
-					int highestPositionPriority = int.MinValue;
-
-					foreach (var kvp in UnitToPositionNameShort)
-					{
-						var positionNameShort = kvp.Value;
-						var unit = kvp.Key;
-
-						var positionPriority = positionNameShortTeamSpeakNamePriorityOrder.IndexOf(positionNameShort);
-						if (positionPriority > highestPositionPriority)
-						{
-							highestPositionPriority = positionPriority;
-							highestPositionUnit = unit;
-						}
-					}
-					teamSpeakUnit_cache = highestPositionUnit;
-				}
-				return teamSpeakUnit_cache;
+				return TeamSpeakPrioritizedUnits.FirstOrDefault();
 			}
 		}
 
 		/// <summary>
-		/// Short name (abbrevation) of position of unit in which you hold position that you put next to your name in teamSpeak
+		/// Units sorted by position in unit TeamSpeak priority.
+		/// Highest priority is first.
 		/// </summary>
-		[NotMapped]
-		public string TeamSpeakUnitPositionNameShort
+		[NotMapped, NoApi]
+		public IEnumerable<PersonUnit> TeamSpeakPrioritizedUnits
 		{
 			get
 			{
-				if (TeamSpeakUnit == null) return "";
-				var ret = UnitToPositionNameShort.GetValue(TeamSpeakUnit, "");
-				if (ret.IsNullOrEmpty()) ret = ""; //TODO: bug UnitToPositionNameShort should not contain null values
-				return ret;
-			}
-		}
-
-		/// <summary>
-		/// Long name of position of unit in which you hold position that you put next to your name in teamSpeak
-		/// </summary>
-		[NotMapped]
-		public string TeamSpeakUnitPositionNameLong
-		{
-			get
-			{
-				return positionNameShortToPositionNameLong.GetValue(TeamSpeakUnitPositionNameShort, "");
+				return ActiveUnits.OrderBy(u => positionNameShortTeamSpeakNamePriorityOrder.IndexOf(u.PositionNameShort));
 			}
 		}
 
@@ -276,9 +220,9 @@ namespace TawGatherMembersInfo.Models
 		{
 			get
 			{
-				return UnitToPositionNameShort.Keys.Any(u =>
+				return ActiveUnits.Any(u =>
 				{
-					var unit = u;
+					var unit = u.Unit;
 					var type = unit.Type.ToLower();
 
 					// walk the unit parent chain until we hit battalion or division
@@ -296,9 +240,6 @@ namespace TawGatherMembersInfo.Models
 			}
 		}
 
-		[NotMapped, NonSerialized]
-		string teamSpeakName_cache;
-
 		// during one day: this took me 4 hours, trying to find logic/algorithm in something that was made to look good, TODO: needs improving
 		// spend many more hours on it afterwards as well
 		[NotMapped]
@@ -306,78 +247,70 @@ namespace TawGatherMembersInfo.Models
 		{
 			get
 			{
-				if (teamSpeakName_cache == null)
+				var teamSpeakName = "";
+
+				string battalionPrefix = "";
+				var positionNameShort = this.TeamSpeakUnit?.PositionNameShort;
+
+				// find battalion name short
 				{
-					string battalionPrefix = "";
-					var positionNameShort = this.TeamSpeakUnitPositionNameShort;
-
-					// find battalion name short
+					foreach (var currentUnit in TeamSpeakPrioritizedUnits)
 					{
-						foreach (var currentUnit in UnitToPositionNameShort.Keys)
+						string newBattalionPrefix = "";
+
+						// walk the unit parent chain until we hit battalion or division
+						var unit = currentUnit.Unit;
+						var type = unit.Type.ToLower();
+						while (type != "battalion" && type != "division" && unit.ParentUnit != null)
 						{
-							string newBattalionPrefix = "";
-
-							// walk the unit parent chain until we hit battalion or division
-							var unit = currentUnit;
-							var type = unit.Type.ToLower();
-							while (type != "battalion" && type != "division" && unit.ParentUnit != null)
-							{
-								unit = unit.ParentUnit;
-								type = unit.Type.ToLower();
-							}
-							var name = unit.Name.ToLower();
-
-							var doesNotHaveBattalionIndex = positionNameShortOwnedByDivision.Contains(positionNameShort);
-
-							// dont want to show purely support units, those are made purely for organization purposes ?
-							// only if its the only battalion person is in
-							if (name.Contains("support") == false || UnitToPositionNameShort.Count == 1)
-							{
-								if (type == "battalion" && doesNotHaveBattalionIndex) unit = unit.ParentUnit;
-
-								var prefix = unit.TeamSpeakNamePrefix;
-								if (prefix.IsNullOrWhiteSpace()) prefix = unit.ParentUnit?.TeamSpeakNamePrefix; // if battalion has not valid prefix, try take one from division
-								if (prefix.IsNullOrWhiteSpace() == false) newBattalionPrefix = prefix;
-							}
-
-							// take the longest prefix we found
-							if (newBattalionPrefix.Length > battalionPrefix.Length) battalionPrefix = newBattalionPrefix;
+							unit = unit.ParentUnit;
+							type = unit.Type.ToLower();
 						}
-					}
+						var name = unit.Name.ToLower();
 
-					battalionPrefix = battalionPrefix.Trim();
-					positionNameShort = positionNameShort.Trim();
-					if (positionNameShort.Length > 0)
-					{
-						if (battalionPrefix.IsNullOrEmpty())
+						var doesNotHaveBattalionIndex = positionNameShortOwnedByDivision.Contains(positionNameShort);
+
+						// dont want to show purely support units, those are made purely for organization purposes ?
+						// only if its the only battalion person is in
+						if (name.Contains("support") == false || ActiveUnits.Count() == 1)
 						{
-							teamSpeakName_cache = Name + " [" + positionNameShort + "]";
+							if (type == "battalion" && doesNotHaveBattalionIndex) unit = unit.ParentUnit;
+
+							var prefix = unit.TeamSpeakNamePrefix;
+							if (prefix.IsNullOrWhiteSpace()) prefix = unit.ParentUnit?.TeamSpeakNamePrefix; // if battalion has not valid prefix, try take one from division
+							if (prefix.IsNullOrWhiteSpace() == false) newBattalionPrefix = prefix;
 						}
-						else
-						{
-							// separating space is already in battalion prefix, no need to have additiopnal space before position
-							if (battalionPrefix.Contains(" ") == false) battalionPrefix += " ";
-							teamSpeakName_cache = Name + " [" + battalionPrefix + positionNameShort + "]";
-						}
-					}
-					else
-					{
-						// we have no position, show only battalion
-						teamSpeakName_cache = Name + " [" + battalionPrefix + "]";
+
+						// take the longest prefix we found
+						if (newBattalionPrefix.Length > battalionPrefix.Length) battalionPrefix = newBattalionPrefix;
 					}
 				}
 
-				return teamSpeakName_cache;
+				battalionPrefix = battalionPrefix?.Trim();
+				positionNameShort = positionNameShort?.Trim();
+				if (positionNameShort.IsNullOrWhiteSpace())
+				{
+					// we have no position, show only battalion
+					teamSpeakName = Name + " [" + battalionPrefix + "]";
+				}
+				else
+				{
+					if (battalionPrefix.IsNullOrWhiteSpace())
+					{
+						teamSpeakName = Name + " [" + positionNameShort + "]";
+					}
+					else
+					{
+						// separating space is already in battalion prefix, no need to have additiopnal space before position
+						if (battalionPrefix.Contains(" ") == false) battalionPrefix += " ";
+						teamSpeakName = Name + " [" + battalionPrefix + positionNameShort + "]";
+					}
+				}
+				return teamSpeakName;
 			}
 		}
 
 		public Person()
-		{
-			Init();
-		}
-
-		[OnDeserializing]
-		void Init(StreamingContext c)
 		{
 			Init();
 		}
@@ -392,27 +325,9 @@ namespace TawGatherMembersInfo.Models
 			return @"http://taw.net/member/" + personName + @".aspx";
 		}
 
-		public void ClearCache()
-		{
-			mostImportantIngameUnit_cache = null;
-			teamSpeakName_cache = null;
-			teamSpeakUnit_cache = null;
-		}
-
 		public override string ToString()
 		{
-			return Name + " rank:" + Rank.NameShort + " steamId:" + SteamId;
-		}
-
-		public override bool Equals(object obj)
-		{
-			return Equals(obj as Person);
-		}
-
-		public bool Equals(Person other)
-		{
-			if (other == null) return false;
-			return Name == other.Name;
+			return Name + " rank:" + Rank?.NameShort + " steamId:" + SteamId;
 		}
 
 		public override int GetHashCode()

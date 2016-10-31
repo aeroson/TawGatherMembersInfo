@@ -107,9 +107,44 @@ namespace Neitri
 				);
 		}
 
+		public static IEnumerable<IPropertyDescriptor> GetAll(
+			Type type,
+			Func<IPropertyDescriptor, int, bool> shouldIncludeChildrenSequences,
+			BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetProperty | BindingFlags.SetProperty | BindingFlags.IgnoreCase
+		)
+		{
+			if (type == null) return null;
+			return GetChildrenSequences(type, shouldIncludeChildrenSequences, bindingFlags, 0);
+		}
+
+		private static IEnumerable<IPropertyDescriptor> GetChildrenSequences(
+			Type type,
+			Func<IPropertyDescriptor, int, bool> shouldIncludeChildrenSequences,
+			BindingFlags bindingFlags,
+			int currentDepth
+		)
+		{
+			var baseDescriptors = GetAll(type, bindingFlags).ToArray();
+
+			var result = new List<IPropertyDescriptor>(baseDescriptors);
+
+			foreach (var prop in baseDescriptors)
+			{
+				if (shouldIncludeChildrenSequences(prop, currentDepth + 1))
+				{
+					result.AddRange(
+						GetChildrenSequences(prop.Type, shouldIncludeChildrenSequences, bindingFlags, currentDepth + 1)
+							.Select(children => new SequenceWrapper(prop, children))
+					);
+				}
+			}
+
+			return result;
+		}
+
 		#region IPropertyDescriptor implementations for field, property and sequence
 
-		class FieldDescriptor : IPropertyDescriptor
+		private class FieldDescriptor : IPropertyDescriptor
 		{
 			public string Name { get { return fieldInfo.Name; } }
 			public bool CanRead { get { return true; } }
@@ -169,7 +204,7 @@ namespace Neitri
 			}
 		}
 
-		class PropertyDescriptor : IPropertyDescriptor
+		private class PropertyDescriptor : IPropertyDescriptor
 		{
 			public string Name { get { return propertyInfo.Name; } }
 			public bool CanRead { get { return propertyInfo.GetGetMethod(true) != null && propertyInfo.GetIndexParameters().Length == 0; } } // we can not read indexed properties
@@ -229,7 +264,7 @@ namespace Neitri
 			}
 		}
 
-		class SequenceWrapper : IPropertyDescriptor
+		private class SequenceWrapper : IPropertyDescriptor
 		{
 			public string Name { get { return holder.Name + "." + property.Name; } }
 			public bool CanRead { get { return holder.CanRead && property.CanRead; } } // we can not read indexed properties

@@ -50,7 +50,7 @@ namespace TawGatherMembersInfo
 			Log.Info("generating squad xmls into: '" + targetSquadXmlFolder + "'");
 
 			var utcNow = DateTime.UtcNow;
-			var people = data.People.Where(p => p.Units.Count(u => u.Removed > utcNow) > 0).ToArray();
+			var people = data.People.Where(p => p.ActiveUnits.Count(u => u.Removed > utcNow) > 0).ToArray();
 
 			var filesSaved = new HashSet<FilePath>();
 
@@ -69,7 +69,7 @@ namespace TawGatherMembersInfo
 
 				Log.Trace("generating squad xml for: " + person.Name + " image:" + image.Name + " armaProfileName:" + armaProfileName);
 
-				var showUnit = person.MostImportantIngameUnit;
+				var showUnit = person.MostImportantIngameUnit.Unit;
 				if (showUnit.Type.ToLower() == "fire team" && showUnit.ParentUnit != null && showUnit.ParentUnit.People.Count > 0) showUnit = showUnit.ParentUnit;
 
 				var rendered = template(
@@ -91,7 +91,7 @@ namespace TawGatherMembersInfo
 								nick = armaProfileName,
 								name = person.Name,
 								email = person.Name.ToLower() + "@taw.net",
-								icq = person.TeamSpeakUnit.Name + " - " + person.TeamSpeakUnitPositionNameLong,
+								icq = person.TeamSpeakUnit.Unit.Name + " - " + person.TeamSpeakUnit.PositionNameLong,
 								remark = "Join us at www.TAW.net",
 							}
 						}
@@ -124,7 +124,7 @@ namespace TawGatherMembersInfo
 
 			// try logo from our unit
 			{
-				var unit = person.MostImportantIngameUnit;
+				var unit = person.MostImportantIngameUnit.Unit;
 
 				do
 				{

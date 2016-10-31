@@ -92,6 +92,12 @@ namespace TawGatherMembersInfo
 				}
 			}
 
+			using (var data = db.NewContext)
+			{
+				var s = data.People.FirstOrDefault(p => p.Name.StartsWith("Sidthe"));
+				var a = s.TeamSpeakName;
+			}
+
 			//TestPrintAttendanceReport();
 			//AttendanceStatisticsPerWeekDay();
 
@@ -99,8 +105,10 @@ namespace TawGatherMembersInfo
 
 			//UpdateSquadXml();
 
+#if !DEBUG
 			roaster.OnDataGatheringCycleCompleted += UpdateSquadXml;
 			roaster.Run();
+#endif
 
 			httpServer?.Run();
 		}
@@ -109,10 +117,9 @@ namespace TawGatherMembersInfo
 		{
 			using (var data = db.NewContext)
 			{
-				var units = data.Units.Where(u => u.TawId == 1330).ToArray();
-				var events = units.SelectMany(u => u.Events.Where(e => e.Mandatory && !e.Cancelled));
+				var events = data.Events.Where(e => e.Mandatory && !e.Cancelled);
 
-				Console.WriteLine("unit: " + units.Select(u => u.ToString()).Join(","));
+				//Console.WriteLine("unit: " + units.Select(u => u.ToString()).Join(","));
 				Console.WriteLine("not cancelled mandatory events count: " + events.Count());
 
 				AttendanceStatisticsPerWeekDay_2(events, DayOfWeek.Sunday);
@@ -175,7 +182,7 @@ namespace TawGatherMembersInfo
 					if (mandatoryEventsAttended > 0) mandatoryAvg = (int)Math.Ceiling(100 * mandatoryEventsAttended / (float)mandatoryEventsCount);
 
 					Console.WriteLine(
-						person.TeamSpeakUnit.Name + "\t" +
+						person.TeamSpeakUnit.Unit.Name + "\t" +
 						person.Name + "\t" +
 						person.Rank.NameLong + "\t" +
 						trainings + "\t" +

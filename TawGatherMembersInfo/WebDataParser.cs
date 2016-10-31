@@ -76,12 +76,12 @@ namespace TawGatherMembersInfo
 								var utcNow = DateTime.UtcNow;
 								// if some person to unit is still valid, and not one of those we just updated, mark it as not valid anymore
 								data
-										.People
-										.First(p => p.Name == personName)
-										.Units
-										.Where(u => u.Removed > utcNow) // still valid, not removed
-										.Where(u => !personUnitIds.Contains(u.PersonUnitId)) // except those we found & updated
-										.ForEach(u => u.Removed = utcNow); // remove it
+									.People
+									.First(p => p.Name == personName)
+									.Units
+									.Where(u => u.Removed > utcNow) // still valid, not removed
+									.Where(u => !personUnitIds.Contains(u.PersonUnitId)) // except those we found & updated
+									.ForEach(u => u.Removed = utcNow); // remove it
 
 								try
 								{
@@ -147,8 +147,8 @@ namespace TawGatherMembersInfo
 
 					if (positionNameLong != "")
 					{
-						positionNameShort = Person.positionNameShortToPositionNameLong.Reverse.GetValue(positionNameLong, null);
-						if (positionNameShort == null) log.Warn("cannot find positionNameShortToPositionNameLong.Reverse[" + positionNameLong + "]");
+						positionNameShort = PersonUnit.PositionNameLongToPositionNameShort(positionNameLong);
+						if (positionNameShort.IsNullOrWhiteSpace()) log.Warn("cannot find positionNameShortToPositionNameLong.Reverse[" + positionNameLong + "]");
 					}
 				}
 
