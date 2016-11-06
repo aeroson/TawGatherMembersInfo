@@ -137,13 +137,13 @@ namespace TawGatherMembersInfo.Models
 			get
 			{
 				var name = Iso3166.countryNameToIso3166.Reverse.GetValue(CountryCodeIso3166, string.Empty);
-				if (name == string.Empty) name = Iso3166.countrySubdivisonNameToIso3166_2.Reverse.GetValue(CountryCodeIso3166, string.Empty);
+				if (name.IsNullOrWhiteSpace()) name = Iso3166.countrySubdivisonNameToIso3166_2.Reverse.GetValue(CountryCodeIso3166, string.Empty);
 				return name;
 			}
 			set
 			{
 				var iso = Iso3166.countryNameToIso3166.GetValue(value, string.Empty);
-				if (iso == string.Empty) Iso3166.countrySubdivisonNameToIso3166_2.GetValue(value, string.Empty);
+				if (iso.IsNullOrWhiteSpace()) iso = Iso3166.countrySubdivisonNameToIso3166_2.GetValue(value, string.Empty);
 				CountryCodeIso3166 = iso;
 			}
 		}

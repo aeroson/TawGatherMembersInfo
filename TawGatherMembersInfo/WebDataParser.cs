@@ -380,7 +380,7 @@ namespace TawGatherMembersInfo
 				var table = new HtmlTwoColsStringTable(html.DocumentNode.SelectNodes("//*[@class='dossiernexttopicture']/table//tr"));
 
 				// country
-				person.CountryName = table.GetValue("Location:", person.CountryName).Trim(); ;
+				person.CountryName = table.GetValue("Location:", person.CountryName).Trim();
 				person.Status = table.GetValue("Status:", person.Status).Trim().ToLower();
 
 				var joined = table.GetValue("Joined:", "01-01-0001");
