@@ -328,6 +328,13 @@ namespace TawGatherMembersInfo
 			}
 		}
 
+		/// <summary>
+		/// "dossier movements" DO NOT show demotions.
+		/// So we first need to parse "dossier movements", then if the rank differs from rank in "dossier next to picture" we add that one.
+		/// </summary>
+		/// <param name="_log"></param>
+		/// <param name="personName"></param>
+		/// <returns></returns>
 		public async Task UpdateInfoFromProfilePage(ILogEnd _log, string personName)
 		{
 			var log = _log.ProfileStart("updating profile of " + personName);
@@ -336,6 +343,8 @@ namespace TawGatherMembersInfo
 			var url = Person.GetPersonProfilePageUrl(personName);
 			var response = await sessionManager.GetUrl(url, scope);
 			var html = response.HtmlDocument;
+
+			string realRankNameLong = null;
 
 			using (var data = db.NewContext)
 			{
@@ -383,8 +392,14 @@ namespace TawGatherMembersInfo
 				person.CountryName = table.GetValue("Location:", person.CountryName).Trim();
 				person.Status = table.GetValue("Status:", person.Status).Trim().ToLower();
 
+				// joined
 				var joined = table.GetValue("Joined:", "01-01-0001");
 				person.DateJoinedTaw = ParseUSDateTime(joined);
+
+				// real rank
+				var rank = table.GetValue("Rank:", null);
+				if (!rank.IsNullOrEmpty())
+					realRankNameLong = rank.TakeStringBefore("(").Trim();
 
 				person.LastProfileDataUpdatedDate = DateTime.UtcNow;
 
@@ -507,7 +522,19 @@ namespace TawGatherMembersInfo
 							scope.Warn("unexpected dossier row: " + description);
 						}
 					}
+
+					if (!realRankNameLong.IsNullOrEmpty() && person.Rank?.NameLong != realRankNameLong)
+					{
+						// rank in dossier movements and in main section is different
+						var personRank = new PersonRank();
+						personRank.NameLong = realRankNameLong;
+						personRank.ValidFrom = DateTime.UtcNow;
+						personRank.Person = person;
+						person.Ranks.Add(personRank);
+					}
+
 					await data.SaveChangesAsync();
+
 				}
 				scope.End();
 			}

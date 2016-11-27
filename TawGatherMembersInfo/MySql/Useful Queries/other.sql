@@ -23,12 +23,11 @@ call AttendanceReport(1330, 30);
 
 select * from People p order by p.PersonId desc limit 10;
 
-select * from People where name = "Deceded";
+select * from People where name = "Curt";
 
-select * from People p join PersonUnits pu on p.PersonId = pu.Person_PersonId and p.Name = "Wingnut"
-join Units u on u.UnitId = pu.Unit_UnitId;
+select u.*, pu.*,  p.* from People p join PersonUnits pu on p.PersonId = pu.Person_PersonId and p.Name = "dostojetski" join Units u on u.UnitId = pu.Unit_UnitId;
 
-select pr.* from People p join PersonRanks pr on p.PersonId = pr.Person_PersonId and p.Name = "Asbuster";
+select pr.* from People p join PersonRanks pr on p.PersonId = pr.Person_PersonId and p.Name = "CURT" order by ValidFrom desc;
 select pe.*, e.* from People p join PersonEvents pe on p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and p.Name = "Pepsimax";
 select e.*, pe.* from People p join PersonEvents pe on p.PersonId = pe.PersonId join Events e on e.EventId = pe.EventId and e.From > (date_sub(now(), interval 30 day)) and p.Name = "Bazoon";
 
@@ -38,12 +37,16 @@ update PersonUnits pu set pu.Removed = '9999-01-01 00:00:00' where pu.Removed = 
 
 select * from Events e where e.EventId = 13099;
 
+select * from PersonRanks where TawId = 0;
 
-select * from People where Name = "aeroson";
+select * from People where Name = "dostojetski";
 
-select * from Events e where e.TawId = 1198;
+select * from Events e where e.TawId = 1189;
+select e.* from Events e order by e.EventId desc limit 100;
 select e.* from Events e order by e.TawId desc limit 100;
+select e.* from Events e order by e.From limit 100;
 select e.* from Events e where e.Name like "[AM 2%" order by e.TawId desc limit 100;
+select * from Events e where e.Name = null;
 
 select count(*) from PersonUnits pu where pu.Removed = '0000-00-00 00:00:00';
 select * from PersonUnits pu where pu.Removed < '0001-01-01 00:00:00' limit 10;

@@ -24,16 +24,19 @@ namespace TawGatherMembersInfo.Models
 
 		public virtual Person PromotedBy { get; set; }
 
+
+
+
 		[NotMapped]
 		public string NameLong
 		{
 			get
 			{
-				return rankNameShortToRankNameLong.GetValue(NameShort, "Unknown rank");
+				return rankNameShortToRankNameLong.GetValue(NameShort, null);
 			}
 			set
 			{
-				NameShort = rankNameShortToRankNameLong.Reverse.GetValue(value, "Unknown");
+				NameShort = rankNameShortToRankNameLong.Reverse.GetValue(value, null);
 			}
 		}
 
