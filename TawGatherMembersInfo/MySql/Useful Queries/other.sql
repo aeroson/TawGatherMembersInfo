@@ -20,6 +20,7 @@ select * from GetPeopleInUnit_result;
 
 call AttendanceReport(2776, 30);
 call AttendanceReport(1330, 30);
+call AttendanceReport(2947, 30);
 
 select * from People p order by p.PersonId desc limit 10;
 
@@ -69,5 +70,6 @@ select * from PersonRanks where length(NameShort) > 3;
 ALTER TABLE Events AUTO_INCREMENT = 1;
 
 select * from Events order by TawId desc limit 10;
+
 
 
