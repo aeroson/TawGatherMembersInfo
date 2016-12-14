@@ -43,11 +43,11 @@ namespace TawGatherMembersInfo
 			{
 				var newVersion = new Random().Next(); // all person to unit relations without this unit version will be deleted
 
-				log = log.ProfileStart($"roaster unit {tawUnitId}");
+				log = log.ProfileStart($"unit {tawUnitId}");
 
 				var url = Unit.GetUnitRoasterPage(tawUnitId);
 
-				var response = await sessionManager.GetUrl(url, log.ScopeStart("getting html"));
+				var response = await sessionManager.GetUrlAsync(url, log.Profile("getting html"));
 
 				var html = response.HtmlDocument;
 
@@ -56,7 +56,7 @@ namespace TawGatherMembersInfo
 				using (log.ScopeStart("parsing html"))
 					await ParseUnitContents(log, roasterDiv, null);
 
-				using (var log2 = log.ScopeStart("parsing people"))
+				using (var log2 = log.ScopeStart("processing people"))
 				{
 					var tasks = new List<Task>(personNameToPersonLines.Count);
 
@@ -66,38 +66,38 @@ namespace TawGatherMembersInfo
 						var personLines = kvp.Value;
 						var task = Task.Run(async () =>
 						{
-							using (var data = Db.NewContext)
+							using (var log3 = log2.ProfileStart(personName))
 							{
-								log2.Trace("parsing & saving roaster person " + personName);
-								foreach (var personLine in personLines)
+								using (var data = Db.NewContext)
 								{
-									await personLine.FinishParsing(log2, data);
-								}
-								var personUnitIds = personLines.Select(p => p.PersonToUnitId).ToArray();
-								var utcNow = DateTime.UtcNow;
-								// if some person to unit is still valid, and not one of those we just updated, mark it as not valid anymore
-								data
-									.People
-									.First(p => p.Name == personName)
-									.Units
-									.Where(u => u.Removed > utcNow) // still valid, not removed
-									.Where(u => !personUnitIds.Contains(u.PersonUnitId)) // except those we found & updated
-									.ForEach(u => u.Removed = utcNow); // remove it
+									foreach (var personLine in personLines)
+									{
+										await personLine.FinishParsing(log3, data);
+									}
+									var personUnitIds = personLines.Select(p => p.PersonToUnitId).ToArray();
+									var utcNow = DateTime.UtcNow;
+									// if some person to unit is still valid, and not one of those we just updated, mark it as not valid anymore
+									data
+										.People
+										.First(p => p.Name == personName)
+										.Units
+										.Where(u => u.Removed > utcNow) // still valid, not removed
+										.Where(u => !personUnitIds.Contains(u.PersonUnitId)) // except those we found & updated
+										.ForEach(u => u.Removed = utcNow); // remove it
 
-								try
-								{
-									await data.SaveChangesAsync();
+									try
+									{
+										await data.SaveChangesAsync();
+									}
+									catch (Exception e)
+									{
+										log3.Fatal(e);
+									}
 								}
-								catch (Exception e)
-								{
-									log2.Fatal(e);
-								}
-								log2.Trace("done parsing & saving roaster person:" + personName);
+
+								// update active person profile, if he is on main roaster == he is active
+								await parent.UpdateInfoFromProfilePage(log3, personName);
 							}
-
-							// update active person profile, if he is on main roaster == he is active
-							await parent.UpdateInfoFromProfilePage(log2, personName);
-
 						});
 						tasks.Add(task);
 					};
@@ -211,7 +211,7 @@ namespace TawGatherMembersInfo
 					var tawId = int.Parse(unitNameA.GetAttributeValue("href", "/unit/-1.aspx").TakeStringBetweenLast("/", ".aspx"));
 					var name = unitNameA.InnerText;
 
-					log.Trace("parsing " + tawId);
+					log.Trace("parsing unit " + tawId);
 
 					var unit = await GetUnit(data, tawId, name);
 					unit.Type = type;
@@ -257,17 +257,14 @@ namespace TawGatherMembersInfo
 		async static Task<Person> GetPersonFromName(MyDbContext data, string name, string rankNameShort)
 		{
 			var person = await GetPersonFromName(data, name);
-			if (!rankNameShort.IsNullOrEmpty())
+			if (!rankNameShort.IsNullOrEmpty() && person.Ranks.Count == 0)
 			{
-				if (person.Ranks.Count == 0)
-				{
-					var personRank = new PersonRank();
-					personRank.Person = person;
-					personRank.NameShort = rankNameShort;
-					personRank.ValidFrom = DateTime.UtcNow;
-					person.Ranks.Add(personRank);
-					await data.SaveChangesAsync();
-				}
+				var personRank = new PersonRank();
+				personRank.Person = person;
+				personRank.NameShort = rankNameShort;
+				personRank.ValidFrom = DateTime.UtcNow;
+				person.Ranks.Add(personRank);
+				await data.SaveChangesAsync();
 			}
 			return person;
 		}
@@ -338,16 +335,15 @@ namespace TawGatherMembersInfo
 		/// "dossier movements" DO NOT show demotions.
 		/// So we first need to parse "dossier movements", then if the rank differs from rank in "dossier next to picture" we add that one.
 		/// </summary>
-		/// <param name="_log"></param>
+		/// <param name="logParent"></param>
 		/// <param name="personName"></param>
 		/// <returns></returns>
-		public async Task UpdateInfoFromProfilePage(ILogEnd _log, string personName)
+		public async Task UpdateInfoFromProfilePage(ILogEnd logParent, string personName)
 		{
-			var log = _log.ProfileStart("updating profile of " + personName);
+			var logPerson = logParent.ProfileStart("updating profile of " + personName);
 
-			var scope = log.Profile("getting html");
 			var url = Person.GetPersonProfilePageUrl(personName);
-			var response = await sessionManager.GetUrl(url, scope);
+			var response = await sessionManager.GetUrlAsync(url, logPerson.Profile("getting html"));
 			var html = response.HtmlDocument;
 
 			string realRankNameLong = null;
@@ -357,7 +353,7 @@ namespace TawGatherMembersInfo
 				var person = data.People.FirstOrDefault(p => p.Name == personName);
 				if (person == null)
 				{
-					log.Error("person not found in database");
+					logPerson.Error("person not found in database");
 					return;
 				}
 
@@ -416,16 +412,17 @@ namespace TawGatherMembersInfo
 			// rank in time
 			// position in unit in time
 			{
-				scope = log.Profile("getting movements");
-				var res = await sessionManager.PostJsonAsync("http://taw.net/services/JSONFactory.asmx/GetMovement", new { callsign = personName }, scope);
+				var res = await sessionManager.PostJsonAsync("http://taw.net/services/JSONFactory.asmx/GetMovement", new { callsign = personName }, logPerson.Profile("getting movements"));
 
-				scope = log.ProfileStart("parsing movements");
+				var log = logPerson.ProfileStart("parsing movements");
 				var d = (string)JObject.Parse(res)["d"];
 				var dossierMovements = JsonConvert.DeserializeObject<DossierMovements>(d);
 
 				using (var data = db.NewContext)
 				{
 					var person = data.People.FirstOrDefault(p => p.Name == personName);
+
+					var wasDischarged = false;
 
 					foreach (var dossierMovement in dossierMovements.Movements)
 					{
@@ -436,12 +433,6 @@ namespace TawGatherMembersInfo
 						if (description.Contains("was admitted to TAW")) person.AdmittedToTaw = timestamp;
 						else if (description.Contains("was promoted to") || description.Contains("applied for TAW"))
 						{
-							if (person.Ranks == null || person.Ranks.Any(r => r.TawId == 0))
-							{
-								while (person.Ranks?.Count > 0) data.PersonRanks.Remove(person.Ranks.First());
-								person.Ranks = new List<PersonRank>();
-							}
-
 							if (!person.Ranks.Any(r => r.TawId == tawId))
 							{
 								string rankNameLong = "unknown";
@@ -496,6 +487,7 @@ namespace TawGatherMembersInfo
 						else if (description.Contains("was returned to active duty by"))
 						{
 							// <a href="/member/MaverickSabre.aspx">MaverickSabre</a> was returned to active duty by <a href="/member/Lucky.aspx">Lucky</a>.
+							wasDischarged = false;
 						}
 						else if (description.Contains("was put on leave by"))
 						{
@@ -504,20 +496,24 @@ namespace TawGatherMembersInfo
 						else if (description.Contains("was reinstated by"))
 						{
 							// <a href="/member/Dackey.aspx">Dackey</a> was reinstated by <a href="/member/Phenom.aspx">Phenom</a>
+							wasDischarged = false;
 						}
 						else if (description.Contains("was discharged by"))
 						{
 							// http://taw.net/member/gravedigger.aspx
 							// leave from unit that is before this
 							// <a href="/member/MaverickSabre.aspx">MaverickSabre</a> was discharged by <a href="/member/Lucid.aspx">Lucid</a>.
+							wasDischarged = true;
 						}
 						else if (description.Contains("was discharged honorable by"))
 						{
 							// <a href="/member/Xsage.aspx">Xsage</a> was discharged honorable by <a href="/member/TexasHillbilly.aspx">TexasHillbilly</a>.
+							wasDischarged = true;
 						}
 						else if (description.Contains("was discharged dishonorable by"))
 						{
 							// <a href="/member/Dackey.aspx">Dackey</a> was discharged dishonorable by <a href="/member/Juvenis.aspx">Juvenis</a>.
+							wasDischarged = true;
 						}
 						else if (description.Contains("Unknown was removed from unit Unknown by"))
 						{
@@ -525,27 +521,46 @@ namespace TawGatherMembersInfo
 						}
 						else
 						{
-							scope.Warn("unexpected dossier row: " + description);
+							log.Warn("unexpected dossier row: " + description);
 						}
+					}
+
+
+					if (wasDischarged)
+					{
+						// make sure all units relations are marked as not valid
+						var utcNow = DateTime.UtcNow;
+						foreach (var u in person.Units.Where(u => u.Removed > utcNow).ToArray())
+							u.Removed = utcNow;
 					}
 
 					if (!realRankNameLong.IsNullOrEmpty() && person.Rank?.NameLong != realRankNameLong)
 					{
-						// rank in dossier movements and in main section is different
+						// most up to date rank in dossier movements and in main section is different -> add rank from main section
+						log.Info("found rank discrepancy, adding real rank: '" + realRankNameLong + "'");
 						var personRank = new PersonRank();
 						personRank.NameLong = realRankNameLong;
 						personRank.ValidFrom = DateTime.UtcNow;
 						personRank.Person = person;
+						personRank.TawId = -1; // special case, added from profile main section
 						person.Ranks.Add(personRank);
+					}
+
+					// cleanup person ranks
+					// remove ranks added from unit pages
+					if (person.Ranks == null || person.Ranks.Any(r => r.TawId == 0))
+					{
+						while (person.Ranks?.Count > 0)
+							data.PersonRanks.Remove(person.Ranks.First());
 					}
 
 					await data.SaveChangesAsync();
 
 				}
-				scope.End();
+				log.End();
 			}
 
-			log.End("done, parsed and saved");
+			logPerson.End("done, parsed and saved");
 		}
 
 		public readonly static string[] possibleDateTimeFormats = new string[] {
@@ -606,13 +621,11 @@ namespace TawGatherMembersInfo
 			try
 			{
 				var url = Event.GetEventPage(eventTawId);
-				var scope = log.ScopeStart("getting html");
-				var response = await sessionManager.GetUrl(url);
-				scope.End();
+				var response = await sessionManager.GetUrlAsync(url, log.Profile("getting html"));
 
 				ParseEventResult result;
 
-				scope = log.ScopeStart("parsing html");
+				var scope = log.ScopeStart("parsing html");
 				using (var data = db.NewContext)
 				{
 					result = await ParseEventData_1(scope, data, response, eventTawId);

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -116,18 +117,19 @@ namespace TawGatherMembersInfo.Models
 			foreach (var unit in ChildUnits) unit.FillWithAllActivePeopleNames(people);
 		}
 
-		public HashSet<string> GetAllActivePeopleNames()
+		public HashSet<string> GetPeopleInUnit()
 		{
 			var hs = new HashSet<string>();
 			FillWithAllActivePeopleNames(hs);
 			return hs;
 		}
 
-		private void FillWithAllActivePeople(HashSet<Person> people)
+		private void FillWithAllActivePeople(HashSet<Person> resultPeople)
 		{
-			var names = this.People.Where(p => !p.Person.Status.StartsWith("discharged")).Select(p => p.Person);
-			people.UnionWith(names);
-			foreach (var unit in ChildUnits) unit.FillWithAllActivePeople(people);
+			var utcNow = DateTime.UtcNow;
+			var people = this.People.Where(p => p.Removed > utcNow).Select(p => p.Person);
+			resultPeople.UnionWith(people);
+			foreach (var unit in ChildUnits) unit.FillWithAllActivePeople(resultPeople);
 		}
 
 		public HashSet<Person> GetAllActivePeople()

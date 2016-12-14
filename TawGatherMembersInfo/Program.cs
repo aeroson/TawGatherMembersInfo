@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -107,8 +108,17 @@ namespace TawGatherMembersInfo
 
 #if !DEBUG
 			roaster.OnDataGatheringCycleCompleted += UpdateSquadXml;
-			roaster.Run();
 #endif
+
+
+			/*
+			// TODO: use stored procedure instead of Unit.GetPeopleInUnit()
+			var c = db.NewContext;
+			var param1 = new SqlParameter("@rootUnitTawId", 1330);
+			c.Database.ExecuteSqlCommand("GetPeopleInUnit @rootUnitTawId", param1);
+			*/
+
+			roaster.Run();
 
 			httpServer?.Run();
 		}

@@ -192,7 +192,7 @@ namespace TawGatherMembersInfo
 
 	public class TheadedVariableManager<T> where T : class, new()
 	{
-		SemaphoreSlim s;
+		SemaphoreSlim semaphore;
 		ConcurrentDictionary<Thread, T> threadToVar = new ConcurrentDictionary<Thread, T>();
 
 		public class DisposableWrapper : IDisposable
@@ -209,7 +209,7 @@ namespace TawGatherMembersInfo
 
 			public void Dispose()
 			{
-				manager.s.Release();
+				manager.semaphore.Release();
 			}
 
 			public static implicit operator T(DisposableWrapper me)
@@ -220,12 +220,12 @@ namespace TawGatherMembersInfo
 
 		public TheadedVariableManager(int maxInstances)
 		{
-			s = new SemaphoreSlim(maxInstances);
+			semaphore = new SemaphoreSlim(maxInstances);
 		}
 
 		public virtual async Task<DisposableWrapper> GetAsync()
 		{
-			await s.WaitAsync();
+			await semaphore.WaitAsync();
 			T var;
 			if (!threadToVar.TryGetValue(Thread.CurrentThread, out var)) var = threadToVar[Thread.CurrentThread] = new T();
 			return new DisposableWrapper(this, var);
@@ -234,23 +234,23 @@ namespace TawGatherMembersInfo
 
 	public class SessionMannager : TheadedVariableManager<LoggedInSession>
 	{
-		int maxRequestsPerMinutePerSession;
+		int MaxRequestsPerMinute;
 
 		public SessionMannager(int maxInstances, int maxRequestsPerMinutePerSession) : base(maxInstances)
 		{
-			this.maxRequestsPerMinutePerSession = maxRequestsPerMinutePerSession;
+			this.MaxRequestsPerMinute = maxRequestsPerMinutePerSession;
 		}
 
 		public override async Task<DisposableWrapper> GetAsync()
 		{
 			var r = await base.GetAsync();
-			r.Value.MaxRequestsPerMinute = maxRequestsPerMinutePerSession;
+			r.Value.MaxRequestsPerMinute = MaxRequestsPerMinute;
 			return r;
 		}
 
 		public async Task<string> PostJsonAsync(string url, object payload, LogScope log = null)
 		{
-			if (log != null) log.Trace("waiting for session");
+			if (log != null) log.Trace("waiting for web session");
 			using (var session = await GetAsync())
 			{
 				if (log != null) log.Start();
@@ -260,9 +260,9 @@ namespace TawGatherMembersInfo
 			}
 		}
 
-		public async Task<MyHttpWebResponse> GetUrl(string url, LogScope log = null)
+		public async Task<MyHttpWebResponse> GetUrlAsync(string url, LogScope log = null)
 		{
-			if (log != null) log.Trace("waiting for session");
+			if (log != null) log.Trace("waiting for web session");
 			using (var session = await GetAsync())
 			{
 				if (log != null) log.Start();
