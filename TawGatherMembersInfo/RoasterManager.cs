@@ -81,56 +81,6 @@ namespace TawGatherMembersInfo
 			}
 		}
 
-		void UpdateProfiles()
-		{
-			var personsUpdated = new HashSet<string>();
-			foreach (var tawUnitId in config.UnitsToGatherMemberInfo)
-			{
-				using (var log = Log.ScopeStart($"parsing people from unit taw id:{tawUnitId}"))
-				{
-					HashSet<string> peopleNames;
-
-					{
-						var log2 = log.ProfileStart("gathering people ids");
-						using (var data = db.NewContext)
-						{
-							var unit = data.Units.FirstOrDefault(u => u.TawId == tawUnitId);
-							if (unit == null) break;
-							peopleNames = unit.GetAllActivePeopleNames();
-						}
-						log2.End($"got {peopleNames.Count} people");
-					}
-
-					var tasks = new List<Task>();
-
-					foreach (var personName in peopleNames)
-					{
-						var personNameCopy = personName;
-						if (personsUpdated.Contains(personNameCopy)) continue;
-						personsUpdated.Add(personNameCopy);
-
-						var task = Task.Run(async () =>
-						{
-							await dataParser.UpdateInfoFromProfilePage(Log, personNameCopy);
-						});
-						tasks.Add(task);
-					}
-
-					using (var log2 = log.ProfileStart($"all tasks"))
-					{
-						try
-						{
-							Task.WaitAll(tasks.ToArray());
-						}
-						catch (Exception e)
-						{
-							log2.FatalException(e);
-						}
-					}
-				}
-			}
-		}
-
 		void UpdateOldEvents()
 		{
 			var maxDaysBack = config.GetOne(45, "ReparseExistingEventsThatAreDaysBack");
@@ -306,26 +256,25 @@ namespace TawGatherMembersInfo
 		async Task ThreadMain()
 		{
 			long i = 0;
-			
-			Run(() => UpdateOldEvents());
 
 			while (true)
 			{
 				i++;
 				Log.Info(nameof(ThreadMain) + " loop number #" + i);
 
-				Run(() => GatherBasicInformationFromUnitId1Roaster());
+				if (Chance(config.GetOne(50, "ChancePerLoopToUpdateMainRoaster")))
+				{
+					Run(() => GatherBasicInformationFromUnitId1Roaster());
+					Run(() => BackupPeopleOrder());
+				}
 
-				Run(() => BackupPeopleOrder());
-
-				Run(() => UpdateProfiles());
+				Run(() => OnDataGatheringCycleCompleted?.Invoke());
 
 				if (Chance(config.GetOne(10, "ChancePerLoopToReparseExistingEvents")))
 					Run(() => UpdateOldEvents());
 
-				Run(() => GatherNewEvents());
-
-				Run(() => OnDataGatheringCycleCompleted?.Invoke());
+				if (Chance(config.GetOne(50, "ChancePerLoopToParseNewEvents")))
+					Run(() => GatherNewEvents());
 
 				if (Chance(config.GetOne(1, "ChancePerLoopToReparseMissingEvents")))
 					Run(async () => await ReparseMissingEvents());

@@ -25,17 +25,18 @@ namespace TawGatherMembersInfo
 
 		public async Task UpdateUnitContents(ILogEnd log, SessionMannager sessionManager, int tawUnitId)
 		{
-			await new UpdateUnitContentsHandler(db).Run(log, sessionManager, tawUnitId);
+			await new UpdateUnitContentsHandler(this).Run(log, sessionManager, tawUnitId);
 		}
 
 		class UpdateUnitContentsHandler
 		{
-			DbContextProvider db;
+			DbContextProvider Db => parent.db;
+			WebDataParser parent;
 			Dictionary<string, List<UnitRoasterPersonLine>> personNameToPersonLines = new Dictionary<string, List<UnitRoasterPersonLine>>();
 
-			public UpdateUnitContentsHandler(DbContextProvider db)
+			public UpdateUnitContentsHandler(WebDataParser parent)
 			{
-				this.db = db;
+				this.parent = parent;
 			}
 
 			public async Task Run(ILogEnd log, SessionMannager sessionManager, int tawUnitId)
@@ -65,7 +66,7 @@ namespace TawGatherMembersInfo
 						var personLines = kvp.Value;
 						var task = Task.Run(async () =>
 						{
-							using (var data = db.NewContext)
+							using (var data = Db.NewContext)
 							{
 								log2.Trace("parsing & saving roaster person " + personName);
 								foreach (var personLine in personLines)
@@ -93,6 +94,10 @@ namespace TawGatherMembersInfo
 								}
 								log2.Trace("done parsing & saving roaster person:" + personName);
 							}
+
+							// update active person profile, if he is on main roaster == he is active
+							await parent.UpdateInfoFromProfilePage(log2, personName);
+
 						});
 						tasks.Add(task);
 					};
@@ -150,6 +155,7 @@ namespace TawGatherMembersInfo
 						positionNameShort = PersonUnit.PositionNameLongToPositionNameShort(positionNameLong);
 						if (positionNameShort.IsNullOrWhiteSpace()) log.Warn("cannot find positionNameShortToPositionNameLong.Reverse[" + positionNameLong + "]");
 					}
+
 				}
 
 				async public Task FinishParsing(ILogEnd log, MyDbContext data)
@@ -195,7 +201,7 @@ namespace TawGatherMembersInfo
 			async Task ParseUnitContents(ILogEnd log, HtmlNode unitNamePlusUl, long? parentUnitId)
 			{
 				List<Task> tasks;
-				using (var data = db.NewContext)
+				using (var data = Db.NewContext)
 				{
 					var unitTypeNameElement = unitNamePlusUl.SelectSingleNode("li | span");
 					var unitTypeA = unitTypeNameElement.SelectSingleNode("*/a[1] | a[1]");
@@ -515,7 +521,7 @@ namespace TawGatherMembersInfo
 						}
 						else if (description.Contains("Unknown was removed from unit Unknown by"))
 						{
-							// removed person from removes unit
+							// removed person from removed unit
 						}
 						else
 						{

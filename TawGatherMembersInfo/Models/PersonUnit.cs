@@ -38,17 +38,6 @@ namespace TawGatherMembersInfo.Models
 		[NotMapped]
 		public string PositionNameLong => PositionNameShortToPositionNameLong(PositionNameShort);
 
-		/*
-[23:42:29.769][E] cannot find positionNameShortToPositionNameLong.Reverse[Operations Commander]
-[23:42:29.769][E] cannot find positionNameShortToPositionNameLong.Reverse[Operations Lt. Commander]
-[23:42:29.770][E] cannot find positionNameShortToPositionNameLong.Reverse[Operations Division Commander]
-[23:42:29.771][E] cannot find positionNameShortToPositionNameLong.Reverse[Operations Division Commander]
-[23:42:29.771][E] cannot find positionNameShortToPositionNameLong.Reverse[Operations Member]
-[23:42:29.774][E] cannot find positionNameShortToPositionNameLong.Reverse[Operations Corps. Commander]
-[23:42:29.775][E] cannot find positionNameShortToPositionNameLong.Reverse[Operations Corps. Lt. Commander]
-[23:42:29.784][E] cannot find positionNameShortToPositionNameLong.Reverse[Operations Member]
-		*/
-
 		public static string PositionNameShortToPositionNameLong(string positionNameShort)
 		{
 			return positionNameShortToPositionNameLong.GetValue(positionNameShort);
@@ -108,6 +97,17 @@ namespace TawGatherMembersInfo.Models
 				{"DI", "Drill Instructor"},
 				{"ST", "Server Technician"},
 				{"FL", "Fire Team Leader"},
+
+				// unknown short name
+				// TODO: find out correct short name
+				{"OPS1", "Operations Commander"},
+				{"OPS2", "Operations Lt. Commander"},
+				{"OPS3", "Operations Division Commander"},
+				{"OPS4", "Operations Division Member"},
+				{"OPS5", "Operations Member"},
+				{"OPS6", "Operations Corps. Commander"},
+				{"OPS7", "Operations Corps. Lt. Commander"},
 			};
+
 	}
 }

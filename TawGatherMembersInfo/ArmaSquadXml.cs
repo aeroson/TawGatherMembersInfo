@@ -50,7 +50,7 @@ namespace TawGatherMembersInfo
 			Log.Info("generating squad xmls into: '" + targetSquadXmlFolder + "'");
 
 			var utcNow = DateTime.UtcNow;
-			var people = data.People.Where(p => p.ActiveUnits.Count(u => u.Removed > utcNow) > 0).ToArray();
+			var people = data.People.Where(p => p.Units.Where(u => u.Removed > utcNow).Count() > 0).ToArray();
 
 			var filesSaved = new HashSet<FilePath>();
 
