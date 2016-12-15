@@ -1,5 +1,6 @@
 ﻿using Neitri;
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
@@ -19,6 +20,16 @@ namespace TawGatherMembersInfo
 		public Unit RootUnit => Units.OrderBy(u => u.TawId).FirstOrDefault();
 		public virtual IDbSet<Event> Events { get; set; }
 		public virtual IDbSet<Person> People { get; set; }
+
+		public IEnumerable<Person> ActivePeople
+		{
+			get
+			{
+				var utcNow = DateTime.UtcNow;
+				return People.Where(p => p.Units.Where(u => u.Removed > utcNow).Count() > 0);
+			}
+		}
+
 		public virtual IDbSet<Unit> Units { get; set; }
 		public virtual IDbSet<PersonEvent> PersonEvents { get; set; }
 		public virtual IDbSet<PersonUnit> PersonUnits { get; set; }

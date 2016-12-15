@@ -63,6 +63,8 @@ namespace TawGatherMembersInfo.Models
 			}
 		}
 
+
+
 		/// <summary>
 		/// Returns the prefix you use fot TeamSpeak name
 		/// AM1 1st Battalion North American == AM 1
@@ -74,35 +76,56 @@ namespace TawGatherMembersInfo.Models
 		{
 			get
 			{
+				if (Name.IsNullOrWhiteSpace()) return null;
+
 				// special use cases
 				if (Type.ToLower() == "division" && Name.ToLower().Contains("arma ")) return "AM";
+				if (Name.ToLower().Contains("newsletter")) return "NEWS";
 
-				if (Name.IsNullOrWhiteSpace()) return null;
-				if (Name.Contains(" ") == false) return null;
+				var nameSplitBySpaces = Name.Split(' ');
+				var prefix = Name; // default prefix
 
-				var prefix = Name.TakeStringBefore(" "); // AM1 1st Battalion North American || AM2 2nd Battalion European
-														 // we take only AM1 or AM2
-				if (prefix.IsNullOrWhiteSpace()) return null;
+				if (nameSplitBySpaces.Length > 1)
+					prefix = nameSplitBySpaces[0]; // AM1 1st Battalion North American || AM2 2nd Battalion European => we take only AM1 or AM2
 
-				// special use case
-				if (prefix == "TAW") return null;
-
-				// then take the last number out of it
-				int lastCharAsInt;
-				var isLastCharNumber = int.TryParse(prefix.Last().ToString(), out lastCharAsInt);
+				// try take the last number out of it and add space before it
+				int battalionNumber;
+				var isLastCharNumber = int.TryParse(prefix.Last().ToString(), out battalionNumber);
 				if (isLastCharNumber)
 				{
 					// first part of battalion name is TS prefix
-					prefix = prefix.RemoveFromEnd(1) + " " + lastCharAsInt;
+					// example: AM1
+					prefix = prefix.RemoveFromEnd(1) + " " + battalionNumber;
+				}
+				else
+				{
+					if (nameSplitBySpaces.Length >= 2)
+					{
+						var nextPart = nameSplitBySpaces[1];
+
+						// maybe the number is already after space
+						// example: EFT 1
+						if (nextPart != null && int.TryParse(nextPart, out battalionNumber))
+							prefix += " " + battalionNumber;
+
+						// maybe the battalion number is instead a name
+						// example: EV NA Platoon
+						if(nextPart.ToLower() == "na") // north america
+							prefix += " 1";
+						if (nextPart.ToLower() == "eu") // europe
+							prefix += " 2";
+					}
 				}
 
 				// only take prefix if its uppercase and looks valid
 				if (prefixValidRegexp.IsMatch(prefix)) return prefix;
+
 				return null;
 			}
 		}
 
-		static Regex prefixValidRegexp = new Regex("^[0-9 A-Z]+$", RegexOptions.Compiled);
+		static readonly Regex prefixValidRegexp = new Regex("^[0-9 A-Z]+$", RegexOptions.Compiled);
+
 
 		public static string GetUnitRoasterPage(int unitTawId)
 		{

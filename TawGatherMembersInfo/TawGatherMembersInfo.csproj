@@ -108,6 +108,7 @@
     <Compile Include="EnterTawUserLoginInfo.Designer.cs">
       <DependentUpon>EnterTawUserLoginInfo.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions.cs" />
     <Compile Include="Iso3166.cs" />
     <Compile Include="Migrations\201610052218530_InitialSchema.cs" />
     <Compile Include="Migrations\201610052218530_InitialSchema.Designer.cs">

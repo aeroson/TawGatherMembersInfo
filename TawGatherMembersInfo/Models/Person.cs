@@ -215,31 +215,6 @@ namespace TawGatherMembersInfo.Models
 			}
 		}
 
-		[NotMapped]
-		public bool IsTeamSpeakNameGuaranteedToBeCorrect
-		{
-			get
-			{
-				return ActiveUnits.Any(u =>
-				{
-					var unit = u.Unit;
-					var type = unit.Type.ToLower();
-
-					// walk the unit parent chain until we hit battalion or division
-					while (type != "battalion" && type != "division" && unit.ParentUnit != null)
-					{
-						unit = unit.ParentUnit;
-						type = unit.Type.ToLower();
-					}
-
-					var name = unit.Name.ToLower();
-					if (type == "division") return name.Contains("arma ");
-					if (type == "battalion") return name.Contains("am1") || name.Contains("am2");
-					return false;
-				});
-			}
-		}
-
 		// during one day: this took me 4 hours, trying to find logic/algorithm in something that was made to look good, TODO: needs improving
 		// spend many more hours on it afterwards as well
 		[NotMapped]

@@ -94,9 +94,6 @@ namespace TawGatherMembersInfo
 										log3.Fatal(e);
 									}
 								}
-
-								// update active person profile, if he is on main roaster == he is active
-								await parent.UpdateInfoFromProfilePage(log3, personName);
 							}
 						});
 						tasks.Add(task);
@@ -252,6 +249,33 @@ namespace TawGatherMembersInfo
 				}
 				await Task.WhenAll(tasks.ToArray());
 			}
+		}
+
+		public async Task UpdateActivePeopleProfiles(ILogEnd log)
+		{
+			var tasks = new List<Task>();
+
+			string[] names;
+			using (var ctx = db.NewContext)
+				names = ctx.ActivePeople.Select(p => p.Name).ToArray();
+
+			foreach (var name in names)
+			{
+				var personNameCopy = name;
+				var task = Task.Run(async () =>
+				{
+					await UpdateInfoFromProfilePage(log, personNameCopy);
+				});
+				tasks.Add(task);
+
+				if (tasks.Count > 100)
+				{
+					await tasks.WaitAllAsync(log);
+					tasks.Clear();
+				}
+			}
+
+			await tasks.WaitAllAsync(log);
 		}
 
 		async static Task<Person> GetPersonFromName(MyDbContext data, string name, string rankNameShort)
@@ -528,7 +552,7 @@ namespace TawGatherMembersInfo
 
 					if (wasDischarged)
 					{
-						// make sure all units relations are marked as not valid
+						// make sure all units relations are marked as not valid, so we are seen as not active
 						var utcNow = DateTime.UtcNow;
 						foreach (var u in person.Units.Where(u => u.Removed > utcNow).ToArray())
 							u.Removed = utcNow;

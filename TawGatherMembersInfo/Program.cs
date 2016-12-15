@@ -99,11 +99,9 @@ namespace TawGatherMembersInfo
 				var a = s.TeamSpeakName;
 			}
 
+			//DEBUG
 			//TestPrintAttendanceReport();
 			//AttendanceStatisticsPerWeekDay();
-
-			//httpServer = dependency.Create<HttpServerHandler>();
-
 			//UpdateSquadXml();
 
 #if !DEBUG

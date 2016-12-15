@@ -49,18 +49,15 @@ namespace TawGatherMembersInfo
 
 			Log.Info("generating squad xmls into: '" + targetSquadXmlFolder + "'");
 
-			var utcNow = DateTime.UtcNow;
-			var people = data.People.Where(p => p.Units.Where(u => u.Removed > utcNow).Count() > 0).ToArray();
+			var people = data.ActivePeople.ToArray();
 
 			var filesSaved = new HashSet<FilePath>();
 
 			foreach (var person in people)
 			{
-				// TODO: skip discharged persons
-				var armaProfileName = person.Biography.GetData("profile name", "arma profile name");
+				var armaProfileName = person.Biography.GetData("profile name", "arma profile name", "arma 3 profile name");
 				if (armaProfileName.IsNullOrEmpty())
 				{
-					//if (person.IsTeamSpeakNameGuaranteedToBeCorrect == false) continue;
 					armaProfileName = person.TeamSpeakName;
 					if (armaProfileName.Contains("[]")) continue; // taw teamspeak name position suffix is empty, failed to figure it out
 				}

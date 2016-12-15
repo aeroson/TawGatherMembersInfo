@@ -81,6 +81,16 @@ namespace TawGatherMembersInfo
 			}
 		}
 
+		void UpdateActivePeopleProfiles()
+		{
+			var log = Log.ProfileStart("update active people profiles");
+			Task.Run(async () =>
+			{
+				await dataParser.UpdateActivePeopleProfiles(log);
+			}).Wait();
+			log.End();
+		}
+
 		void UpdateOldEvents()
 		{
 			var maxDaysBack = config.GetOne(45, "ReparseExistingEventsThatAreDaysBack");
@@ -169,20 +179,17 @@ namespace TawGatherMembersInfo
 						if (pauseEachXEvents <= 100) Interlocked.Increment(ref pauseEachXEvents); // successfull, lets parse more at the same time
 					}
 				});
+
 				tasks.Add(task);
+
 				if (i % pauseEachXEvents == 0)
 				{
-					try
-					{
-						Task.WaitAll(tasks.ToArray());
-					}
-					catch (Exception e)
-					{
-						Log.FatalException(e);
-					}
+					tasks.WaitAll(Log);
 					tasks.Clear();
 				}
 			}
+
+			tasks.WaitAll(Log);
 
 			log.End();
 		}
@@ -233,7 +240,7 @@ namespace TawGatherMembersInfo
 			var secondsLeft = config.WebCrawlerLoopPauseSeconds;
 			var log = Log.ScopeStart($"pausing data gathering loop");
 
-			var logEverySeconds = (int)(secondsLeft / 1000);
+			var logEverySeconds = (int)(secondsLeft / 100);
 			if (logEverySeconds < 1) logEverySeconds = 1;
 
 			while (secondsLeft > 0)
@@ -262,11 +269,11 @@ namespace TawGatherMembersInfo
 				i++;
 				Log.Info(nameof(ThreadMain) + " loop number #" + i);
 
-				if (Chance(config.GetOne(50, "ChancePerLoopToUpdateMainRoaster")))
-				{
-					Run(() => GatherBasicInformationFromUnitId1Roaster());
-					Run(() => BackupPeopleOrder());
-				}
+				Run(() => GatherBasicInformationFromUnitId1Roaster());
+				Run(() => BackupPeopleOrder());
+
+				if (Chance(config.GetOne(30, "ChancePerLoopToUpdateActivePeopleProfiles")))
+					Run(() => UpdateActivePeopleProfiles());
 
 				Run(() => OnDataGatheringCycleCompleted?.Invoke());
 
