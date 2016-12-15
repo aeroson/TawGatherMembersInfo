@@ -264,6 +264,10 @@ namespace TawGatherMembersInfo
 		{
 			long i = 0;
 
+			//DEBUG
+			// await dataParser.UpdateInfoFromProfilePage(Log, "Colt");
+			Run(() => UpdateActivePeopleProfiles());
+
 			while (true)
 			{
 				i++;
