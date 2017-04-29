@@ -1,3 +1,7 @@
+# DISCONTINUED
+# DISCONTINUED
+# DISCONTINUED
+
 # TawGatherMembersInfo
 Automatic gathering of TAW.net members information for automated processing purposes. 
 Such as automatic generation of Arma 3 squad xmls.
